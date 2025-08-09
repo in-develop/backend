@@ -49,7 +49,7 @@ namespace TeamChallenge.Controllers
 
                 _context.Entry(cosmetic).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return NoContent();
+                return Ok("Product successfuly updated");
             }
 
             [HttpDelete("{id}")]
@@ -60,7 +60,7 @@ namespace TeamChallenge.Controllers
 
                 _context.Cosmetiс.Remove(cosmetic);
                 await _context.SaveChangesAsync();
-                return NoContent();
+                return Ok("Product successfuly updated");
             }
         }
     }
