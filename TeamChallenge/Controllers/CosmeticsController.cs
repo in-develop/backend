@@ -2,66 +2,80 @@
 using Microsoft.EntityFrameworkCore;
 using TeamChallenge.DbContext;
 using TeamChallenge.Models.Models;
+using TeamChallenge.Models.Responses;
 
 
 namespace TeamChallenge.Controllers
 {
-    public class CosmeticsController
+    [ApiController]
+    [Route("api")]
+    public class CosmeticController : ControllerBase
     {
-        [ApiController]
-        [Route("api/[controller]")]
-        public class CosmeticController : ControllerBase
+        private readonly CosmeticStoreDbContext _context;
+
+        public CosmeticController(CosmeticStoreDbContext context)
         {
-            private readonly CosmeticStoreDbContext _context;
+            _context = context;
+        }
 
-            public CosmeticController(CosmeticStoreDbContext context)
-            {
-                _context = context;
-            }
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
+        {
+            var cosmetics = await _context.Cosmetiс.ToListAsync();
+            return Ok(cosmetics);
+        }
 
-            [HttpGet]
-            public async Task<IActionResult> GetAll()
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var cosmetic = await _context.Cosmetiс.FindAsync(id);
+            if (cosmetic == null)
             {
-                var cosmetics = await _context.Cosmetiс.ToListAsync();
-                return Ok(cosmetics);
+                return NotFound($"Id is not found({id})");
             }
+            return Ok(cosmetic);
+        }
 
-            [HttpGet("{id}")]
-            public async Task<IActionResult> GetById(int id)
-            {
-                var cosmetic = await _context.Cosmetiс.FindAsync(id);
-                if (cosmetic == null) return NotFound();
-                return Ok(cosmetic);
-            }
-            
-            [HttpPost]
-            public async Task<IActionResult> Create([FromBody] Cosmetic cosmetic)
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] Cosmetic cosmetic)
+        {
+            try
             {
                 _context.Cosmetiс.Add(cosmetic);
                 await _context.SaveChangesAsync();
-                return CreatedAtAction(nameof(GetById), new { id  = cosmetic.Id }, cosmetic);
+                return Ok(new Response
+                {
+                    IsSucceded = true
+                });
             }
-
-            [HttpPut("{id}")]
-            public async Task<IActionResult> Update(int id, [FromBody] Cosmetic cosmetic)
+            catch (Exception ex)
             {
-                if (id != cosmetic.Id) return NotFound();
+                return BadRequest(ex);
+            }
+        }
 
-                _context.Entry(cosmetic).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return NoContent();
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Cosmetic cosmetic)
+        {
+            if (id != cosmetic.Id) 
+            { 
+                return NotFound("product is not found"); 
             }
 
-            [HttpDelete("{id}")]
-            public async Task<IActionResult> Delete(int id)
-            {
-                var cosmetic = await _context.Cosmetiс.FindAsync(id);
-                if (cosmetic == null) return NotFound();
+            _context.Entry(cosmetic).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return Ok("");
+        }
 
-                _context.Cosmetiс.Remove(cosmetic);
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var cosmetic = await _context.Cosmetiс.FindAsync(id);
+            if (cosmetic == null) return NotFound();
+
+            _context.Cosmetiс.Remove(cosmetic);
+            await _context.SaveChangesAsync();
+            return Ok("");
         }
     }
 }
