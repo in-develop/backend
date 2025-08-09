@@ -12,8 +12,8 @@ using TeamChallenge.DbContext;
 namespace TeamChallenge.Migrations
 {
     [DbContext(typeof(CosmeticStoreDbContext))]
-    [Migration("20250808110942_FixNaming")]
-    partial class FixNaming
+    [Migration("20250809091349_initialCommit")]
+    partial class initialCommit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

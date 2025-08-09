@@ -16,7 +16,7 @@ namespace TeamChallenge.DbContext
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<Сosmetiс>()
+            builder.Entity<Cosmetic>()
             .Property(c => c.Price)
             .HasPrecision(18, 2);
         }        
@@ -25,6 +25,6 @@ namespace TeamChallenge.DbContext
         public DbSet<DeliveryState> DeliveryState { get; set; }
         public DbSet<OrderItem> OrderItem { get; set; }
         public DbSet<User> Users {  get; set; }
-        public DbSet<Сosmetiс> Cosmetiс { get; set; }
+        public DbSet<Cosmetic> Cosmetiс { get; set; }
     }
 }

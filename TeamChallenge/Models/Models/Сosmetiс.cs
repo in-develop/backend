@@ -1,6 +1,6 @@
 ﻿namespace TeamChallenge.Models.Models
 {
-    public class Сosmetiс
+    public class Cosmetic
     {
         public int Id { get; set; }
         public string Name { get; set; }

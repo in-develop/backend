@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TeamChallenge.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCommit : Migration
+    public partial class initialCommit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -189,7 +189,7 @@ namespace TeamChallenge.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "сosmetiс",
+                name: "Cosmetiс",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -201,9 +201,9 @@ namespace TeamChallenge.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_сosmetiс", x => x.Id);
+                    table.PrimaryKey("PK_Cosmetiс", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_сosmetiс_OrderItem_OrderItemId",
+                        name: "FK_Cosmetiс_OrderItem_OrderItemId",
                         column: x => x.OrderItemId,
                         principalTable: "OrderItem",
                         principalColumn: "Id");
@@ -222,9 +222,9 @@ namespace TeamChallenge.Migrations
                 {
                     table.PrimaryKey("PK_Category", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Category_сosmetiс_СosmetiсId",
+                        name: "FK_Category_Cosmetiс_СosmetiсId",
                         column: x => x.СosmetiсId,
-                        principalTable: "сosmetiс",
+                        principalTable: "Cosmetiс",
                         principalColumn: "Id");
                 });
 
@@ -273,14 +273,14 @@ namespace TeamChallenge.Migrations
                 column: "СosmetiсId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cosmetiс_OrderItemId",
+                table: "Cosmetiс",
+                column: "OrderItemId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItem_DeliveryStateId",
                 table: "OrderItem",
                 column: "DeliveryStateId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_сosmetiс_OrderItemId",
-                table: "сosmetiс",
-                column: "OrderItemId");
         }
 
         /// <inheritdoc />
@@ -311,7 +311,7 @@ namespace TeamChallenge.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "сosmetiс");
+                name: "Cosmetiс");
 
             migrationBuilder.DropTable(
                 name: "OrderItem");
