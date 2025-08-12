@@ -8,7 +8,7 @@ namespace TeamChallenge.DbContext
 {
     public class CosmeticStoreDbContext: IdentityDbContext<User>
     {
-        public CosmeticStoreDbContext(DbContextOptions options) : base(options)
+        public CosmeticStoreDbContext(DbContextOptions<CosmeticStoreDbContext> options) : base(options)
         {
         }
 

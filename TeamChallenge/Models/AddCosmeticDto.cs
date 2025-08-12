@@ -1,8 +1,9 @@
-﻿namespace TeamChallenge.Models.Models
+﻿using TeamChallenge.Models.Models;
+
+namespace TeamChallenge.Models
 {
-    public class Cosmetic
+    public class AddCosmeticDto
     {
-        public int Id { get; set; }
         public required string Name { get; set; }
         public string Description { get; set; }
         public required decimal Price { get; set; }

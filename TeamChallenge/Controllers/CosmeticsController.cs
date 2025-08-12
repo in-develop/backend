@@ -2,51 +2,59 @@
 using Microsoft.EntityFrameworkCore;
 using TeamChallenge.DbContext;
 using TeamChallenge.Models.Models;
+using TeamChallenge.Models.DTOs;
+using TeamChallenge.Services;
 using TeamChallenge.Models.Responses;
 
 
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Route("api")]
+    [Route("api/[Cosmetic]")]
     public class CosmeticController : ControllerBase
     {
-        private readonly CosmeticStoreDbContext _context;
+        private readonly CosmeticService _service;
 
-        public CosmeticController(CosmeticStoreDbContext context)
+        public CosmeticController(CosmeticService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
-            var cosmetics = await _context.Cosmetiс.ToListAsync();
-            return Ok(cosmetics);
+            try
+            {
+                return Ok(await _service.GetAllAsync()); // невпевнений
+            } 
+            catch (Exception ex) 
+            {
+                return BadRequest(ex);
+            }    
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var cosmetic = await _context.Cosmetiс.FindAsync(id);
-            if (cosmetic == null)
+            try
             {
-                return NotFound($"Id is not found({id})");
+                var cosmetic = await _service.GetByIdAsync(id);
+                return cosmetic == null ? NotFound($"Id is not found({id})") : Ok(cosmetic);
             }
-            return Ok(cosmetic);
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+            
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Cosmetic cosmetic)
+        public async Task<IActionResult> Create([FromBody] CosmeticCreateDto dto)
         {
             try
             {
-                _context.Cosmetiс.Add(cosmetic);
-                await _context.SaveChangesAsync();
-                return Ok(new Response
-                {
-                    IsSucceded = true
-                });
+                var created = await _service.CreateAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
             }
             catch (Exception ex)
             {
@@ -55,27 +63,32 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Cosmetic cosmetic)
+        public async Task<IActionResult> Update(int id, [FromBody] CosmeticCreateDto dto)
         {
-            if (id != cosmetic.Id) 
-            { 
-                return NotFound("product is not found"); 
+            try
+            {
+                var updated = await _service.UpdateAsync(id, dto);
+                return updated ? Ok("Product is successfuly updated") : NotFound("Product is not found");
             }
-
-            _context.Entry(cosmetic).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return Ok("");
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+            
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var cosmetic = await _context.Cosmetiс.FindAsync(id);
-            if (cosmetic == null) return NotFound();
-
-            _context.Cosmetiс.Remove(cosmetic);
-            await _context.SaveChangesAsync();
-            return Ok("");
+            try
+            {
+                var deleted = await _service.DeleteAsync(id);
+                return deleted ? NotFound("Product is not found.") : Ok("Product is successfuly deleted");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
     }
 }
