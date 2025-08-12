@@ -1,8 +1,8 @@
 ﻿using TeamChallenge.Models.Models;
 
-namespace TeamChallenge.Models
+namespace TeamChallenge.Models.DTOs
 {
-    public class AddCosmeticDto
+    public class CosmeticAddDto
     {
         public required string Name { get; set; }
         public string Description { get; set; }

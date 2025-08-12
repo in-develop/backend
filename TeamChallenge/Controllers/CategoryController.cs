@@ -7,7 +7,7 @@ using TeamChallenge.Models.Responses;
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Route("api/[Category]")]
+    [Route("[controller]")]
     public class CategoryController : ControllerBase
     {
         private readonly CosmeticStoreDbContext _context;
@@ -30,5 +30,6 @@ namespace TeamChallenge.Controllers
                 return BadRequest(ex);
             }
         }
+
     }
 }

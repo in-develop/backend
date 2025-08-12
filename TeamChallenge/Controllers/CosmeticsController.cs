@@ -1,21 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TeamChallenge.DbContext;
-using TeamChallenge.Models.Models;
 using TeamChallenge.Models.DTOs;
 using TeamChallenge.Services;
-using TeamChallenge.Models.Responses;
+using TeamChallenge.Interfaces;
 
 
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Route("api/[Cosmetic]")]
+    [Route("[controller]")]
     public class CosmeticController : ControllerBase
     {
-        private readonly CosmeticService _service;
+        private readonly ICosmetic _service;
 
-        public CosmeticController(CosmeticService service)
+        public CosmeticController(ICosmetic service)
         {
             _service = service;
         }
@@ -25,7 +22,7 @@ namespace TeamChallenge.Controllers
         {
             try
             {
-                return Ok(await _service.GetAllAsync()); // невпевнений
+               return Ok(await _service.GetAllAsync()); // невпевнений
             } 
             catch (Exception ex) 
             {
@@ -34,21 +31,20 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById()
         {
             try
             {
                 var cosmetic = await _service.GetByIdAsync(id);
-                return cosmetic == null ? NotFound($"Id is not found({id})") : Ok(cosmetic);
+                return cosmetic == null ? NotFound($"Your {id} is not found") : Ok(cosmetic);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex);
-            }
-            
+            }            
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CosmeticCreateDto dto)
         {
             try
@@ -83,7 +79,7 @@ namespace TeamChallenge.Controllers
             try
             {
                 var deleted = await _service.DeleteAsync(id);
-                return deleted ? NotFound("Product is not found.") : Ok("Product is successfuly deleted");
+                return deleted ? Ok("Product is successfuly deleted") : NotFound("Product is not found.") ;
             }
             catch (Exception ex)
             {
