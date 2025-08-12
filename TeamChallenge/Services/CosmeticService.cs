@@ -2,10 +2,11 @@
 using TeamChallenge.Models.Models;
 using TeamChallenge.Models.DTOs;
 using TeamChallenge.DbContext;
+using TeamChallenge.Interfaces;
 
 namespace TeamChallenge.Services
 {
-    public class CosmeticService
+    public class CosmeticService: ICosmetic
     {
         private readonly CosmeticStoreDbContext _context;
 
@@ -16,28 +17,27 @@ namespace TeamChallenge.Services
 
         public async Task<List<CosmeticReadDto>> GetAllAsync()
         {
-            return await _context.Cosmetiсs
-                .Include(c => c.Categories)
-                .Select(c => new CosmeticReadDto 
-                { Id = c.Id, 
-                  Name = c.Name,
-                  Description = c.Description,
-                  Price = c.Price, 
-                  Category = c.Categories
+            return await _context.Cosmetiс
+                .Select(c => new CosmeticReadDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    Price = c.Price,
+                    Category = c.Category
                 }).ToListAsync();
         }
         public async Task<CosmeticReadDto?> GetByIdAsync(int id)
         {
-            return await _context.Cosmetiсs
-                .Include(c => c.Categories)
-                .Where(c => c.Id == id)
+            return await _context.Cosmetiс
                 .Select(c => new CosmeticReadDto
-                { Id = c.Id, 
-                    Name = c.Name, 
-                    Description = c.Description, 
-                    Price = c.Price, 
-                    Category = c.Categories
-                }).FirstOrDefaultAsync();
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    Price = c.Price,
+                    Category = c.Category
+                }).FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<CosmeticReadDto> CreateAsync(CosmeticCreateDto dto)
@@ -47,12 +47,12 @@ namespace TeamChallenge.Services
                 Name = dto.Name,
                 Description = dto.Description,
                 Price = dto.Price,
-                Categories = await _context.Categories.
-                Where(cat => dto.CategoryIds.Contains(cat.Id))
+                Category = await _context.Category
+                .Where(cat => dto.CategoryIds.Contains(cat.Id))
                 .ToListAsync()
             };
 
-            _context.Cosmetiсs.Add(cosmetic);
+            _context.Cosmetiс.Add(cosmetic);
             await _context.SaveChangesAsync();
 
             return new CosmeticReadDto
@@ -61,22 +61,24 @@ namespace TeamChallenge.Services
                 Name = cosmetic.Name,
                 Description = cosmetic.Description,
                 Price = cosmetic.Price,
-                Category = cosmetic.Categories
+                Category = cosmetic.Category
             };
         }
 
         public async Task<bool> UpdateAsync(int id, CosmeticCreateDto dto)
         {
-            var cosmetic = await _context.Cosmetiсs.
-                Include(c => c.Categories)
+            var cosmetic = await _context.Cosmetiс
                 .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (cosmetic == null) return false;
-            
+            if (cosmetic == null) 
+            {
+                return false;
+            }
+
             cosmetic.Name = dto.Name;
             cosmetic.Description = dto.Description;
             cosmetic.Price = dto.Price;
-            cosmetic.Categories = await _context.Categories
+            cosmetic.Category = await _context.Category
                 .Where(cat => dto.CategoryIds.Contains(cat.Id))
                 .ToListAsync();
 
@@ -86,10 +88,13 @@ namespace TeamChallenge.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var cosmetic = await _context.Cosmetiсs.FindAsync(id);
-            if (cosmetic == null) return false;
+            var cosmetic = await _context.Cosmetiс.FindAsync(id);
+            if (cosmetic == null) 
+            {
+                return false;
+            }
 
-            _context.Cosmetiсs.Remove(cosmetic);
+            _context.Cosmetiс.Remove(cosmetic);
             await _context.SaveChangesAsync();
             return true;
         }
