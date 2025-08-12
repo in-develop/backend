@@ -14,7 +14,7 @@ var config = builder.Configuration;
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<ILogin, LoginService>(); 
+builder.Services.AddSingleton<ILogin, LoginService>();
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 
 builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>

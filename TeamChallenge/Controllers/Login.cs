@@ -31,7 +31,7 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromForm] Models.Requests.LoginRequest request)
+        public async Task<IActionResult> Login([FromForm] LoginRequest request)
         {
             if (request == null)
             {
