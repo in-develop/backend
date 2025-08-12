@@ -1,10 +1,8 @@
-﻿using TeamChallenge.Interfaces;
-
-namespace TeamChallenge.Services
+﻿namespace TeamChallenge.Helpers
 {
-    public class LoginService: ILogin
+    public static class EmailVerifyHelper
     {
-        public bool IsValidEmail(string email)
+        public static bool IsValidEmail(string email)
         {
             var trimmedEmail = email.Trim();
 
@@ -12,6 +10,7 @@ namespace TeamChallenge.Services
             {
                 return false;
             }
+
             try
             {
                 var addr = new System.Net.Mail.MailAddress(email);
@@ -22,6 +21,5 @@ namespace TeamChallenge.Services
                 return false;
             }
         }
-
     }
 }

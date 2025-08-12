@@ -1,28 +1,42 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using TeamChallenge.DbContext;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Models;
+using TeamChallenge.Models.SendEmailModels;
 using TeamChallenge.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<ILogin, LoginService>(); 
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
+builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
+builder.Services.AddTransient<IEmailSend, EmailSenderService>();
+var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentity<User, IdentityRole>(
     opt =>
-    {
+    {   
+        opt.SignIn.RequireConfirmedEmail = true;
         opt.Password.RequireNonAlphanumeric = false;
         opt.Password.RequireUppercase = false;
         opt.Password.RequiredLength = 1;
@@ -32,15 +46,46 @@ builder.Services.AddIdentity<User, IdentityRole>(
     .AddEntityFrameworkStores<CosmeticStoreDbContext>()
     .AddApiEndpoints();
 
+
 builder.Services.AddAuthorization();
 
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-        .AddJwtBearer(jwtOptions =>
+    .AddCookie()
+    .AddGoogle(googleOptions =>
+    {
+        var clientId = googleOptions.ClientId = config["Authentication:Google:ClientId"];
+        if (clientId == null)
+        {
+            throw new ArgumentNullException(nameof(clientId));
+        }
+
+        var clientSecret = googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"];
+        if (clientSecret == null)
+        {
+            throw new ArgumentNullException(nameof(clientSecret));
+        }
+        googleOptions.ClientId = clientId;
+        googleOptions.ClientSecret = clientSecret;
+        googleOptions.CallbackPath = "/signin-google";
+        googleOptions.Events.OnCreatingTicket = ctx =>
+        {
+            var identity = (ClaimsIdentity)ctx.Principal.Identity;
+            var profilePic = ctx.User.GetProperty("picture").GetString();
+            var email = ctx.User.GetProperty("email").GetString();
+            var name = ctx.User.GetProperty("name").GetString();
+            identity.AddClaim(new Claim("profilePic", profilePic));
+            identity.AddClaim(new Claim(ClaimTypes.Email, email));
+            identity.AddClaim(new Claim(ClaimTypes.Name, name));
+            return Task.CompletedTask;
+        };
+
+    })
+    .AddJwtBearer(jwtOptions =>
         {
             jwtOptions.TokenValidationParameters = new TokenValidationParameters
             {
@@ -70,6 +115,13 @@ builder.Services.AddAuthentication(x =>
             };
         });
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
 var app = builder.Build();
 
 //using (var scope = app.Services.CreateScope())
@@ -93,6 +145,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSession();
 app.UseHttpsRedirection();
 app.MapIdentityApi<IdentityUser>();
 
