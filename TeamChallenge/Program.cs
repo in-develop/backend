@@ -17,6 +17,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ILogin, LoginService>();
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 builder.Services.AddTransient<ICosmetic, CosmeticService>();
+builder.Services.AddTransient<ICategory, CategoryService>();
 
 builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

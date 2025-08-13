@@ -22,25 +22,25 @@ namespace TeamChallenge.Controllers
         {
             try
             {
-               return Ok(await _service.GetAllAsync()); // невпевнений
+               return Ok(await _service.GetAllAsync());
             } 
             catch (Exception ex) 
             {
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }    
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById()
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
                 var cosmetic = await _service.GetByIdAsync(id);
-                return cosmetic == null ? NotFound($"Your {id} is not found") : Ok(cosmetic);
+                return cosmetic == null ? NotFound($"Your cosmetic {id} is not found") : Ok(cosmetic);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }            
         }
 
@@ -54,7 +54,7 @@ namespace TeamChallenge.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -68,7 +68,7 @@ namespace TeamChallenge.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }
             
         }
@@ -83,7 +83,7 @@ namespace TeamChallenge.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }
         }
     }

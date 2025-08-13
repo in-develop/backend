@@ -7,5 +7,6 @@
         public string Description { get; set; }
         public required decimal Price { get; set; }
         public required List<Category> Category { get; set; }
+
     }
 }
