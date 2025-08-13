@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TeamChallenge.DbContext;
 using TeamChallenge.Interfaces;
-using TeamChallenge.Models.DTOs;
-using TeamChallenge.Models.Models;
-using TeamChallenge.Models.Responses;
+using TeamChallenge.Models.DTOs.Category;
 
 namespace TeamChallenge.Controllers
 {
@@ -33,10 +29,11 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById()
         {
             try
             {
+                var id = int.Parse((string)RouteData.Values["id"]);
                 var category = await _service.GetByIdAsync(id);
                 return category == null ? NotFound($"Your category {id} is not found") : Ok(category);
             }
@@ -61,10 +58,11 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CategoryAddDto dto)
+        public async Task<IActionResult> Update([FromBody] CategoryAddDto dto)
         {
             try
             {
+                var id = int.Parse((string)RouteData.Values["id"]);
                 var updated = await _service.UpdateAsync(id, dto);
                 return updated ? Ok("Category is successfuly updated") : NotFound("Desired Category is not found");
             }
@@ -75,10 +73,11 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete()
         {
             try
             {
+                var id = int.Parse((string)RouteData.Values["id"]);
                 var deleted = await _service.DeleteAsync(id);
                 return deleted ? Ok("Category is successfuly deleted") : NotFound("Desired Category is not found");
             }

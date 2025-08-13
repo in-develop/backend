@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Models.DTOs;
-using TeamChallenge.Services;
 using TeamChallenge.Interfaces;
+using TeamChallenge.Models.DTOs.Cosmetic;
 
 
 namespace TeamChallenge.Controllers
@@ -31,10 +30,11 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById()
         {
             try
             {
+                var id = int.Parse((string)RouteData.Values["id"]);
                 var cosmetic = await _service.GetByIdAsync(id);
                 return cosmetic == null ? NotFound($"Your cosmetic {id} is not found") : Ok(cosmetic);
             }
@@ -59,10 +59,11 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CosmeticCreateDto dto)
+        public async Task<IActionResult> Update([FromBody] CosmeticCreateDto dto)
         {
             try
             {
+                var id = int.Parse((string)RouteData.Values["id"]);
                 var updated = await _service.UpdateAsync(id, dto);
                 return updated ? Ok("Product is successfuly updated") : NotFound("Product is not found");
             }
@@ -74,10 +75,11 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete()
         {
             try
             {
+                var id = int.Parse((string)RouteData.Values["id"]);
                 var deleted = await _service.DeleteAsync(id);
                 return deleted ? Ok("Product is successfuly deleted") : NotFound("Product is not found.") ;
             }

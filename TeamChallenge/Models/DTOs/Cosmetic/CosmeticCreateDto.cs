@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TeamChallenge.Models.DTOs
+namespace TeamChallenge.Models.DTOs.Cosmetic
 {
     public class CosmeticCreateDto
     {

@@ -1,4 +1,4 @@
-﻿using TeamChallenge.Models.DTOs;
+﻿using TeamChallenge.Models.DTOs.Cosmetic;
 
 namespace TeamChallenge.Interfaces
 {

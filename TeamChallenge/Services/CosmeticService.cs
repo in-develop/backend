@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeamChallenge.Models.Models;
-using TeamChallenge.Models.DTOs;
 using TeamChallenge.DbContext;
 using TeamChallenge.Interfaces;
+using TeamChallenge.Models.DTOs.Cosmetic;
 
 namespace TeamChallenge.Services
 {
@@ -27,6 +27,7 @@ namespace TeamChallenge.Services
                     Category = c.Category
                 }).ToListAsync();
         }
+
         public async Task<CosmeticReadDto?> GetByIdAsync(int id)
         {
             return await _context.Cosmetiс

@@ -1,6 +1,6 @@
 ﻿using TeamChallenge.Models.Models;
 
-namespace TeamChallenge.Models.DTOs
+namespace TeamChallenge.Models.DTOs.Cosmetic
 {
     public class CosmeticReadDto
     {
@@ -8,6 +8,6 @@ namespace TeamChallenge.Models.DTOs
         public string Name { get; set; }
         public string Description { get; set; }
         public decimal Price  { get; set; }
-        public List<Category> Category { get; set; }
+        public List<Models.Category> Category { get; set; }
     }
 }

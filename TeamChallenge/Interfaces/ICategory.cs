@@ -1,4 +1,4 @@
-﻿using TeamChallenge.Models.DTOs;
+﻿using TeamChallenge.Models.DTOs.Category;
 
 namespace TeamChallenge.Interfaces
 {

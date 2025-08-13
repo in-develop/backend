@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TeamChallenge.Migrations
 {
     /// <inheritdoc />
-    public partial class initialCommit : Migration
+    public partial class updateDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +48,19 @@ namespace TeamChallenge.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Category",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Category", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -210,22 +223,27 @@ namespace TeamChallenge.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Category",
+                name: "CategoryCosmetic",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    СosmetiсId = table.Column<int>(type: "int", nullable: true)
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    CosmeticId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Category", x => x.Id);
+                    table.PrimaryKey("PK_CategoryCosmetic", x => new { x.CategoryId, x.CosmeticId });
                     table.ForeignKey(
-                        name: "FK_Category_Cosmetiс_СosmetiсId",
-                        column: x => x.СosmetiсId,
+                        name: "FK_CategoryCosmetic_Category_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Category",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CategoryCosmetic_Cosmetiс_CosmeticId",
+                        column: x => x.CosmeticId,
                         principalTable: "Cosmetiс",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -268,9 +286,9 @@ namespace TeamChallenge.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Category_СosmetiсId",
-                table: "Category",
-                column: "СosmetiсId");
+                name: "IX_CategoryCosmetic_CosmeticId",
+                table: "CategoryCosmetic",
+                column: "CosmeticId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cosmetiс_OrderItemId",
@@ -302,13 +320,16 @@ namespace TeamChallenge.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Category");
+                name: "CategoryCosmetic");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Category");
 
             migrationBuilder.DropTable(
                 name: "Cosmetiс");

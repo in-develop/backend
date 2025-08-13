@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeamChallenge.DbContext;
-using TeamChallenge.Models.DTOs;
 using TeamChallenge.Models.Models;
 using TeamChallenge.Interfaces;
+using TeamChallenge.Models.DTOs.Category;
 
 namespace TeamChallenge.Services
 {
