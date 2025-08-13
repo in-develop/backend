@@ -12,8 +12,8 @@ using TeamChallenge.DbContext;
 namespace TeamChallenge.Migrations
 {
     [DbContext(typeof(CosmeticStoreDbContext))]
-    [Migration("20250808110942_FixNaming")]
-    partial class FixNaming
+    [Migration("20250813080654_updateDB")]
+    partial class updateDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace TeamChallenge.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("CategoryCosmetic", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CosmeticId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CategoryId", "CosmeticId");
+
+                    b.HasIndex("CosmeticId");
+
+                    b.ToTable("CategoryCosmetic");
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -170,14 +185,39 @@ namespace TeamChallenge.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("СosmetiсId")
+                    b.HasKey("Id");
+
+                    b.ToTable("Category");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Models.Cosmetic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrderItemId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("СosmetiсId");
+                    b.HasIndex("OrderItemId");
 
-                    b.ToTable("Category");
+                    b.ToTable("Cosmetiс");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Models.DeliveryState", b =>
@@ -280,34 +320,19 @@ namespace TeamChallenge.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("TeamChallenge.Models.Models.Сosmetiс", b =>
+            modelBuilder.Entity("CategoryCosmetic", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.HasOne("TeamChallenge.Models.Models.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("OrderItemId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderItemId");
-
-                    b.ToTable("Cosmetiс");
+                    b.HasOne("TeamChallenge.Models.Models.Cosmetic", null)
+                        .WithMany()
+                        .HasForeignKey("CosmeticId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -361,11 +386,11 @@ namespace TeamChallenge.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TeamChallenge.Models.Models.Category", b =>
+            modelBuilder.Entity("TeamChallenge.Models.Models.Cosmetic", b =>
                 {
-                    b.HasOne("TeamChallenge.Models.Models.Сosmetiс", null)
-                        .WithMany("Category")
-                        .HasForeignKey("СosmetiсId");
+                    b.HasOne("TeamChallenge.Models.Models.OrderItem", null)
+                        .WithMany("Cosmetics")
+                        .HasForeignKey("OrderItemId");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Models.OrderItem", b =>
@@ -379,21 +404,9 @@ namespace TeamChallenge.Migrations
                     b.Navigation("DeliveryState");
                 });
 
-            modelBuilder.Entity("TeamChallenge.Models.Models.Сosmetiс", b =>
-                {
-                    b.HasOne("TeamChallenge.Models.Models.OrderItem", null)
-                        .WithMany("Cosmetics")
-                        .HasForeignKey("OrderItemId");
-                });
-
             modelBuilder.Entity("TeamChallenge.Models.Models.OrderItem", b =>
                 {
                     b.Navigation("Cosmetics");
-                });
-
-            modelBuilder.Entity("TeamChallenge.Models.Models.Сosmetiс", b =>
-                {
-                    b.Navigation("Category");
                 });
 #pragma warning restore 612, 618
         }

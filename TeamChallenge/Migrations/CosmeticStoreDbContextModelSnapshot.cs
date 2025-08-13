@@ -22,6 +22,21 @@ namespace TeamChallenge.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CategoryCosmetic", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CosmeticId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CategoryId", "CosmeticId");
+
+                    b.HasIndex("CosmeticId");
+
+                    b.ToTable("CategoryCosmetic");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -163,16 +178,11 @@ namespace TeamChallenge.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CosmeticId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CosmeticId");
 
                     b.ToTable("Category");
                 });
@@ -310,6 +320,21 @@ namespace TeamChallenge.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("CategoryCosmetic", b =>
+                {
+                    b.HasOne("TeamChallenge.Models.Models.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeamChallenge.Models.Models.Cosmetic", null)
+                        .WithMany()
+                        .HasForeignKey("CosmeticId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -361,13 +386,6 @@ namespace TeamChallenge.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TeamChallenge.Models.Models.Category", b =>
-                {
-                    b.HasOne("TeamChallenge.Models.Models.Cosmetic", null)
-                        .WithMany("Category")
-                        .HasForeignKey("CosmeticId");
-                });
-
             modelBuilder.Entity("TeamChallenge.Models.Models.Cosmetic", b =>
                 {
                     b.HasOne("TeamChallenge.Models.Models.OrderItem", null)
@@ -384,11 +402,6 @@ namespace TeamChallenge.Migrations
                         .IsRequired();
 
                     b.Navigation("DeliveryState");
-                });
-
-            modelBuilder.Entity("TeamChallenge.Models.Models.Cosmetic", b =>
-                {
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Models.OrderItem", b =>

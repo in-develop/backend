@@ -1,9 +1,6 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using TeamChallenge.DbContext;
@@ -18,6 +15,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
+builder.Services.AddScoped<ICosmetic, CosmeticService>();
+builder.Services.AddScoped<ICategory, CategoryService>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
 builder.Services.AddTransient<IEmailSend, EmailSenderService>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
@@ -137,8 +136,8 @@ var app = builder.Build();
 //        }
 //    }
 //}
+//Configure the HTTP request pipeline.
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

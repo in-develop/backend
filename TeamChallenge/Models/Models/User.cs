@@ -2,7 +2,7 @@
 
 namespace TeamChallenge.Models.Models
 {
-    public class User:IdentityUser
+    public class User : IdentityUser
     {
         public bool IsEmailConfirmed { get; set; }
     }
