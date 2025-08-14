@@ -11,6 +11,7 @@ using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Entities;
+using TeamChallenge.Models.Models.Login;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 
@@ -20,13 +21,13 @@ namespace TeamChallenge.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private readonly SignInManager<User> _signInManager;
-        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<UserEntity> _signInManager;
+        private readonly UserManager<UserEntity> _userManager;
         private readonly IGenerateToken _tokenService;
         private readonly IEmailSend _emailSender;
         private static readonly Dictionary<string, DateTime> _emailCooldowns = new Dictionary<string, DateTime>();
 
-        public LoginController(SignInManager<User> signInManager, UserManager<User> userManager, IGenerateToken tokenService, IEmailSend emailSender)
+        public LoginController(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IGenerateToken tokenService, IEmailSend emailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -42,7 +43,7 @@ namespace TeamChallenge.Controllers
                 return Unauthorized(new ErrorResponse("Invalid credentials"));
             }
 
-            var user = new User();
+            var user = new UserEntity();
             if (EmailVerifyHelper.IsValidEmail(request.UsernameOrEmail))
             {
                 user = await _userManager.FindByEmailAsync(request.UsernameOrEmail);
@@ -94,7 +95,7 @@ namespace TeamChallenge.Controllers
                 return BadRequest(new ErrorResponse("Fields must not be empty"));
             }
 
-            var user = new User { UserName = request.Username, Email = request.Email };
+            var user = new UserEntity { UserName = request.Username, Email = request.Email };
             var result = await _userManager.CreateAsync(user, request.Password);
 
             if (result.Succeeded)

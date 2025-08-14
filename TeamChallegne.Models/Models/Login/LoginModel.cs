@@ -1,5 +1,4 @@
-﻿
-namespace TeamChallenge.Models.Responses
+﻿namespace TeamChallenge.Models.Login
 {
     public class LoginModel
     {

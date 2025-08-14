@@ -4,6 +4,6 @@ namespace TeamChallenge.Interfaces
 {
     public interface IGenerateToken
     {
-        (string, DateTime)GenerateToken(User user, IList<string> roles);
+        (string, DateTime)GenerateToken(UserEntity user, IList<string> roles);
     }
 }

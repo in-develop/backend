@@ -1,4 +1,6 @@
-﻿namespace TeamChallenge.Models.Entities
+﻿using TeamChallenge.Models.Entities;
+
+namespace TeamChallenge.Models.Login
 {
     public class InviteToken
     {
@@ -7,6 +9,6 @@
         public int Token { get; set; }
         public bool IsUsed { get; set; }
         public DateTime ExpiresAt { get; set; }
-        public User User { get; set; }
+        public UserEntity User { get; set; }
     }
 }
