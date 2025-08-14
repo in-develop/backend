@@ -1,6 +1,7 @@
-﻿namespace TeamChallenge.Models.Responses
+﻿
+namespace TeamChallenge.Models.Responses
 {
-    public class LoginResponse: Response
+    public class LoginModel
     {
         public string? TokenString { get; set; }
         public DateTime Expires { get; set; }

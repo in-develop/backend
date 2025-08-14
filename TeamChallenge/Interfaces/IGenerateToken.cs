@@ -1,4 +1,4 @@
-﻿using TeamChallenge.Models.Models;
+﻿using TeamChallenge.Models.Entities;
 
 namespace TeamChallenge.Interfaces
 {

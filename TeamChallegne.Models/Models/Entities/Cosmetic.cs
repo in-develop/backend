@@ -1,4 +1,4 @@
-﻿namespace TeamChallenge.Models.Models
+﻿namespace TeamChallenge.Models.Entities
 {
     public class Cosmetic
     {

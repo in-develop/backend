@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
-using TeamChallenge.Models.Models;
+using TeamChallenge.Models.Entities;
 
 namespace TeamChallenge.DbContext
 {
@@ -10,6 +10,10 @@ namespace TeamChallenge.DbContext
     {
         public CosmeticStoreDbContext(DbContextOptions<CosmeticStoreDbContext> options) : base(options)
         {
+            if (!Database.CanConnect())
+            {
+                Database.EnsureCreated();
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

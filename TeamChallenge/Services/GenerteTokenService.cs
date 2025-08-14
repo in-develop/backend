@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TeamChallenge.Interfaces;
-using TeamChallenge.Models.Models;
+using TeamChallenge.Models.Entities;
 
 public class GenerateTokenService: IGenerateToken
 {

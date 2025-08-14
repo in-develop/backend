@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TeamChallenge.Migrations
 {
     /// <inheritdoc />
-    public partial class updateDB : Migration
+    public partial class updateDB2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

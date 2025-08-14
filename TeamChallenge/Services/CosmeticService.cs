@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TeamChallenge.Models.Models;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.DbContext;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.DTOs.Cosmetic;

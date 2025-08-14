@@ -1,13 +1,12 @@
-﻿using TeamChallenge.Models.Responses.GoogleResponses;
+﻿using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Interfaces
 {
     public interface IGoogleOAuth
     {
-        public string GenerateOAuthRequestUrl(string scope, string redirectUrl, string codeChellange, string state);
+        public IDataResponse<string> GenerateOAuthRequestUrl(string scope, string redirectUrl, string codeChellange, string state);
 
-        public Task<OAuthGoogleResponse> ExchangeCodeOnToken(string code, string codeVerifier, string redicertUrl);
+        public Task<IDataResponse<GoogleAuthCallback>> GetGoogleAuthCallback(string code, string codeVerifier, string redicertUrl);
 
-        public Task<TokenResponse> RefreshToken(string refreshToken);
     }
 }

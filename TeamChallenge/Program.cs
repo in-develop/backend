@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using TeamChallenge.DbContext;
 using TeamChallenge.Interfaces;
-using TeamChallenge.Models.Models;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.SendEmailModels;
 using TeamChallenge.Services;
 

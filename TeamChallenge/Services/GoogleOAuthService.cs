@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using TeamChallenge.Helpers;
 using TeamChallenge.Interfaces;
-using TeamChallenge.Models.Responses.GoogleResponses;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Services
 {
@@ -16,7 +16,7 @@ namespace TeamChallenge.Services
             _configuration = configuration;
         }
 
-        public string GenerateOAuthRequestUrl(string scope, string redirectUrl, string codeChellange, string state)
+        public IDataResponse<string> GenerateOAuthRequestUrl(string scope, string redirectUrl, string codeChellange, string state)
         {
             var oAuthEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
 
@@ -34,10 +34,10 @@ namespace TeamChallenge.Services
             };
 
             var url = QueryHelpers.AddQueryString(oAuthEndpoint, queryParams);
-            return url;
+            return new DataResponse<string>(url);
         }
 
-        public async Task<OAuthGoogleResponse> ExchangeCodeOnToken(string code, string codeVerifier, string redicertUrl)
+        public async Task<IDataResponse<GoogleAuthCallback>> GetGoogleAuthCallback(string code, string codeVerifier, string redicertUrl)
         {
             var tokenEndpoint = "https://oauth2.googleapis.com/token";
 
@@ -51,10 +51,16 @@ namespace TeamChallenge.Services
                 {"redirect_uri", redicertUrl }
             };
             var tokenResult = await HttpClientHelper<OAuthGoogleResponse>.SendPostRequest(tokenEndpoint, authParams);
-            return tokenResult;
+            var refreshToken = await RefreshToken(tokenResult.RefreshToken);
+
+            return new GoogleAuthCallbackResponse(new GoogleAuthCallback
+            {
+                AuthGoogleResponse = tokenResult,
+                TokenResponse = refreshToken
+            });
         }        
 
-        public async Task<TokenResponse> RefreshToken(string refreshToken)
+        private async Task<TokenResponse> RefreshToken(string refreshToken)
         {
             var refreshParams = new Dictionary<string, string>
             {

@@ -1,8 +1,7 @@
-﻿using TeamChallenge.Models.Responses.GoogleResponses;
-
+﻿
 namespace TeamChallenge.Models.Responses
 {
-    public class GoogleCallbackResponse: Response
+    public class GoogleAuthCallback
     {
         public OAuthGoogleResponse AuthGoogleResponse { get; set; }
         public TokenResponse TokenResponse { get; set; }

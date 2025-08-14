@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Mail;
 using TeamChallenge.Helpers;
 using TeamChallenge.Interfaces;
-using TeamChallenge.Models.Models;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.SendEmailModels;
 
 namespace TeamChallenge.Services

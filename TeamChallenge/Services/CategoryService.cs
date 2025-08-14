@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeamChallenge.DbContext;
-using TeamChallenge.Models.Models;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.DTOs.Category;
 

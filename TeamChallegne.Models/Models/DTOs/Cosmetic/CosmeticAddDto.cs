@@ -1,4 +1,4 @@
-﻿using TeamChallenge.Models.Models;
+﻿using TeamChallenge.Models.Entities;
 
 namespace TeamChallenge.Models.DTOs.Cosmetic
 {
@@ -10,6 +10,6 @@ namespace TeamChallenge.Models.DTOs.Cosmetic
 
         public required decimal Price { get; set; }
 
-        public required List<Models.Category> Category { get; set; }
+        public required List<Entities.Category> Category { get; set; }
     }
 }
