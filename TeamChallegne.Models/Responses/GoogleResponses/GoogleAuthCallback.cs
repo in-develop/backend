@@ -1,5 +1,4 @@
-﻿
-namespace TeamChallenge.Models.Responses
+﻿namespace TeamChallenge.Models.Responses.GoogleResponses
 {
     public class GoogleAuthCallback
     {

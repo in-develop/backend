@@ -8,20 +8,57 @@ namespace TeamChallenge.DbContext
     {
         public CosmeticStoreDbContext(DbContextOptions<CosmeticStoreDbContext> options) : base(options)
         {
-            //if (!Database.CanConnect())
-            //{
-            //    Database.EnsureCreated();
-            //}
-
-            Database.EnsureDeleted();
-            Database.EnsureCreated();
-
+            if (!Database.CanConnect())
+            {
+                Database.Migrate();
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-        }        
+
+            builder.Entity<CategoryEntity>()
+                .HasData(new CategoryEntity
+                {
+                    Id = 1,
+                    Name = "Category 1"
+                },
+                new CategoryEntity
+                {
+                    Id = 2,
+                    Name = "Category 2"
+                });
+
+            builder.Entity<ProductEntity>()
+                .HasData(new ProductEntity
+                {
+                    Id = 1,
+                    Name = "Prod 1",
+                    CategoryId = 1,
+                    StockQuantity = 100,
+                    Price = 10.99m,
+                    Description = "Description for product 1",
+                },
+                new ProductEntity
+                {
+                    Id = 2,
+                    Name = "Prod 2",
+                    CategoryId = 2,
+                    StockQuantity = 100,
+                    Price = 10.99m,
+                    Description = "Description for product 2",
+                },
+                new ProductEntity
+                {
+                    Id = 3,
+                    Name = "Prod 3",
+                    CategoryId = 1,
+                    StockQuantity = 100,
+                    Price = 10.99m,
+                    Description = "Description for product 3",
+                });
+        }   
 
         public DbSet<CategoryEntity> Categories { get; set; }
         public DbSet<ProductEntity> Products { get; set; }

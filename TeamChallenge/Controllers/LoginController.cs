@@ -11,7 +11,7 @@ using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Models.Login;
+using TeamChallenge.Models.Login;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 
@@ -58,7 +58,7 @@ namespace TeamChallenge.Controllers
                 return BadRequest(new ErrorResponse("User not found"));
             }
 
-            if (!user.IsEmailConfirmed)
+            if (!user.EmailConfirmed)
             {
                 return Unauthorized(new ErrorResponse("Confirm Email"));
             }
@@ -157,7 +157,7 @@ namespace TeamChallenge.Controllers
             
             if (result.Succeeded)
             {
-                user.IsEmailConfirmed = true;
+                user.EmailConfirmed = true;
                 return Ok(new OkResponse("Thank you for confirming your email. You can now log in."));
             }
             

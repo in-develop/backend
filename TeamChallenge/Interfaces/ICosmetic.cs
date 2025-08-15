@@ -1,13 +1,13 @@
-﻿using TeamChallenge.Models.DTOs.Cosmetic;
+﻿
 
 namespace TeamChallenge.Interfaces
 {
-    public interface ICosmetic
-    {
-        Task<List<CosmeticReadDto>> GetAllAsync();
-        Task<CosmeticReadDto?> GetByIdAsync(int id);
-        Task<CosmeticReadDto> CreateAsync(CosmeticCreateDto dto);
-        Task<bool> UpdateAsync(int id, CosmeticCreateDto dto);
-        Task<bool> DeleteAsync(int id);
-    }
+    //public interface ICosmetic
+    //{
+    //    Task<List<CosmeticReadDto>> GetAllAsync();
+    //    Task<CosmeticReadDto?> GetByIdAsync(int id);
+    //    Task<CosmeticReadDto> CreateAsync(CosmeticCreateDto dto);
+    //    Task<bool> UpdateAsync(int id, CosmeticCreateDto dto);
+    //    Task<bool> DeleteAsync(int id);
+    //}
 }
