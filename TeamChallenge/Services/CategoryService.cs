@@ -18,6 +18,7 @@ namespace TeamChallenge.Services
         public async Task<List<CategoryReadDto>> GetAllAsync()
         {
             return await _context.Category
+                .AsNoTracking()
                 .Select(c => new CategoryReadDto
                 {
                     Id = c.Id,
@@ -28,6 +29,8 @@ namespace TeamChallenge.Services
         public async Task<CategoryReadDto?> GetByIdAsync(int id)
         {
             return await _context.Category
+                .AsNoTracking()
+                .Where(c => c.Id == id)
                 .Select(c => new CategoryReadDto
                 {
                     Id = c.Id,
@@ -35,6 +38,7 @@ namespace TeamChallenge.Services
                 }).FirstOrDefaultAsync();
         }
 
+        // Id Error
         public async Task<CategoryReadDto> CreateAsync(CategoryCreateDto dto)
         {
             var category = new Category

@@ -18,6 +18,7 @@ namespace TeamChallenge.Services
         public async Task<List<CosmeticReadDto>> GetAllAsync()
         {
             return await _context.Cosmetiс
+                .AsNoTracking()
                 .Select(c => new CosmeticReadDto
                 {
                     Id = c.Id,
@@ -31,6 +32,8 @@ namespace TeamChallenge.Services
         public async Task<CosmeticReadDto?> GetByIdAsync(int id)
         {
             return await _context.Cosmetiс
+                .AsNoTracking()
+                .Where(c => c.Id == id)
                 .Select(c => new CosmeticReadDto
                 {
                     Id = c.Id,
@@ -38,7 +41,7 @@ namespace TeamChallenge.Services
                     Description = c.Description,
                     Price = c.Price,
                     Category = c.Category
-                }).FirstOrDefaultAsync(c => c.Id == id);
+                }).FirstOrDefaultAsync(); // CosmeticObject bug
         }
 
         public async Task<CosmeticReadDto> CreateAsync(CosmeticCreateDto dto)

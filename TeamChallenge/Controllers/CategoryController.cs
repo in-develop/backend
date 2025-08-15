@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.DTOs.Category;
+using TeamChallenge.Models.Models.Responses.CategoryResponse;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers
 {
@@ -9,6 +11,8 @@ namespace TeamChallenge.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategory _service;
+
+
 
         public CategoryController(ICategory service)
         {
@@ -20,7 +24,9 @@ namespace TeamChallenge.Controllers
         {
             try
             {
-                return Ok(await _service.GetAllAsync());
+                //return Ok(await _service.GetAllAsync());
+                var category = await _service.GetAllAsync();
+                return Ok(new CategoryListResponse(category));
             }
             catch (Exception ex)
             {
@@ -35,7 +41,7 @@ namespace TeamChallenge.Controllers
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
                 var category = await _service.GetByIdAsync(id);
-                return category == null ? NotFound($"Your category {id} is not found") : Ok(category);
+                return category == null ? NotFound(new ErrorResponse($"Your category {id} is not found")) : Ok(new CategoryResponse(category));
             }
             catch (Exception ex)
             {
@@ -64,7 +70,7 @@ namespace TeamChallenge.Controllers
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
                 var updated = await _service.UpdateAsync(id, dto);
-                return updated ? Ok("Category is successfuly updated") : NotFound("Desired Category is not found");
+                return updated ? Ok(new OkResponse("Category is successfuly updated")) : NotFound(new ErrorResponse("Desired Category is not found"));
             }
             catch (Exception ex)
             {
@@ -79,7 +85,7 @@ namespace TeamChallenge.Controllers
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
                 var deleted = await _service.DeleteAsync(id);
-                return deleted ? Ok("Category is successfuly deleted") : NotFound("Desired Category is not found");
+                return deleted ? Ok(new OkResponse("Category is successfuly deleted")) : NotFound(new ErrorResponse("Desired Category is not found"));
             }
             catch (Exception ex)
             {
