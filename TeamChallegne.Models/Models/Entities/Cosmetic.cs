@@ -1,4 +1,6 @@
-﻿namespace TeamChallenge.Models.Entities
+﻿using TeamChallenge.Models.Models.Entities;
+
+namespace TeamChallenge.Models.Entities
 {
     public class Cosmetic
     {
@@ -6,7 +8,7 @@
         public required string Name { get; set; }
         public string Description { get; set; }
         public required decimal Price { get; set; }
-        public required List<Category> Category { get; set; }
+        public List<CategoryCosmetic> Category { get; set; }
 
     }
 }

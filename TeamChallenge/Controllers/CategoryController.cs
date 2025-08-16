@@ -24,7 +24,6 @@ namespace TeamChallenge.Controllers
         {
             try
             {
-                //return Ok(await _service.GetAllAsync());
                 var category = await _service.GetAllAsync();
                 return Ok(new CategoryListResponse(category));
             }

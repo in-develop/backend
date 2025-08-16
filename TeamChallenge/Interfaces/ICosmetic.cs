@@ -7,7 +7,7 @@ namespace TeamChallenge.Interfaces
         Task<List<CosmeticReadDto>> GetAllAsync();
         Task<CosmeticReadDto?> GetByIdAsync(int id);
         Task<CosmeticReadDto> CreateAsync(CosmeticCreateDto dto);
-        Task<bool> UpdateAsync(int id, CosmeticCreateDto dto);
+        Task<bool> UpdateAsync(int id, CosmeticAddDto dto);
         Task<bool> DeleteAsync(int id);
     }
 }
