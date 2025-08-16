@@ -14,7 +14,7 @@ public class GenerateTokenService: IGenerateToken
         _configuration = configuration;
     }
 
-    public (string, DateTime) GenerateToken(User user, IList<string> roles)
+    public (string, DateTime) GenerateToken(UserEntity user, IList<string> roles)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);

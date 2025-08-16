@@ -1,5 +1,4 @@
-﻿
-namespace TeamChallenge.Models.Responses
+﻿namespace TeamChallenge.Models.Responses
 {
     public class DataResponse<T> : BaseDataResponse<T>
     {

@@ -1,19 +1,17 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Models.Entities;
 
 namespace TeamChallenge.DbContext
 {
-    public class CosmeticStoreDbContext: IdentityDbContext<User>
+    public class CosmeticStoreDbContext: IdentityDbContext<UserEntity>
     {
         public CosmeticStoreDbContext(DbContextOptions<CosmeticStoreDbContext> options) : base(options)
         {
             if (!Database.CanConnect())
             {
-                Database.EnsureCreated();
+                Database.Migrate();
             }
         }
 
@@ -21,16 +19,54 @@ namespace TeamChallenge.DbContext
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<Cosmetic>()
-            .Property(c => c.Price)
-            .HasPrecision(18, 2);
-        }
+            builder.Entity<CategoryEntity>()
+                .HasData(new CategoryEntity
+                {
+                    Id = 1,
+                    Name = "Category 1"
+                },
+                new CategoryEntity
+                {
+                    Id = 2,
+                    Name = "Category 2"
+                });
 
-        public DbSet<Category> Category { get; set; }
-        public DbSet<DeliveryState> DeliveryState { get; set; }
-        public DbSet<OrderItem> OrderItem { get; set; }
-        public DbSet<User> Users {  get; set; }
-        public DbSet<Cosmetic> Cosmetiс { get; set; }
-        public DbSet<CategoryCosmetic> CategoryCosmetic { get; set; }
+            builder.Entity<ProductEntity>()
+                .HasData(new ProductEntity
+                {
+                    Id = 1,
+                    Name = "Prod 1",
+                    CategoryId = 1,
+                    StockQuantity = 100,
+                    Price = 10.99m,
+                    Description = "Description for product 1",
+                },
+                new ProductEntity
+                {
+                    Id = 2,
+                    Name = "Prod 2",
+                    CategoryId = 2,
+                    StockQuantity = 100,
+                    Price = 10.99m,
+                    Description = "Description for product 2",
+                },
+                new ProductEntity
+                {
+                    Id = 3,
+                    Name = "Prod 3",
+                    CategoryId = 1,
+                    StockQuantity = 100,
+                    Price = 10.99m,
+                    Description = "Description for product 3",
+                });
+        }   
+
+        public DbSet<CategoryEntity> Categories { get; set; }
+        public DbSet<ProductEntity> Products { get; set; }
+        public DbSet<OrderEntity> Orders { get; set; }
+        public DbSet<OrderItemEntity> OrderItems { get; set; }
+        public DbSet<CartEntity> Carts { get; set; }
+        public DbSet<CartItemEntity> Cartitems { get; set; }
+        public DbSet<UserEntity> Users {  get; set; }
     }
 }

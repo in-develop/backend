@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace TeamChallenge.Models.Responses
+namespace TeamChallenge.Models.Responses.GoogleResponses
 {
     public class TokenResponse
     {

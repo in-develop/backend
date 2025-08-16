@@ -2,7 +2,7 @@
 using TeamChallenge.Models.Entities;
 using TeamChallenge.DbContext;
 using TeamChallenge.Interfaces;
-using TeamChallenge.Models.DTOs.Cosmetic;
+
 
 namespace TeamChallenge.Services
 {
@@ -10,10 +10,10 @@ namespace TeamChallenge.Services
     {
         private readonly CosmeticStoreDbContext _context;
 
-        public CosmeticService(CosmeticStoreDbContext context)
-        {
-            _context = context;
-        }
+    //    public CosmeticService(CosmeticStoreDbContext context)
+    //    {
+    //        _context = context;
+    //    }
 
         //public async Task<List<CosmeticReadDto>> GetAllAsync()
         //{
@@ -90,17 +90,17 @@ namespace TeamChallenge.Services
         //    return true;
         //}
 
-        public async Task<bool> DeleteAsync(int id)
-        {
-            var cosmetic = await _context.Cosmetiс.FindAsync(id);
-            if (cosmetic == null) 
-            {
-                return false;
-            }
+    //    public async Task<bool> DeleteAsync(int id)
+    //    {
+    //        var cosmetic = await _context.Cosmetiс.FindAsync(id);
+    //        if (cosmetic == null) 
+    //        {
+    //            return false;
+    //        }
 
-            _context.Cosmetiс.Remove(cosmetic);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-    }
+    //        _context.Cosmetiс.Remove(cosmetic);
+    //        await _context.SaveChangesAsync();
+    //        return true;
+    //    }
+    //}
 }
