@@ -1,0 +1,30 @@
+ 
+services:
+  teamchallenge:
+    image: ${DOCKER_REGISTRY-}teamchallenge
+    build:
+      context: .
+      dockerfile: TeamChallenge/Dockerfile
+    ports:
+        - "8080:8080"
+        - "8081:8081"
+    networks:
+      - teamchallengentw
+  
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+       ACCEPT_EULA: "Y"
+       SA_PASSWORD: "Password12345!"
+    ports:
+      - "1433:1433"
+    networks:
+      - teamchallengentw 
+    volumes:
+      - sqlserverData:/var/opt/mssql
+
+networks:
+  teamchallengentw:
+
+volumes:
+    sqlserverData:

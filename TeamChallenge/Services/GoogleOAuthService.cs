@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.DotNet.MSIdentity.Shared;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
 using TeamChallenge.Helpers;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Responses;

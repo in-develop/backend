@@ -1,12 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Options;
-using System.Linq.Expressions;
+﻿using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
-using TeamChallenge.Helpers;
 using TeamChallenge.Interfaces;
-using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.SendEmailModels;
 
 namespace TeamChallenge.Services
