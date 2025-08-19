@@ -1,6 +1,6 @@
 ﻿namespace TeamChallenge.Models.DTOs.Category
 {
-    public class CategoryAddDto
+    public class CategoryUpdateDto : BaseDTO
     {
         public string Name { get; set; }
     }

@@ -1,11 +1,12 @@
 ﻿using TeamChallenge.Models.DTOs.Category;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Models.Models.Responses.CategoryResponse
 {
-    public class CategoryResponse : BaseDataResponse<CategoryReadDto>
+    public class CategoryResponse : BaseDataResponse<CategoryEntity>
     {
-        public CategoryResponse(CategoryReadDto data) : base(data)
+        public CategoryResponse(CategoryEntity data) : base(data)
         {
 
         }

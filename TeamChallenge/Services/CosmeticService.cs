@@ -6,9 +6,9 @@ using TeamChallenge.Interfaces;
 
 namespace TeamChallenge.Services
 {
-    public class CosmeticService : ICosmetic
-    {
-        private readonly CosmeticStoreDbContext _context;
+    //public class CosmeticService : ICosmetic
+    //{
+        //private readonly CosmeticStoreDbContext _context;
 
     //    public CosmeticService(CosmeticStoreDbContext context)
     //    {

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Models.Entities;
 
 namespace TeamChallenge.DbContext
 {
