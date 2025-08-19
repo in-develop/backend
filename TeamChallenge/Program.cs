@@ -18,7 +18,7 @@ builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 //builder.Services.AddScoped<ICosmetic, CosmeticService>();
 //builder.Services.AddScoped<ICategory, CategoryService>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
-builder.Services.AddTransient<IEmailSend, EmailSenderService>();
+builder.Services.AddSingleton<IEmailSend, EmailSenderService>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 
 builder.Services.AddSession(options =>

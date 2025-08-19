@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.DotNet.MSIdentity.Shared;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
 using TeamChallenge.Helpers;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Responses;
@@ -12,9 +9,19 @@ namespace TeamChallenge.Services
     public class GoogleOAuthService : IGoogleOAuth
     {
         private readonly IConfiguration _configuration;
-        public GoogleOAuthService(IConfiguration configuration)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private HttpContext HttpContext => _httpContextAccessor.HttpContext;
+        public GoogleOAuthService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        public void GenerateCodeVerifierState(out string codeVerifier, out string state, out string codeChallenge)
+        {
+            codeVerifier = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+            state = Guid.NewGuid().ToString("N");
+            codeChallenge = PkceHelper.GenerateCodeChallenge(codeVerifier);
         }
 
         public IDataResponse<string> GenerateOAuthRequestUrl(string scope, string redirectUrl, string codeChellange, string state)
@@ -38,9 +45,12 @@ namespace TeamChallenge.Services
             return new DataResponse<string>(url);
         }
 
-        public async Task<IDataResponse<GoogleAuthCallback>> GetGoogleAuthCallback(string code, string codeVerifier, string redicertUrl)
+        public async Task<IDataResponse<GoogleAuthCallback>> GetGoogleAuthCallback(string code)
         {
             var tokenEndpoint = "https://oauth2.googleapis.com/token";
+
+            var redirectUri = _configuration["Authentication:Google:RedirectUri"];
+            var codeVerifier = HttpContext.Session.GetString("code_verifier");
 
             var authParams = new Dictionary<string, string>
             {
@@ -49,7 +59,7 @@ namespace TeamChallenge.Services
                 {"code", code },
                 {"code_verifier", codeVerifier },
                 {"grant_type", "authorization_code"},
-                {"redirect_uri", redicertUrl }
+                {"redirect_uri", redirectUri }
             };
             var tokenResult = await HttpClientHelper<OAuthGoogleResponse>.SendPostRequest(tokenEndpoint, authParams);
             var refreshToken = await RefreshToken(tokenResult.RefreshToken);

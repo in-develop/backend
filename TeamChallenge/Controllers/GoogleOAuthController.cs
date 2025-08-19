@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Helpers;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.GoogleResponses;
@@ -20,27 +19,19 @@ public class GoogleAuthController : ControllerBase
     [HttpGet("google-signin")]
     public async Task<ActionResult<IDataResponse<string>>> GetGoogleLoginUrl()
     {
-        var scope = "openid"; // your required scopes
+        var scope = "openid";
         var redirectUri = _configuration["Authentication:Google:RedirectUri"];
+        string codeVerifier, state, codeChallenge;
 
-        // TODO: Move this values inside service instead of passing them as parameters,
-        // PKCE support (optional, for better security)
-        var codeVerifier = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+        _googleOAuthService.GenerateCodeVerifierState(out codeVerifier, out state, out codeChallenge);
         HttpContext.Session.SetString("code_verifier", codeVerifier);
-
-        // TODO: Move this values inside service instead of passing them as parameters,
-        var state = Guid.NewGuid().ToString("N");
         HttpContext.Session.SetString("oauth_state", state);
-
-        // TODO: Move this values inside service instead of passing them as parameters,
-        var codeChallenge = PkceHelper.GenerateCodeChallenge(codeVerifier);
-
         var response = _googleOAuthService.GenerateOAuthRequestUrl(scope, redirectUri, codeChallenge, state);
 
         return Ok(response);
     }
 
-#warning Check redirection
+    #warning Check redirection
     [HttpGet("google-callback")]
     public async Task<ActionResult<IDataResponse<GoogleAuthCallback>>> GoogleCallback([FromQuery] string code, [FromQuery] string state)
     {
@@ -51,13 +42,7 @@ public class GoogleAuthController : ControllerBase
         if (state != savedState)
             return BadRequest(new ErrorResponse("Invalid state value."));
 
-        // TODO: Move this values inside service instead of passing them as parameters, controller should containg only input validation
-        //       Retrieve httpContext from DI container, also you already have IConfiguration injected
-
-        var redirectUri = _configuration["Authentication:Google:RedirectUri"];
-        var codeVerifier = HttpContext.Session.GetString("code_verifier");
-
-        var response = await _googleOAuthService.GetGoogleAuthCallback(code, codeVerifier, redirectUri);
+        var response = await _googleOAuthService.GetGoogleAuthCallback(code);
 
         return Ok(response);
     }
