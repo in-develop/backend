@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Interfaces;
 using TeamChallenge.Models.DTOs.Category;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Models.Responses.CategoryResponse;
 using TeamChallenge.Models.Responses;
 
@@ -46,19 +47,21 @@ namespace TeamChallenge.Controllers
             }
         }
 
-        //    [HttpPost("create")]
-        //    public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
-        //    {
-        //        try
-        //        {
-        //            var created = await _service.CreateAsync(dto);
-        //            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            return BadRequest(ex.Message);
-        //        }
-        //    }
+        [HttpPost("create")]
+        public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
+        {
+            try
+            {
+                var data = await _service.CreateCategoryAsync(dto);
+
+                if (data != null) return Ok(new CategoryResponse(data));
+                return NotFound(new ErrorResponse(""));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         //    [HttpPut("{id}")]
         //    public async Task<IActionResult> Update([FromBody] CategoryAddDto dto)

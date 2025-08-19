@@ -26,16 +26,16 @@ namespace TeamChallenge.Repositories
             return entity;
         }
 
-        public async Task AddAsync(TEntity entity)
+        public async Task CreateAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
         }
 
-        public async Task<bool> UpdateAsync(int id, TEntity updateEntity)
+        public async Task<bool> UpdateAsync(int id, TEntity updEntity)
         {
             var entity = await _dbSet.FindAsync(id);
             if (entity == null) return false;
-            _context.Entry(entity).CurrentValues.SetValues(updateEntity);
+            _context.Entry(entity).CurrentValues.SetValues(updEntity);
             return true;
         }
 

@@ -1,5 +1,6 @@
 ﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Interfaces;
+using TeamChallenge.Models.DTOs.Category;
 
 namespace TeamChallenge.Services
 {
@@ -22,9 +23,12 @@ namespace TeamChallenge.Services
             return await _categoryRepository.GetByIdAsync(id);
         }
 
-        public async Task AddCategoryAsync(CategoryEntity category)
+        public async Task<CategoryEntity> CreateCategoryAsync(CategoryCreateDto dto)
         {
-            await _categoryRepository.AddAsync(category);
+            var category = new CategoryEntity { Name = dto.Name };
+            await _categoryRepository.CreateAsync(category);
+            await _categoryRepository.SaveChangesAsync();
+            return category;
         }
 
         public async Task<bool> UpdateCategoryAsync(int id, CategoryEntity category)
