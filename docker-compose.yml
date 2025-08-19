@@ -9,7 +9,13 @@ services:
         - "8080:8080"
         - "8081:8081"
     networks:
-      - teamchallengentw
+        - teamchallengentw
+    environment:
+          - ASPNETCORE_URLS=https://+:8081;http://+:8080
+          - ASPNETCORE_Kestrel__Certificates__Default__Password=SuperStrongPassword123
+          - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+    volumes:
+        - ./https:/https:ro
   
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
