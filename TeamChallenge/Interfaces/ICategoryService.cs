@@ -8,7 +8,7 @@ namespace TeamChallenge.Interfaces
         Task<IEnumerable<CategoryEntity>> GetAllCategoriesAsync();
         Task<CategoryEntity?> GetCategoryByIdAsync(int id);
         Task<CategoryEntity> CreateCategoryAsync(CategoryCreateDto dto);
-        Task<bool> UpdateCategoryAsync(int id, CategoryEntity category);
+        Task<bool> UpdateCategoryAsync(int id, CategoryUpdateDto dto);
         Task<bool> DeleteCategoryAsync(int id);
     }
 }

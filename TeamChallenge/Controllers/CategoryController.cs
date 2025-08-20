@@ -63,35 +63,34 @@ namespace TeamChallenge.Controllers
             }
         }
 
-        //    [HttpPut("{id}")]
-        //    public async Task<IActionResult> Update([FromBody] CategoryAddDto dto)
-        //    {
-        //        try
-        //        {
-        //            var id = int.Parse((string)RouteData.Values["id"]);
-        //            var updated = await _service.UpdateAsync(id, dto);
-        //            return updated ? Ok(new OkResponse("Category is successfuly updated")) : NotFound(new ErrorResponse("Desired Category is not found"));
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            return BadRequest(ex.Message);
-        //        }
-        //    }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromBody] CategoryUpdateDto dto)
+        {
+            try
+            {
+                var id = int.Parse((string)RouteData.Values["id"]);
+                var updated = await _service.UpdateCategoryAsync(id, dto);
+                return updated ? Ok(new OkResponse("Category is successfuly updated")) : NotFound(new ErrorResponse("Desired Category is not found"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        //    [HttpDelete("{id}")]
-        //    public async Task<IActionResult> Delete()
-        //    {
-        //        try
-        //        {
-        //            var id = int.Parse((string)RouteData.Values["id"]);
-        //            var deleted = await _service.DeleteAsync(id);
-        //            return deleted ? Ok(new OkResponse("Category is successfuly deleted")) : NotFound(new ErrorResponse("Desired Category is not found"));
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            return BadRequest(ex.Message);
-        //        }
-        //    }
-        //}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete()
+        {
+            try
+            {
+                var id = int.Parse((string)RouteData.Values["id"]);
+                var deleted = await _service.DeleteCategoryAsync(id);
+                return deleted ? Ok(new OkResponse("Category is successfuly deleted")) : NotFound(new ErrorResponse("Desired Category is not found"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

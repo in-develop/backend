@@ -29,6 +29,7 @@ namespace TeamChallenge.Repositories
         public async Task CreateAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
+            await SaveChangesAsync();
         }
 
         public async Task<bool> UpdateAsync(int id, TEntity updEntity)
@@ -36,6 +37,7 @@ namespace TeamChallenge.Repositories
             var entity = await _dbSet.FindAsync(id);
             if (entity == null) return false;
             _context.Entry(entity).CurrentValues.SetValues(updEntity);
+            await SaveChangesAsync();
             return true;
         }
 
@@ -44,6 +46,7 @@ namespace TeamChallenge.Repositories
             var entity = await _dbSet.FindAsync(id);
             if (entity == null) return false;
             _dbSet.Remove(entity);
+            await SaveChangesAsync();
             return true;
         }
 
