@@ -8,12 +8,17 @@ using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.SendEmailModels;
 using TeamChallenge.Services;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//var keyVaultEndpoint = new Uri(Environment.GetEnvironmentVariable("VaultUri")!);
+//builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
 var config = builder.Configuration;
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMvc();
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 //builder.Services.AddScoped<ICosmetic, CosmeticService>();
 //builder.Services.AddScoped<ICategory, CategoryService>();
@@ -146,6 +151,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.UseSession();
 app.UseHttpsRedirection();

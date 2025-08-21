@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "apis1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/TeamChallengeapi/apis/TeamChallengeApi2",
+      "type": "apis.azure"
+    },
+    "mssql1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.Web/sites/TeamChallenge20250821125417/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsDatabaseConnection_E2617ED3EB",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/teamchallengeapi-server/databases/teamchallengeapi-database",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:DatabaseConnection",
+      "dynamicId": null
+    }
+  }
+}

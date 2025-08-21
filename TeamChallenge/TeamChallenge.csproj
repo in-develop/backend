@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
     <PackageReference Include="Google.Apis" Version="1.70.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.5" />
@@ -24,7 +26,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.3" />
   </ItemGroup>
 
   <ItemGroup>
