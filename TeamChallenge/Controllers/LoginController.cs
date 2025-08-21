@@ -87,9 +87,14 @@ namespace TeamChallenge.Controllers
                 return BadRequest(new ErrorResponse("Request is null"));
             }
 
-            if(string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Email))
+            if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Email))
             {
                 return BadRequest(new ErrorResponse("Fields must not be empty"));
+            }
+
+            if (!EmailVerifyHelper.IsValidEmail(request.Email))
+            {
+                return BadRequest(new ErrorResponse("Your email is not valid"));
             }
 
             var user = new UserEntity { UserName = request.Username, Email = request.Email };
@@ -112,6 +117,7 @@ namespace TeamChallenge.Controllers
                 {
                     return BadRequest(new ErrorResponse("Could not generate confirmation link."));
                 }
+
                 string emailBody = $"Hello! You've received a confirmation link. Please click here to confirm your email: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Click here</a>";
                 await _emailSender.SendEmail(request.Email, emailBody);
                 if (_emailCooldowns.ContainsKey(request.Email))
@@ -158,8 +164,7 @@ namespace TeamChallenge.Controllers
                 return Ok(new OkResponse("Thank you for confirming your email. You can now log in."));
             }
             
-            return BadRequest(new ErrorResponse("Error confirming your email. The link may be invalid or expired."));
-            
+            return BadRequest(new ErrorResponse("Error confirming your email. The link may be invalid or expired."));            
         }
 
         [HttpPost("resend/email/confirmation")]
@@ -193,10 +198,9 @@ namespace TeamChallenge.Controllers
 
             var callbackUrl = Url.Action(
                 "ConfirmEmail",
-                "Account",
+                "Login",
                 new { userId = user.Id, code = encodedCode },
                 protocol: Request.Scheme);
-
 
             if (callbackUrl == null)
             {

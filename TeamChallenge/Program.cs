@@ -34,7 +34,9 @@ builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
 
 builder.Services.AddIdentity<UserEntity, IdentityRole>(
     opt =>
-    {   
+    {
+        opt.User.RequireUniqueEmail = true;
+        opt.SignIn.RequireConfirmedEmail = true;
         opt.SignIn.RequireConfirmedEmail = true;
         opt.Password.RequireNonAlphanumeric = false;
         opt.Password.RequireUppercase = false;
@@ -123,19 +125,20 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-//    var roles = new[] { "Admin", "Member", "Unauthorized" };
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var roles = new[] { "Admin", "Member", "Unauthorized" };
 
-//    foreach (var role in roles)
-//    {
-//        if (!await roleManager.RoleExistsAsync(role))
-//        {
-//            await roleManager.CreateAsync(new IdentityRole(role));
-//        }
-//    }
-//}
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+}
+
 //Configure the HTTP request pipeline.
 
 if (app.Environment.IsDevelopment())
