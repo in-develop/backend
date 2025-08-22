@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TeamChallenge.Models.Entities;
-using TeamChallenge.DbContext;
+﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Interfaces;
-using TeamChallenge.Interfaces.Product;
 using TeamChallenge.Models.DTOs.Product;
+using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Services
 {
@@ -11,9 +9,9 @@ namespace TeamChallenge.Services
     {
         private readonly IProductRepository _productRepository;
 
-        public ProductService(IProductRepository productRepository)
+        public ProductService(RepositoryFactory factory)
         {
-            _productRepository = productRepository;
+            _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
         }
 
         public async Task<IEnumerable<ProductEntity>> GetAllProductsAsync()
@@ -35,7 +33,7 @@ namespace TeamChallenge.Services
                 Price = dto.Price,
                 CategoryId = dto.CategoryId,
             };
-            await _productRepository.CreateAsync(product);
+            //await _productRepository.CreateAsync(product);
             return product;
         }
         public async Task<bool> UpdateProductAsync(int id, ProductUpdateDto dto)
@@ -48,10 +46,10 @@ namespace TeamChallenge.Services
                 Price = dto.Price,
                 CategoryId = dto.CategoryId,
             };
-            if (await _productRepository.UpdateAsync(id, product))
+            /*if (await _productRepository.UpdateAsync(id, product))
             {
                 return true;
-            }
+            }*/
             return false;
         }
 

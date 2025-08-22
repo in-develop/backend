@@ -1,52 +1,70 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeamChallenge.DbContext;
-using TeamChallenge.Interfaces;
+using TeamChallenge.Models.Entities;
 
 namespace TeamChallenge.Repositories
 {
-    public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : class
+    public class BaseRepository<T> : IRepository<T> where T : class, IEntity
     {
         private readonly CosmeticStoreDbContext _context;
-        private readonly DbSet<TEntity> _dbSet;
+        private readonly DbSet<T> _dbSet;
         
         public BaseRepository(CosmeticStoreDbContext context)
         {
             _context = context;
-            _dbSet = _context.Set<TEntity>(); // Read Docs in details
+            _dbSet = _context.Set<T>(); // Read Docs in details
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public async Task<TEntity?> GetByIdAsync(int id)
+        public virtual async Task<IEnumerable<T>> GetSortedAsync(Func<T, bool> filter)
         {
-            var entity = await _dbSet.FindAsync(id);
-            return entity;
+            return _dbSet.AsNoTracking().Where(filter).ToList();
         }
 
-        public async Task CreateAsync(TEntity entity)
+        public virtual async Task<T?> GetByIdAsync(int id)
         {
+            return await _dbSet.FindAsync(id);
+        }
+
+        public virtual async Task CreateAsync(Action<T> entityFieldSetter)
+        {
+            var entity = Activator.CreateInstance<T>();
+            entityFieldSetter(entity);
+
             await _dbSet.AddAsync(entity);
             await SaveChangesAsync();
         }
 
-        public async Task<bool> UpdateAsync(int id, TEntity updEntity)
+        public virtual async Task<bool> UpdateAsync(int id, Action<T> entityFieldSetter)
         {
             var entity = await _dbSet.FindAsync(id);
-            if (entity == null) return false;
-            _context.Entry(entity).CurrentValues.SetValues(updEntity);
+            if (entity == null)
+            {
+                return false;
+            }
+            
+            entityFieldSetter(entity);
             await SaveChangesAsync();
+
             return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public virtual async Task<bool> DeleteAsync(int id)
         {
             var entity = await _dbSet.FindAsync(id);
-            if (entity == null) return false;
+
+            if (entity == null)
+            {
+                return false;
+            }
+
             _dbSet.Remove(entity);
             await SaveChangesAsync();
+
             return true;
         }
 

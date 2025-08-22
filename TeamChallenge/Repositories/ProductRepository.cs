@@ -1,8 +1,7 @@
 ﻿using TeamChallenge.DbContext;
-using TeamChallenge.Interfaces.Product;
 using TeamChallenge.Models.Entities;
 
-namespace TeamChallenge.Repositories.Product
+namespace TeamChallenge.Repositories
 {
     public class ProductRepository : BaseRepository<ProductEntity>, IProductRepository
     {
@@ -10,4 +9,5 @@ namespace TeamChallenge.Repositories.Product
         {
         }
     }
+
 }

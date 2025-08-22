@@ -1,15 +1,16 @@
 ﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.DTOs.Category;
 using TeamChallenge.Interfaces.Category;
+using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Services
 {
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
-        public CategoryService(ICategoryRepository categoryRepository)
+        public CategoryService(RepositoryFactory factory)
         {
-            _categoryRepository = categoryRepository;
+            _categoryRepository = (ICategoryRepository)factory.GetRepository<CategoryEntity>();
         }
 
 
@@ -26,17 +27,17 @@ namespace TeamChallenge.Services
         public async Task<CategoryEntity> CreateCategoryAsync(CategoryCreateDto dto)
         {
             var category = new CategoryEntity { Name = dto.Name };
-            await _categoryRepository.CreateAsync(category);
+            //await _categoryRepository.CreateAsync(category);
             return category;
         }
 
         public async Task<bool> UpdateCategoryAsync(int id, CategoryUpdateDto dto)
         {
             var category = new CategoryEntity { Id = id, Name = dto.Name };
-            if (await _categoryRepository.UpdateAsync(id, category))
+            /*if (await _categoryRepository.UpdateAsync(id, category))
             {
                 return true;
-            }
+            }*/
             return false;
         }
 
