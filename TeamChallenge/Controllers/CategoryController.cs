@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Interfaces.Category;
+using TeamChallenge.Logic;
 using TeamChallenge.Models.DTOs.Category;
-using TeamChallenge.Models.Models.Responses.CategoryResponse;
+using TeamChallenge.Models.Models.Responses;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.CategoryResponses;
 
@@ -11,9 +11,9 @@ namespace TeamChallenge.Controllers
     [Route("api/[controller]")]
     public class CategoryController : ControllerBase
     {
-        private readonly ICategoryService _service;
+        private readonly ICategoryLogic _service;
 
-        public CategoryController(ICategoryService service)
+        public CategoryController(ICategoryLogic service)
         {
             _service = service;
         }

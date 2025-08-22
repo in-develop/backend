@@ -9,11 +9,11 @@ using System.Data;
 using System.Text;
 using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
-using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Login;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.Services;
 
 namespace TeamChallenge.Controllers
 {

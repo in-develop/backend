@@ -1,11 +1,11 @@
 ﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.DTOs.Category;
-using TeamChallenge.Interfaces.Category;
 using TeamChallenge.Repositories;
+using TeamChallenge.Logic;
 
-namespace TeamChallenge.Services
+namespace TeamChallenge.Logic
 {
-    public class CategoryService : ICategoryService
+    public class CategoryService : ICategoryLogic
     {
         private readonly ICategoryRepository _categoryRepository;
         public CategoryService(RepositoryFactory factory)

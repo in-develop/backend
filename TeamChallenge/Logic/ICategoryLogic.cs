@@ -1,9 +1,9 @@
 ﻿using TeamChallenge.Models.DTOs.Category;
 using TeamChallenge.Models.Entities;
 
-namespace TeamChallenge.Interfaces.Category
+namespace TeamChallenge.Logic
 {
-    public interface ICategoryService
+    public interface ICategoryLogic
     {
         Task<IEnumerable<CategoryEntity>> GetAllCategoriesAsync();
         Task<CategoryEntity?> GetCategoryByIdAsync(int id);

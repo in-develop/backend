@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Helpers;
-using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.GoogleResponses;
+using TeamChallenge.Services;
 
 [ApiController]
 [Route("api/account")]

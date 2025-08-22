@@ -2,8 +2,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Entities;
+using TeamChallenge.Services;
 
 public class GenerateTokenService: IGenerateToken
 {

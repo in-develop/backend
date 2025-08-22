@@ -2,7 +2,7 @@
 using TeamChallenge.Models.Responses;
 
 
-namespace TeamChallenge.Models.Models.Responses.CategoryResponse
+namespace TeamChallenge.Models.Models.Responses
 {
     public class CategoryListResponse : BaseDataListResponse<CategoryEntity>
     {

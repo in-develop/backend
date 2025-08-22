@@ -1,6 +1,6 @@
 ﻿using TeamChallenge.Models.Entities;
 
-namespace TeamChallenge.Models.Responses.ProductResponses
+namespace TeamChallenge.Models.Responses
 {
     public class ProductCreateResponse : BaseDataResponse<ProductEntity>
     {

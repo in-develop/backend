@@ -1,12 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Interfaces;
-using TeamChallenge.Models.DTOs.Category;
-using TeamChallenge.Models.DTOs.Product;
-using TeamChallenge.Models.Models.Responses.CategoryResponse;
-using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.ProductResponses;
-
-
+using TeamChallenge.Logic;
+using TeamChallenge.Models.Requests;
 
 namespace TeamChallenge.Controllers
 {
@@ -14,86 +8,75 @@ namespace TeamChallenge.Controllers
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
     {
-        private readonly IProductService _service;
-        public ProductController(IProductService service)
+        private readonly IProductLogic _productLogic;
+        public ProductController(IProductLogic productLogic)
         {
-            _service = service;
+            _productLogic = productLogic;
         }
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
-            try
+            var result = await _productLogic.GetAllProductsAsync();
+
+            if (!result.IsSuccess)
             {
-                var product = await _service.GetAllProductsAsync();
-                return Ok(new ProductGetAllResponse(product));
+                return BadRequest(result);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new ErrorResponse(ex.Message));
-            }
+
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById()
+        public async Task<IActionResult> GetById([FromRoute]int id)
         {
-            try
-            {
-                var id = int.Parse((string)RouteData.Values["id"]);
-                var product = await _service.GetProductByIdAsync(id);
-                return product == null ? NotFound(new ErrorResponse($"Your product {id} is not found")) : Ok(new ProductGetByIdResponse(product));
-            }
-            catch (Exception ex)
-            {
+            var result = await _productLogic.GetProductByIdAsync(id);
 
-                return BadRequest(new ErrorResponse(ex.Message));
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
             }
+
+            return Ok(result);
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] ProductCreateDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateProductRequest requestData)
         {
-            try
-            {
-                var data = await _service.CreateProductAsync(dto);
+            var result = await _productLogic.CreateProductAsync(requestData);
 
-                if (data != null) return Ok(new ProductCreateResponse(data));
-                return NotFound(new ErrorResponse(""));
-            }
-            catch (Exception ex)
+            if (!result.IsSuccess)
             {
-                return BadRequest(new ErrorResponse(ex.Message));
+                return BadRequest(result);
             }
+
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromBody] ProductUpdateDto dto)
+        public async Task<IActionResult> Update([FromRoute]int id, [FromBody] UpdateProductRequest requestData)
         {
-            try
+            var result = await _productLogic.UpdateProductAsync(id, requestData);
+
+            if (!result.IsSuccess)
             {
-                var id = int.Parse((string)RouteData.Values["id"]);
-                var updated = await _service.UpdateProductAsync(id, dto);
-                return updated ? Ok(new OkResponse("Product is successfuly updated")) : NotFound(new ErrorResponse("Desired Category is not found"));
+                return BadRequest(result);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new ErrorResponse(ex.Message));
-            }
+
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete()
+        public async Task<IActionResult> Delete([FromRoute]int id)
         {
-            try
+            var result = await _productLogic.DeleteProductAsync(id);
+
+            if (!result.IsSuccess)
             {
-                var id = int.Parse((string)RouteData.Values["id"]);
-                var deleted = await _service.DeleteProductAsync(id);
-                return deleted ? Ok(new OkResponse("Product is successfuly deleted")) : NotFound(new ErrorResponse("Desired Category is not found"));
+                return BadRequest(result);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new ErrorResponse(ex.Message));
-            }
+
+            return Ok(result);
         }
     }
 }

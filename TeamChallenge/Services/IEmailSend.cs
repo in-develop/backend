@@ -1,6 +1,6 @@
 ﻿using TeamChallenge.Models.Entities;
 
-namespace TeamChallenge.Interfaces
+namespace TeamChallenge.Services
 {
     public interface IEmailSend
     {
