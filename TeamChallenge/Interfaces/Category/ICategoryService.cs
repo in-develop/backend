@@ -1,7 +1,7 @@
 ﻿using TeamChallenge.Models.DTOs.Category;
 using TeamChallenge.Models.Entities;
 
-namespace TeamChallenge.Interfaces
+namespace TeamChallenge.Interfaces.Category
 {
     public interface ICategoryService
     {

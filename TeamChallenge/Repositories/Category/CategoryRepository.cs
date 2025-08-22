@@ -1,5 +1,5 @@
 ﻿using TeamChallenge.DbContext;
-using TeamChallenge.Interfaces;
+using TeamChallenge.Interfaces.Category;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Repositories;
 

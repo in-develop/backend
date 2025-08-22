@@ -2,7 +2,7 @@
 
 namespace TeamChallenge.Models.Responses.CategoryResponses
 {
-    public class CategoryGetAllResponse : BaseDataResponse<IEnumerable<CategoryEntity>>
+    public class CategoryGetAllResponse : BaseDataListResponse<CategoryEntity>
     {
         public CategoryGetAllResponse(IEnumerable<CategoryEntity> data) : base(data)
         {

@@ -1,19 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Interfaces.Category;
+using TeamChallenge.Interfaces;
 using TeamChallenge.Models.DTOs.Category;
+using TeamChallenge.Models.DTOs.Product;
 using TeamChallenge.Models.Models.Responses.CategoryResponse;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.CategoryResponses;
+using TeamChallenge.Models.Responses.ProductResponses;
+
+
 
 namespace TeamChallenge.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CategoryController : ControllerBase
+    public class ProductController : ControllerBase
     {
-        private readonly ICategoryService _service;
-
-        public CategoryController(ICategoryService service)
+        private readonly IProductService _service;
+        public ProductController(IProductService service)
         {
             _service = service;
         }
@@ -23,8 +25,8 @@ namespace TeamChallenge.Controllers
         {
             try
             {
-                var category = await _service.GetAllCategoriesAsync();
-                return Ok(new CategoryGetAllResponse(category));
+                var product = await _service.GetAllProductsAsync();
+                return Ok(new ProductGetAllResponse(product));
             }
             catch (Exception ex)
             {
@@ -38,23 +40,24 @@ namespace TeamChallenge.Controllers
             try
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
-                var category = await _service.GetCategoryByIdAsync(id);
-                return category == null ? NotFound(new ErrorResponse($"Your category {id} is not found")) : Ok(new CategoryResponse(category));
+                var product = await _service.GetProductByIdAsync(id);
+                return product == null ? NotFound(new ErrorResponse($"Your product {id} is not found")) : Ok(new ProductGetByIdResponse(product));
             }
             catch (Exception ex)
             {
+
                 return BadRequest(new ErrorResponse(ex.Message));
             }
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
+        public async Task<IActionResult> Create([FromBody] ProductCreateDto dto)
         {
             try
             {
-                var data = await _service.CreateCategoryAsync(dto);
+                var data = await _service.CreateProductAsync(dto);
 
-                if (data != null) return Ok(new CategoryCreateResponse(data));
+                if (data != null) return Ok(new ProductCreateResponse(data));
                 return NotFound(new ErrorResponse(""));
             }
             catch (Exception ex)
@@ -64,13 +67,13 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromBody] CategoryUpdateDto dto)
+        public async Task<IActionResult> Update([FromBody] ProductUpdateDto dto)
         {
             try
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
-                var updated = await _service.UpdateCategoryAsync(id, dto);
-                return updated ? Ok(new OkResponse("Category is successfuly updated")) : NotFound(new ErrorResponse("Desired Category is not found"));
+                var updated = await _service.UpdateProductAsync(id, dto);
+                return updated ? Ok(new OkResponse("Product is successfuly updated")) : NotFound(new ErrorResponse("Desired Category is not found"));
             }
             catch (Exception ex)
             {
@@ -84,8 +87,8 @@ namespace TeamChallenge.Controllers
             try
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
-                var deleted = await _service.DeleteCategoryAsync(id);
-                return deleted ? Ok(new OkResponse("Category is successfuly deleted")) : NotFound(new ErrorResponse("Desired Category is not found"));
+                var deleted = await _service.DeleteProductAsync(id);
+                return deleted ? Ok(new OkResponse("Product is successfuly deleted")) : NotFound(new ErrorResponse("Desired Category is not found"));
             }
             catch (Exception ex)
             {

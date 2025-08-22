@@ -2,18 +2,96 @@
 using TeamChallenge.Models.Entities;
 using TeamChallenge.DbContext;
 using TeamChallenge.Interfaces;
-
+using TeamChallenge.Interfaces.Product;
+using TeamChallenge.Models.DTOs.Product;
 
 namespace TeamChallenge.Services
 {
-    //public class CosmeticService : ICosmetic
-    //{
+    public class ProductService : IProductService
+    {
+        private readonly IProductRepository _productRepository;
+
+        public ProductService(IProductRepository productRepository)
+        {
+            _productRepository = productRepository;
+        }
+
+        public async Task<IEnumerable<ProductEntity>> GetAllProductsAsync()
+        {
+            return await _productRepository.GetAllAsync();
+        }
+
+        public async Task<ProductEntity?> GetProductByIdAsync(int id)
+        {
+            return await _productRepository.GetByIdAsync(id);
+        }
+
+        public async Task<ProductEntity> CreateProductAsync(ProductCreateDto dto)
+        {
+            var product = new ProductEntity
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                CategoryId = dto.CategoryId,
+            };
+            await _productRepository.CreateAsync(product);
+            return product;
+        }
+        public async Task<bool> UpdateProductAsync(int id, ProductUpdateDto dto)
+        {
+            var product = new ProductEntity
+            {
+                Id = id,
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                CategoryId = dto.CategoryId,
+            };
+            if (await _productRepository.UpdateAsync(id, product))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> DeleteProductAsync(int id)
+        {
+            var deleted = await _productRepository.DeleteAsync(id);
+            if (!deleted)
+            {
+                throw new KeyNotFoundException($"Product with Id={id} not found");
+            }
+            return true;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //public class ProductService : IProductService
+        //{
         //private readonly CosmeticStoreDbContext _context;
 
-    //    public CosmeticService(CosmeticStoreDbContext context)
-    //    {
-    //        _context = context;
-    //    }
+        //    public CosmeticService(CosmeticStoreDbContext context)
+        //    {
+        //        _context = context;
+        //    }
 
         //public async Task<List<CosmeticReadDto>> GetAllAsync()
         //{
@@ -90,17 +168,18 @@ namespace TeamChallenge.Services
         //    return true;
         //}
 
-    //    public async Task<bool> DeleteAsync(int id)
-    //    {
-    //        var cosmetic = await _context.Cosmetiс.FindAsync(id);
-    //        if (cosmetic == null) 
-    //        {
-    //            return false;
-    //        }
+        //    public async Task<bool> DeleteAsync(int id)
+        //    {
+        //        var cosmetic = await _context.Cosmetiс.FindAsync(id);
+        //        if (cosmetic == null) 
+        //        {
+        //            return false;
+        //        }
 
-    //        _context.Cosmetiс.Remove(cosmetic);
-    //        await _context.SaveChangesAsync();
-    //        return true;
-    //    }
-    //}
+        //        _context.Cosmetiс.Remove(cosmetic);
+        //        await _context.SaveChangesAsync();
+        //        return true;
+        //    }
+        //}
+    }
 }

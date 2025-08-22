@@ -1,5 +1,4 @@
-﻿using TeamChallenge.Models.DTOs.Category;
-using TeamChallenge.Models.Entities;
+﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses;
 
 

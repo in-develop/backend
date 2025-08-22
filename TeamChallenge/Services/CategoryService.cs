@@ -1,6 +1,6 @@
 ﻿using TeamChallenge.Models.Entities;
-using TeamChallenge.Interfaces;
 using TeamChallenge.Models.DTOs.Category;
+using TeamChallenge.Interfaces.Category;
 
 namespace TeamChallenge.Services
 {
