@@ -20,7 +20,7 @@ namespace TeamChallenge.Repositories
             return await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public virtual async Task<IEnumerable<T>> GetSortedAsync(Func<T, bool> filter)
+        public virtual async Task<IEnumerable<T>> GetFilteredAsync(Func<T, bool> filter)
         {
             return _dbSet.AsNoTracking().Where(filter).ToList();
         }

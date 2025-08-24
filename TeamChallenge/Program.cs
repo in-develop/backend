@@ -19,6 +19,7 @@ builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 builder.Services.AddScoped<RepositoryFactory>();
 builder.Services.AddScoped<ICategoryLogic, CategoryService>();
 builder.Services.AddScoped<IProductLogic, ProductLogic>();
+builder.Services.AddScoped<IReviewLogic, ReviewLogic>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
 builder.Services.AddSingleton<IEmailSend, EmailSenderService>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));

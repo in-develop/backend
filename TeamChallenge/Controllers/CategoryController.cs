@@ -18,7 +18,7 @@ namespace TeamChallenge.Controllers
             _service = service;
         }
 
-        [HttpGet()]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             try
@@ -47,7 +47,7 @@ namespace TeamChallenge.Controllers
             }
         }
 
-        [HttpPost()]
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
         {
             try

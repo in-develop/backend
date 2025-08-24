@@ -9,4 +9,11 @@ namespace TeamChallenge.Repositories
         {
         }
     }
+
+    public class ReviewRepository : BaseRepository<ReviewEntity>, IReviewRepository
+    {
+        public ReviewRepository(CosmeticStoreDbContext context) : base(context)
+        {
+        }
+    }
 }

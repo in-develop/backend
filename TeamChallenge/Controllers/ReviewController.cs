@@ -5,19 +5,19 @@ using TeamChallenge.Models.Requests;
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Route("api/products")]
-    public class ProductController : ControllerBase
+    [Route("api/reviews")]
+    public class ReviewController : ControllerBase
     {
-        private readonly IProductLogic _productLogic;
-        public ProductController(IProductLogic productLogic)
+        private readonly IReviewLogic _reviewLogic;
+        public ReviewController(IReviewLogic reviewLogic)
         {
-            _productLogic = productLogic;
+            _reviewLogic = reviewLogic;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _productLogic.GetAllProductsAsync();
+            var result = await _reviewLogic.GetAllReviewsAsync();
 
             return new ObjectResult(result)
             {
@@ -26,9 +26,9 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById([FromRoute]int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var result = await _productLogic.GetProductByIdAsync(id);
+            var result = await _reviewLogic.GetReviewByIdAsync(id);
 
             return new ObjectResult(result)
             {
@@ -37,9 +37,9 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateProductRequest requestData)
+        public async Task<IActionResult> Create([FromBody] CreateReviewRequest requestData)
         {
-            var result = await _productLogic.CreateProductAsync(requestData);
+            var result = await _reviewLogic.CreateReviewAsync(requestData);
 
             return new ObjectResult(result)
             {
@@ -48,9 +48,9 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute]int id, [FromBody] UpdateProductRequest requestData)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateReviewRequest requestData)
         {
-            var result = await _productLogic.UpdateProductAsync(id, requestData);
+            var result = await _reviewLogic.UpdateReviewAsync(id, requestData);
 
             return new ObjectResult(result)
             {
@@ -59,9 +59,9 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute]int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var result = await _productLogic.DeleteProductAsync(id);
+            var result = await _reviewLogic.DeleteReviewAsync(id);
 
             return new ObjectResult(result)
             {

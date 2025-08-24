@@ -67,5 +67,6 @@ namespace TeamChallenge.DbContext
         public DbSet<CartEntity> Carts { get; set; }
         public DbSet<CartItemEntity> Cartitems { get; set; }
         public DbSet<UserEntity> Users {  get; set; }
+        public DbSet<ReviewEntity> Reviews {  get; set; }
     }
 }
