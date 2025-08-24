@@ -12,7 +12,7 @@ namespace TeamChallenge.Repositories
         public BaseRepository(CosmeticStoreDbContext context)
         {
             _context = context;
-            _dbSet = _context.Set<T>(); // Read Docs in details
+            _dbSet = _context.Set<T>();
         }
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
@@ -68,7 +68,7 @@ namespace TeamChallenge.Repositories
             return true;
         }
 
-        public async Task SaveChangesAsync()
+        protected async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }

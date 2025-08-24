@@ -17,7 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 builder.Services.AddScoped<RepositoryFactory>();
-builder.Services.AddScoped<ICategoryLogic, CategoryService>();
+builder.Services.AddScoped<ICategoryLogic, CategoryLogic>();
 builder.Services.AddScoped<IProductLogic, ProductLogic>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
 builder.Services.AddTransient<IEmailSend, EmailSenderService>();

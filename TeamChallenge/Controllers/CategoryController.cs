@@ -2,8 +2,8 @@
 using TeamChallenge.Logic;
 using TeamChallenge.Models.DTOs.Category;
 using TeamChallenge.Models.Models.Responses;
+using TeamChallenge.Models.Requests.Category;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.CategoryResponses;
 
 namespace TeamChallenge.Controllers
 {
@@ -11,86 +11,76 @@ namespace TeamChallenge.Controllers
     [Route("api/[controller]")]
     public class CategoryController : ControllerBase
     {
-        private readonly ICategoryLogic _service;
+        private readonly ICategoryLogic _productLogic;
 
-        public CategoryController(ICategoryLogic service)
+        public CategoryController(ICategoryLogic productLogic)
         {
-            _service = service;
+            _productLogic = productLogic;
         }
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
-            try
+            var result = await _productLogic.GetAllCategoriesAsync();
+
+            if (!result.IsSuccess)
             {
-                var category = await _service.GetAllCategoriesAsync();
-                return Ok(new CategoryGetAllResponse(category));
+                return BadRequest(result);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new ErrorResponse(ex.Message));
-            }
+
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById()
+        public async Task<IActionResult> GetById([FromRoute]int id)
         {
-            try
+            var result = await _productLogic.GetCategoryByIdAsync(id);
+
+            if (!result.IsSuccess)
             {
-                var id = int.Parse((string)RouteData.Values["id"]);
-                var category = await _service.GetCategoryByIdAsync(id);
-                return category == null ? NotFound(new ErrorResponse($"Your category {id} is not found")) : Ok(new CategoryResponse(category));
+                return BadRequest(result);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new ErrorResponse(ex.Message));
-            }
+
+            return Ok(result);
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateCategoryRequest requestData)
         {
-            try
-            {
-                var data = await _service.CreateCategoryAsync(dto);
+            var result = await _productLogic.CreateCategoryAsync(requestData);
 
-                if (data != null) return Ok(new CategoryCreateResponse(data));
-                return NotFound(new ErrorResponse(""));
-            }
-            catch (Exception ex)
+            if (!result.IsSuccess)
             {
-                return BadRequest(new ErrorResponse(ex.Message));
+                return BadRequest(result);
             }
+
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromBody] CategoryUpdateDto dto)
+        public async Task<IActionResult> Update([FromRoute]int id,[FromBody] UpdateCategoryRequest requestData)
         {
-            try
+            var result = await _productLogic.UpdateCategoryAsync(id, requestData);
+
+            if (!result.IsSuccess)
             {
-                var id = int.Parse((string)RouteData.Values["id"]);
-                var updated = await _service.UpdateCategoryAsync(id, dto);
-                return updated ? Ok(new OkResponse("Category is successfuly updated")) : NotFound(new ErrorResponse("Desired Category is not found"));
+                return BadRequest(result);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new ErrorResponse(ex.Message));
-            }
+
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete()
+        public async Task<IActionResult> Delete([FromRoute]int id)
         {
-            try
+            var result = await _productLogic.DeleteCategoryAsync(id);
+
+            if (!result.IsSuccess)
             {
-                var id = int.Parse((string)RouteData.Values["id"]);
-                var deleted = await _service.DeleteCategoryAsync(id);
-                return deleted ? Ok(new OkResponse("Category is successfuly deleted")) : NotFound(new ErrorResponse("Desired Category is not found"));
+                return BadRequest(result);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new ErrorResponse(ex.Message));
-            }
+
+            return Ok(result);
         }
     }
 }

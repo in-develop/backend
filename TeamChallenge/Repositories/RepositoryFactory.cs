@@ -9,7 +9,7 @@ namespace TeamChallenge.Repositories
         private readonly Dictionary<Type, Type> _repositoryMapping = new Dictionary<Type, Type>
         {
             { typeof(ProductEntity), typeof(ProductRepository) },
-            { typeof(CategoryEntity), typeof(CategoryRepository) }
+            { typeof(CategoryEntity), typeof(CategoryRepository) },
         };
 
         public RepositoryFactory(CosmeticStoreDbContext context)
@@ -29,5 +29,4 @@ namespace TeamChallenge.Repositories
             }
         }
     }
-
 }
