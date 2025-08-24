@@ -1,7 +1,6 @@
 ﻿using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.GoogleResponses;
 
-namespace TeamChallenge.Interfaces
+namespace TeamChallenge.Services
 {
     public interface IGoogleOAuth
     {

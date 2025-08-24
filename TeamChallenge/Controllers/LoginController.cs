@@ -6,21 +6,26 @@ using System.Data;
 using System.Text;
 using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
-using TeamChallenge.Interfaces;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Login;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.Services;
 
 namespace TeamChallenge.Controllers
 {
-    [Route("api/")]
+    [Route("api/auth")]
     [ApiController]
     public class LoginController : ControllerBase
     {
         private readonly SignInManager<UserEntity> _signInManager;
         private readonly UserManager<UserEntity> _userManager;
         private readonly IGenerateToken _tokenService;
+
+
+
+
+
         private readonly IEmailSend _emailSender;
         private static readonly Dictionary<string, DateTime> _emailCooldowns = new Dictionary<string, DateTime>();
 
@@ -136,7 +141,7 @@ namespace TeamChallenge.Controllers
             return Ok(new OkResponse());
         }
 
-        [HttpGet("confirm/email")]
+        [HttpGet("confirm-email")]
         public async Task<ActionResult<IResponse>> ConfirmEmail(string userId, string code)
         {
             if (userId == null || code == null)
@@ -162,7 +167,7 @@ namespace TeamChallenge.Controllers
             
         }
 
-        [HttpPost("resend/email/confirmation")]
+        [HttpPost("resend-email-confirmation")]
         public async Task<ActionResult<IResponse>> ResendEmailConfirmation([FromForm] string email)
         {
             if (string.IsNullOrEmpty(email))
