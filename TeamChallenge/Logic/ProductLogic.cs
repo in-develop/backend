@@ -24,7 +24,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
 
@@ -36,14 +36,14 @@ namespace TeamChallenge.Logic
 
                 if (result == null)
                 {
-                    return new ErrorResponse($"Product with Id={id} not found");
+                    return new NotFoundResponse($"Product with Id={id} not found");
                 }
 
                 return new GetProductResponse(result);
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
 
@@ -63,7 +63,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
 
@@ -81,14 +81,14 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
-                    return new ErrorResponse($"Product with Id={id} not found");
+                    return new NotFoundResponse($"Product with Id={id} not found");
                 }
 
                 return new OkResponse();
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
 
@@ -99,14 +99,14 @@ namespace TeamChallenge.Logic
                 var result = await _productRepository.DeleteAsync(id);
                 if (!result)
                 {
-                    return new ErrorResponse($"Product with Id={id} not found");
+                    return new NotFoundResponse($"Product with Id={id} not found");
                 }
 
                 return new OkResponse();
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
     }

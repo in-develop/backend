@@ -8,7 +8,7 @@ using TeamChallenge.Models.Responses;
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/categories")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryLogic _productLogic;
@@ -18,7 +18,7 @@ namespace TeamChallenge.Controllers
             _productLogic = productLogic;
         }
 
-        [HttpGet("all")]
+        [HttpGet()]
         public async Task<IActionResult> GetAll()
         {
             var result = await _productLogic.GetAllCategoriesAsync();

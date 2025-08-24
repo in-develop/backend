@@ -4,7 +4,7 @@ using TeamChallenge.Models.Responses;
 using TeamChallenge.Services;
 
 [ApiController]
-[Route("api/account")]
+[Route("api/auth")]
 public class GoogleAuthController : ControllerBase
 {
     private readonly IGoogleOAuth _googleOAuthService;
