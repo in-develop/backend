@@ -24,7 +24,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
 
@@ -36,14 +36,14 @@ namespace TeamChallenge.Logic
 
                 if (result == null)
                 {
-                    return new ErrorResponse($"Category with Id={id} not found");
+                    return new NotFoundResponse($"Category with Id={id} not found");
                 }
 
                 return new GetCategoryResponse(result);
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
 
@@ -60,7 +60,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
 
@@ -75,14 +75,14 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
-                    return new ErrorResponse($"Category with Id={id} not found");
+                    return new NotFoundResponse($"Category with Id={id} not found");
                 }
 
                 return new OkResponse();
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
 
@@ -101,7 +101,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.Message);
             }
         }
     }

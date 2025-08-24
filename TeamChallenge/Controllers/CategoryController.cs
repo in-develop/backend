@@ -23,12 +23,10 @@ namespace TeamChallenge.Controllers
         {
             var result = await _productLogic.GetAllCategoriesAsync();
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
 
         [HttpGet("{id}")]
@@ -36,12 +34,10 @@ namespace TeamChallenge.Controllers
         {
             var result = await _productLogic.GetCategoryByIdAsync(id);
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
 
         [HttpPost("create")]
@@ -49,12 +45,10 @@ namespace TeamChallenge.Controllers
         {
             var result = await _productLogic.CreateCategoryAsync(requestData);
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
 
         [HttpPut("{id}")]
@@ -62,12 +56,10 @@ namespace TeamChallenge.Controllers
         {
             var result = await _productLogic.UpdateCategoryAsync(id, requestData);
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
 
         [HttpDelete("{id}")]
@@ -75,12 +67,10 @@ namespace TeamChallenge.Controllers
         {
             var result = await _productLogic.DeleteCategoryAsync(id);
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
     }
 }
