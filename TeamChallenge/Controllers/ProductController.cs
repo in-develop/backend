@@ -5,7 +5,7 @@ using TeamChallenge.Models.Requests;
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/products")]
     public class ProductController : ControllerBase
     {
         private readonly IProductLogic _productLogic;
@@ -14,17 +14,15 @@ namespace TeamChallenge.Controllers
             _productLogic = productLogic;
         }
 
-        [HttpGet("all")]
+        [HttpGet()]
         public async Task<IActionResult> GetAll()
         {
             var result = await _productLogic.GetAllProductsAsync();
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
 
         [HttpGet("{id}")]
@@ -32,25 +30,21 @@ namespace TeamChallenge.Controllers
         {
             var result = await _productLogic.GetProductByIdAsync(id);
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
 
-        [HttpPost("create")]
+        [HttpPost()]
         public async Task<IActionResult> Create([FromBody] CreateProductRequest requestData)
         {
             var result = await _productLogic.CreateProductAsync(requestData);
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
 
         [HttpPut("{id}")]
@@ -58,12 +52,10 @@ namespace TeamChallenge.Controllers
         {
             var result = await _productLogic.UpdateProductAsync(id, requestData);
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
 
         [HttpDelete("{id}")]
@@ -71,12 +63,10 @@ namespace TeamChallenge.Controllers
         {
             var result = await _productLogic.DeleteProductAsync(id);
 
-            if (!result.IsSuccess)
+            return new ObjectResult(result)
             {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+                StatusCode = result.StatusCode
+            };
         }
     }
 }

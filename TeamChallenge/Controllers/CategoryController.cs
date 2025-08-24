@@ -8,7 +8,7 @@ using TeamChallenge.Models.Responses.CategoryResponses;
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/categories")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryLogic _service;
@@ -18,7 +18,7 @@ namespace TeamChallenge.Controllers
             _service = service;
         }
 
-        [HttpGet("all")]
+        [HttpGet()]
         public async Task<IActionResult> GetAll()
         {
             try
@@ -47,7 +47,7 @@ namespace TeamChallenge.Controllers
             }
         }
 
-        [HttpPost("create")]
+        [HttpPost()]
         public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
         {
             try
