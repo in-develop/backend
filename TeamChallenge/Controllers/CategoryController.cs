@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
-using TeamChallenge.Models.DTOs.Category;
-using TeamChallenge.Models.Models.Responses;
 using TeamChallenge.Models.Requests.Category;
-using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers
 {
