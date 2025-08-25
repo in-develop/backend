@@ -9,9 +9,11 @@ namespace TeamChallenge.Logic
     public class CategoryLogic : ICategoryLogic
     {
         private readonly ICategoryRepository _categoryRepository;
-        public CategoryLogic(RepositoryFactory factory)
+        private readonly ILogger<CategoryLogic> _logger;
+        public CategoryLogic(RepositoryFactory factory, ILogger<CategoryLogic> logger)
         {
             _categoryRepository = (ICategoryRepository)factory.GetRepository<CategoryEntity>();
+            _logger = logger;
         }
 
         public async Task<IResponse> GetAllCategoriesAsync()
@@ -36,6 +38,7 @@ namespace TeamChallenge.Logic
 
                 if (result == null)
                 {
+                    _logger.LogWarning("Category with Id = {id} not found.", id);
                     return new NotFoundResponse($"Category with Id={id} not found");
                 }
 
@@ -75,6 +78,7 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
+                    _logger.LogWarning("Category with Id = {id} not found for update.", id);
                     return new NotFoundResponse($"Category with Id={id} not found");
                 }
 
@@ -94,6 +98,7 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
+                    _logger.LogWarning("Category with Id = {id} not found for deletion.", id);
                     return new ErrorResponse($"Category with Id={id} not found");
                 }
 

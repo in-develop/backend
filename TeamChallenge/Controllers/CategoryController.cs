@@ -52,7 +52,7 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute]int id,[FromBody] UpdateCategoryRequest requestData)
+        public async Task<IActionResult> Update([FromRoute]int id, [FromBody] UpdateCategoryRequest requestData)
         {
             var result = await _productLogic.UpdateCategoryAsync(id, requestData);
 
