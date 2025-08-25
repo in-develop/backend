@@ -8,10 +8,11 @@ namespace TeamChallenge.Logic
     public class ReviewLogic : IReviewLogic
     {
         private readonly IReviewRepository _reviewRepository;
-
-        public ReviewLogic(RepositoryFactory factory)
+        private readonly ILogger<ReviewLogic> _logger;
+        public ReviewLogic(RepositoryFactory factory, ILogger<ReviewLogic> logger)
         {
             _reviewRepository = (IReviewRepository)factory.GetRepository<ReviewEntity>();
+            _logger = logger;
         }
 
         public async Task<IResponse> GetAllReviewsAsync()
@@ -36,7 +37,8 @@ namespace TeamChallenge.Logic
 
                 if (result == null)
                 {
-                    return new NotFoundResponse($"Product with Id={id} not found");
+                    _logger.LogWarning("Review with Id = {0} not found.", id);
+                    return new NotFoundResponse($"Review with Id = {id} not found");
                 }
 
                 return new GetReviewResponse(result);
@@ -81,7 +83,8 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
-                    return new NotFoundResponse($"Product with Id={id} not found");
+                    _logger.LogWarning("Review with Id = {0} not found.", id);
+                    return new NotFoundResponse($"Review with Id = {id} not found");
                 }
 
                 return new OkResponse();
@@ -99,7 +102,8 @@ namespace TeamChallenge.Logic
                 var result = await _reviewRepository.DeleteAsync(id);
                 if (!result)
                 {
-                    return new NotFoundResponse($"Product with Id={id} not found");
+                    _logger.LogWarning("Review with Id = {0} not found.", id);
+                    return new NotFoundResponse($"Review with Id = {id} not found");
                 }
 
                 return new OkResponse();

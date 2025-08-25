@@ -8,29 +8,54 @@ namespace TeamChallenge.Repositories
     {
         private readonly CosmeticStoreDbContext _context;
         private readonly DbSet<T> _dbSet;
-        
-        public BaseRepository(CosmeticStoreDbContext context)
+        private readonly ILogger<IRepository<T>> _logger;
+
+        public BaseRepository(CosmeticStoreDbContext context, ILogger<IRepository<T>> logger)
         {
             _context = context;
             _dbSet = _context.Set<T>(); // Read Docs in details
+            _logger = logger;
         }
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync()
+        {
+            _logger.LogInformation("Fetching all records of type {0}", typeof(T).Name);
+            return await DoGetAllAsync();
+        }
+
+        protected virtual async Task<IEnumerable<T>> DoGetAllAsync()
         {
             return await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public virtual async Task<IEnumerable<T>> GetFilteredAsync(Func<T, bool> filter)
+        public async Task<IEnumerable<T>> GetFilteredAsync(Func<T, bool> filter)
+        {
+            _logger.LogInformation("Fetching filtered records of type {0}", typeof(T).Name);
+            return await DoGetFilteredAsync(filter);
+        }
+        protected virtual async Task<IEnumerable<T>> DoGetFilteredAsync(Func<T, bool> filter)
         {
             return _dbSet.AsNoTracking().Where(filter).ToList();
         }
 
-        public virtual async Task<T?> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(int id)
+        {
+            _logger.LogInformation("Fetching record of type {0} with ID = {1}", typeof(T).Name, id);
+            return await DoGetByIdAsync(id);
+        }
+
+        protected virtual async Task<T?> DoGetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
         }
 
-        public virtual async Task CreateAsync(Action<T> entityFieldSetter)
+        public async Task CreateAsync(Action<T> entityFieldSetter)
+        {
+            _logger.LogInformation("Creating a new record of type {0}", typeof(T).Name);
+            await DoCreateAsync(entityFieldSetter);
+        }
+
+        protected virtual async Task DoCreateAsync(Action<T> entityFieldSetter)
         {
             var entity = Activator.CreateInstance<T>();
             entityFieldSetter(entity);
@@ -39,21 +64,34 @@ namespace TeamChallenge.Repositories
             await SaveChangesAsync();
         }
 
-        public virtual async Task<bool> UpdateAsync(int id, Action<T> entityFieldSetter)
+        public async Task<bool> UpdateAsync(int id, Action<T> entityFieldSetter)
+        {
+            _logger.LogInformation("Updating record of type {0} with ID = {1}", typeof(T).Name, id);
+            return await DoUpdateAsync(id, entityFieldSetter);
+        }
+
+        protected virtual async Task<bool> DoUpdateAsync(int id, Action<T> entityFieldSetter)
         {
             var entity = await _dbSet.FindAsync(id);
             if (entity == null)
             {
                 return false;
             }
-            
+
             entityFieldSetter(entity);
             await SaveChangesAsync();
 
             return true;
         }
 
-        public virtual async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
+        {
+            _logger.LogInformation("Deleting record of type {0} with ID = {1}", typeof(T).Name, id);
+            return await DoDeleteAsync(id);
+
+        }
+
+        protected virtual async Task<bool> DoDeleteAsync(int id)
         {
             var entity = await _dbSet.FindAsync(id);
 
@@ -68,9 +106,10 @@ namespace TeamChallenge.Repositories
             return true;
         }
 
-        public async Task SaveChangesAsync()
+        protected async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Changes saved to the database.");
         }
     }
 }

@@ -8,10 +8,12 @@ namespace TeamChallenge.Logic
     public class ProductLogic : IProductLogic
     {
         private readonly IProductRepository _productRepository;
+        private readonly ILogger<ProductLogic> _logger;
 
-        public ProductLogic(RepositoryFactory factory)
+        public ProductLogic(RepositoryFactory factory, ILogger<ProductLogic> logger)
         {
             _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
+            _logger = logger;
         }
 
         public async Task<IResponse> GetAllProductsAsync()
@@ -19,7 +21,6 @@ namespace TeamChallenge.Logic
             try
             {
                 var result = await _productRepository.GetAllAsync();
-
                 return new GetAllProductsResponse(result);
             }
             catch (Exception ex)
@@ -36,7 +37,8 @@ namespace TeamChallenge.Logic
 
                 if (result == null)
                 {
-                    return new NotFoundResponse($"Product with Id={id} not found");
+                    _logger.LogWarning("Product with Id = {id} not found.", id);
+                    return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
                 return new GetProductResponse(result);
@@ -81,7 +83,8 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
-                    return new NotFoundResponse($"Product with Id={id} not found");
+                    _logger.LogWarning("Product with Id = {id} not found for update.", id);
+                    return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
                 return new OkResponse();
@@ -99,7 +102,8 @@ namespace TeamChallenge.Logic
                 var result = await _productRepository.DeleteAsync(id);
                 if (!result)
                 {
-                    return new NotFoundResponse($"Product with Id={id} not found");
+                    _logger.LogWarning("Product with Id = {id} not found for deletion.", id);
+                    return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
                 return new OkResponse();

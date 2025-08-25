@@ -6,6 +6,7 @@ namespace TeamChallenge.Repositories
     public class RepositoryFactory
     {
         private  CosmeticStoreDbContext _context;
+        private ILoggerFactory _loggerFactory;
         private readonly Dictionary<Type, Type> _repositoryMapping = new Dictionary<Type, Type>
         {
             { typeof(ProductEntity), typeof(ProductRepository) },
@@ -13,16 +14,25 @@ namespace TeamChallenge.Repositories
             { typeof(ReviewEntity), typeof(ReviewRepository) }
         };
 
-        public RepositoryFactory(CosmeticStoreDbContext context)
+        public RepositoryFactory(CosmeticStoreDbContext context, ILoggerFactory loggerFactory)
         {
             _context = context;
+            _loggerFactory = loggerFactory;
         }
 
         public IRepository<T> GetRepository<T>() where T : IEntity
         {
             if (_repositoryMapping.TryGetValue(typeof(T), out Type repositoryType))
             {
-                return (IRepository<T>)Activator.CreateInstance(repositoryType, _context);
+                var createLoggerMethod = typeof(LoggerFactoryExtensions)
+                    .GetMethod(nameof(LoggerFactoryExtensions.CreateLogger), [typeof(ILoggerFactory)])
+                    .MakeGenericMethod(repositoryType);
+
+                return (IRepository<T>)Activator.CreateInstance(
+                    repositoryType, 
+                    _context,
+                    createLoggerMethod.Invoke(null, [_loggerFactory])
+                    );
             }
             else
             {
