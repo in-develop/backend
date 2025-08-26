@@ -28,6 +28,7 @@ builder.Services.AddScoped<IProductLogic, ProductLogic>();
 builder.Services.AddScoped<IReviewLogic, ReviewLogic>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
 builder.Services.AddSingleton<IEmailSend, EmailSenderService>();
+builder.Services.AddScoped<ILogin, LoginService>();
 builder.Services.AddScoped<ValidationFilter>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 
