@@ -28,6 +28,7 @@ builder.Services.AddScoped<IProductLogic, ProductLogic>();
 builder.Services.AddScoped<IReviewLogic, ReviewLogic>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
 builder.Services.AddSingleton<IEmailSend, EmailSenderService>();
+builder.Services.AddScoped<ILogin, LoginService>();
 builder.Services.AddScoped<ValidationFilter>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 
@@ -55,7 +56,9 @@ builder.Services.AddControllers(opt =>
 
 builder.Services.AddIdentity<UserEntity, IdentityRole>(
     opt =>
-    {   
+    {
+        opt.User.RequireUniqueEmail = true;
+        opt.SignIn.RequireConfirmedEmail = true;
         opt.SignIn.RequireConfirmedEmail = true;
         opt.Password.RequireNonAlphanumeric = false;
         opt.Password.RequireUppercase = false;
@@ -144,19 +147,20 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-//    var roles = new[] { "Admin", "Member", "Unauthorized" };
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var roles = new[] { "Admin", "Member", "Unauthorized" };
 
-//    foreach (var role in roles)
-//    {
-//        if (!await roleManager.RoleExistsAsync(role))
-//        {
-//            await roleManager.CreateAsync(new IdentityRole(role));
-//        }
-//    }
-//}
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+}
+
 //Configure the HTTP request pipeline.
 
 if (app.Environment.IsDevelopment())

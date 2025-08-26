@@ -1,4 +1,6 @@
-﻿namespace TeamChallenge.Helpers
+﻿using System.Net.Mail;
+
+namespace TeamChallenge.Helpers
 {
     public static class EmailVerifyHelper
     {
@@ -13,7 +15,7 @@
 
             try
             {
-                var addr = new System.Net.Mail.MailAddress(email);
+                var addr = new MailAddress(email);
                 return addr.Address == trimmedEmail;
             }
             catch
