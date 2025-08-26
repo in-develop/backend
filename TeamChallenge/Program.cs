@@ -2,23 +2,33 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Security.Claims;
 using TeamChallenge.DbContext;
-using TeamChallenge.Interfaces;
+using TeamChallenge.Filters;
+using TeamChallenge.Logic;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.SendEmailModels;
+using TeamChallenge.Repositories;
 using TeamChallenge.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
+
+builder.Host.UseSerilog((context, loggerConfiguration) =>
+    loggerConfiguration.ReadFrom.Configuration(context.Configuration));
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
-//builder.Services.AddScoped<ICosmetic, CosmeticService>();
-//builder.Services.AddScoped<ICategory, CategoryService>();
+builder.Services.AddScoped<RepositoryFactory>();
+builder.Services.AddScoped<ICategoryLogic, CategoryService>();
+builder.Services.AddScoped<IProductLogic, ProductLogic>();
+builder.Services.AddScoped<IReviewLogic, ReviewLogic>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
 builder.Services.AddSingleton<IEmailSend, EmailSenderService>();
+builder.Services.AddScoped<ValidationFilter>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 
 builder.Services.AddSession(options =>
@@ -30,7 +40,18 @@ builder.Services.AddSession(options =>
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+    }
+});
+
+builder.Services.AddControllers(opt =>
+{
+    opt.Filters.Add<ValidationFilter>();
+});
 
 builder.Services.AddIdentity<UserEntity, IdentityRole>(
     opt =>
@@ -146,6 +167,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseSession();
 app.UseHttpsRedirection();

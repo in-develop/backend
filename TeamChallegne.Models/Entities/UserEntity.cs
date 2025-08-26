@@ -6,5 +6,6 @@ namespace TeamChallenge.Models.Entities
     {
         public CartEntity Cart { get; set; }
         public ICollection<OrderEntity> Orders { get; set; }
+        public ICollection<ReviewEntity> Reviews { get; set; }
     }
 }

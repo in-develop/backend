@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Interfaces;
+using TeamChallenge.Helpers;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.GoogleResponses;
+using TeamChallenge.Services;
 
 [ApiController]
-[Route("api/account")]
+[Route("api/auth")]
 public class GoogleAuthController : ControllerBase
 {
     private readonly IGoogleOAuth _googleOAuthService;

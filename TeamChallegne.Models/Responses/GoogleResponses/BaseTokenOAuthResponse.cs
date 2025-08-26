@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-namespace TeamChallenge.Models.Responses.GoogleResponses
+namespace TeamChallenge.Models.Responses
 {
     public class BaseTokenOAuthResponse
     {

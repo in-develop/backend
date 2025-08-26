@@ -1,30 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Interfaces;
+using TeamChallenge.Logic;
 using TeamChallenge.Models.DTOs.Category;
+using TeamChallenge.Models.Models.Responses;
+using TeamChallenge.Models.Responses;
+using TeamChallenge.Models.Responses.CategoryResponses;
 
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/categories")]
     public class CategoryController : ControllerBase
     {
-        private readonly ICategory _service;
+        private readonly ICategoryLogic _service;
 
-        public CategoryController(ICategory service)
+        public CategoryController(ICategoryLogic service)
         {
             _service = service;
         }
 
-        [HttpGet("all")]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             try
             {
-                return Ok(await _service.GetAllAsync());
+                var category = await _service.GetAllCategoriesAsync();
+                return Ok(new CategoryGetAllResponse(category));
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new ErrorResponse(ex.Message));
             }
         }
 
@@ -34,41 +38,43 @@ namespace TeamChallenge.Controllers
             try
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
-                var category = await _service.GetByIdAsync(id);
-                return category == null ? NotFound($"Your category {id} is not found") : Ok(category);
+                var category = await _service.GetCategoryByIdAsync(id);
+                return category == null ? NotFound(new ErrorResponse($"Your category {id} is not found")) : Ok(new CategoryResponse(category));
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new ErrorResponse(ex.Message));
             }
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] CategoryCreateDto dto)
         {
             try
             {
-                var created = await _service.CreateAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+                var data = await _service.CreateCategoryAsync(dto);
+
+                if (data != null) return Ok(new CategoryCreateResponse(data));
+                return NotFound(new ErrorResponse(""));
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new ErrorResponse(ex.Message));
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromBody] CategoryAddDto dto)
+        public async Task<IActionResult> Update([FromBody] CategoryUpdateDto dto)
         {
             try
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
-                var updated = await _service.UpdateAsync(id, dto);
-                return updated ? Ok("Category is successfuly updated") : NotFound("Desired Category is not found");
+                var updated = await _service.UpdateCategoryAsync(id, dto);
+                return updated ? Ok(new OkResponse("Category is successfuly updated")) : NotFound(new ErrorResponse("Desired Category is not found"));
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new ErrorResponse(ex.Message));
             }
         }
 
@@ -78,12 +84,12 @@ namespace TeamChallenge.Controllers
             try
             {
                 var id = int.Parse((string)RouteData.Values["id"]);
-                var deleted = await _service.DeleteAsync(id);
-                return deleted ? Ok("Category is successfuly deleted") : NotFound("Desired Category is not found");
+                var deleted = await _service.DeleteCategoryAsync(id);
+                return deleted ? Ok(new OkResponse("Category is successfuly deleted")) : NotFound(new ErrorResponse("Desired Category is not found"));
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new ErrorResponse(ex.Message));
             }
         }
     }

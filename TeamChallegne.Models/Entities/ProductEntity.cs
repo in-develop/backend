@@ -13,5 +13,6 @@ namespace TeamChallenge.Models.Entities
         [ForeignKey("Category")]
         public required int CategoryId { get; set; }
         public CategoryEntity Category { get; set; }
+        public ICollection<ReviewEntity> Reviews { get; set; }
     }
 }
