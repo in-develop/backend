@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Models.Login;
-using TeamChallenge.Models.Requests;
+using TeamChallenge.Models.Requests.Login;
 using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Services
 {
-    public interface ILogin
+    public interface ILoginService
     {
-        Task<IResponse> Login(LoginRequest request);
-
+        Task<IResponse> Login(TCLoginRequest request);
         Task<IResponse> SignUp(SignUpRequest request);
         Task<IResponse> Logout();
         Task<IResponse> ConfirmEmail(string userId, string code);

@@ -1,4 +1,4 @@
-﻿namespace TeamChallenge.Models.Requests
+﻿namespace TeamChallenge.Models.Requests.Login
 {
     public class SignUpRequest
     {

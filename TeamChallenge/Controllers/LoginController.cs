@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Models.Requests;
+using TeamChallenge.Models.Requests.Login;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Services;
 
@@ -10,15 +10,15 @@ namespace TeamChallenge.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private ILogin _service;
+        private ILoginService _service;
 
-        public LoginController(ILogin service)
+        public LoginController(ILoginService service)
         {
             _service = service;
         }
 
         [HttpPost("login")]
-        public async Task<IResponse> Login([FromForm] LoginRequest request)
+        public async Task<IResponse> Login([FromBody] TCLoginRequest request)
         {
             return await _service.Login(request);
         }

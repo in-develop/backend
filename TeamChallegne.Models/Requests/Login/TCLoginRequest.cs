@@ -1,6 +1,6 @@
-﻿namespace TeamChallenge.Models.Requests
+﻿namespace TeamChallenge.Models.Requests.Login
 {
-    public class LoginRequest
+    public class TCLoginRequest
     {        
         public string UsernameOrEmail { get; set; }
         public string Password { get; set; }
