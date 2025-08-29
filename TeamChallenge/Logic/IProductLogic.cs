@@ -1,5 +1,4 @@
-﻿using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Requests;
+﻿using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 
 
