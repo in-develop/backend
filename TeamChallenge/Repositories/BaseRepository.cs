@@ -13,7 +13,7 @@ namespace TeamChallenge.Repositories
         public BaseRepository(CosmeticStoreDbContext context, ILogger<IRepository<T>> logger)
         {
             _context = context;
-            _dbSet = _context.Set<T>(); // Read Docs in details
+            _dbSet = _context.Set<T>();
             _logger = logger;
         }
 

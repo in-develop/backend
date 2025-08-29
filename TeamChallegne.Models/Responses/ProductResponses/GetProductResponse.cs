@@ -1,11 +1,10 @@
 ﻿using TeamChallenge.Models.Entities;
 
-namespace TeamChallenge.Models.Responses
+namespace TeamChallenge.Models.Responses;
+
+public class GetProductResponse : BaseDataResponse<ProductEntity>
 {
-    public class GetProductResponse : BaseDataResponse<ProductEntity>
+    public GetProductResponse(ProductEntity data) : base(data)
     {
-        public GetProductResponse(ProductEntity data) : base(data)
-        {
-        }
     }
 }

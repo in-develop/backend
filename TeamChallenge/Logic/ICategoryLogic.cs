@@ -1,14 +1,14 @@
-﻿using TeamChallenge.Models.DTOs.Category;
-using TeamChallenge.Models.Entities;
+﻿using TeamChallenge.Models.Requests.Category;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Logic
 {
     public interface ICategoryLogic
     {
-        Task<IEnumerable<CategoryEntity>> GetAllCategoriesAsync();
-        Task<CategoryEntity?> GetCategoryByIdAsync(int id);
-        Task<CategoryEntity> CreateCategoryAsync(CategoryCreateDto dto);
-        Task<bool> UpdateCategoryAsync(int id, CategoryUpdateDto dto);
-        Task<bool> DeleteCategoryAsync(int id);
+        Task<IResponse> GetAllCategoriesAsync();
+        Task<IResponse> GetCategoryByIdAsync(int id);
+        Task<IResponse> CreateCategoryAsync(CreateCategoryRequest dto);
+        Task<IResponse> UpdateCategoryAsync(int id, UpdateCategoryRequest dto);
+        Task<IResponse> DeleteCategoryAsync(int id);
     }
 }
