@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers
 {
@@ -15,58 +16,34 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IResponse> GetAll()
         {
-            var result = await _productLogic.GetAllProductsAsync();
+            return await _productLogic.GetAllProductsAsync();
 
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById([FromRoute]int id)
+        public async Task<IResponse> GetById([FromRoute]int id)
         {
-            var result = await _productLogic.GetProductByIdAsync(id);
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _productLogic.GetProductByIdAsync(id);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateProductRequest requestData)
+        public async Task<IResponse> Create([FromBody] CreateProductRequest requestData)
         {
-            var result = await _productLogic.CreateProductAsync(requestData);
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _productLogic.CreateProductAsync(requestData);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute]int id, [FromBody] UpdateProductRequest requestData)
+        public async Task<IResponse> Update([FromRoute]int id, [FromBody] UpdateProductRequest requestData)
         {
-            var result = await _productLogic.UpdateProductAsync(id, requestData);
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _productLogic.UpdateProductAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute]int id)
+        public async Task<IResponse> Delete([FromRoute]int id)
         {
-            var result = await _productLogic.DeleteProductAsync(id);
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _productLogic.DeleteProductAsync(id);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Filters
 {
@@ -18,7 +20,13 @@ namespace TeamChallenge.Filters
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
-            // This is called after the action has executed; no logging needed here for this purpose.
+            if (context.Result is ObjectResult result)
+            {
+                if(result.Value is IResponse response)
+                {
+                    result.StatusCode = response.StatusCode;
+                }
+            }
         }
     }
 }
