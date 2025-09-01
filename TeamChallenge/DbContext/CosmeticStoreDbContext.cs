@@ -16,6 +16,17 @@ namespace TeamChallenge.DbContext
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<SubCategoryEntity>()
+                .HasOne(sc => sc.Category)
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(c => c.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ProductEntity>()
+                .HasMany(p => p.SubCategories)
+                .WithMany(sc => sc.Products)
+                .UsingEntity(j => j.ToTable("ProductSubCategories"));
+
             base.OnModelCreating(builder);
 
             builder.Entity<CategoryEntity>()
@@ -35,7 +46,7 @@ namespace TeamChallenge.DbContext
                 {
                     Id = 1,
                     Name = "Prod 1",
-                    CategoryId = 1,
+                    SubCategoryId = 1,
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 1",
@@ -44,7 +55,7 @@ namespace TeamChallenge.DbContext
                 {
                     Id = 2,
                     Name = "Prod 2",
-                    CategoryId = 2,
+                    SubCategoryId = 2,
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 2",
@@ -53,7 +64,7 @@ namespace TeamChallenge.DbContext
                 {
                     Id = 3,
                     Name = "Prod 3",
-                    CategoryId = 1,
+                    SubCategoryId = 1,
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 3",
@@ -68,5 +79,6 @@ namespace TeamChallenge.DbContext
         public DbSet<CartItemEntity> Cartitems { get; set; }
         public DbSet<UserEntity> Users {  get; set; }
         public DbSet<ReviewEntity> Reviews {  get; set; }
+        public DbSet<SubCategoryEntity> SubCategories { get; set; }
     }
 }
