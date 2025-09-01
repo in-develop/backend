@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
@@ -56,6 +57,7 @@ namespace TeamChallenge.Services
 
                 if (!user.EmailConfirmed)
                 {
+                    _logger.LogWarning("User not confirmed email");
                     return new UnauthorizedResponse("Confirm Email");
                 }
 
@@ -67,7 +69,7 @@ namespace TeamChallenge.Services
                 }
 
                 var roles = await _userManager.GetRolesAsync(user);
-                (string tokenString, DateTime Expires) = _tokenService.GenerateToken(user, roles);
+                (string tokenString, DateTime Expires) = _tokenService.GenerateToken(user, roles, request.RememberMe);
 
                 if (result.Succeeded)
                 {
@@ -89,6 +91,7 @@ namespace TeamChallenge.Services
             }
         }
 
+        [Authorize]
         public async Task<IResponse> Logout()
         {
             try

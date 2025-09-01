@@ -14,7 +14,7 @@ public class GenerateTokenService: IGenerateToken
         _configuration = configuration;
     }
 
-    public (string, DateTime) GenerateToken(UserEntity user, IList<string> roles)
+    public (string, DateTime) GenerateToken(UserEntity user, IList<string> roles, bool remebmerMe)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
@@ -33,7 +33,16 @@ public class GenerateTokenService: IGenerateToken
         }
 
         var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
-        var tokenExpiration = DateTime.UtcNow.Add(TimeSpan.Parse(_configuration["Jwt:Expires"]!)) ;
+
+        DateTime tokenExpiration;
+        if (remebmerMe)
+        {
+            tokenExpiration = DateTime.UtcNow.Add(TimeSpan.Parse(_configuration["Jwt:RememberMe"]!));
+        }
+        else
+        {
+            tokenExpiration = DateTime.UtcNow.Add(TimeSpan.Parse(_configuration["Jwt:Expires"]!));
+        }
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
