@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests.Cart;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers
 {
@@ -15,14 +17,11 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCart([FromBody] CreateCartRequest request)
+        [Authorize]
+        public async Task<IResponse> CreateCart([FromBody] CreateCartRequest request)
         {
-            var result = await _cartLogic.CreateCartAsync(request);
+            return await _cartLogic.CreateCartAsync(request);
 
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
         }
 
         [HttpPost("update")]

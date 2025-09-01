@@ -1,51 +1,71 @@
-﻿using TeamChallenge.Models.Entities;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Requests.Cart;
+using TeamChallenge.Models.Requests.CartItem;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Repositories;
+using TeamChallenge.Models.Responses.CartResponses;
 
 namespace TeamChallenge.Logic
 {
+    [Authorize]
     public class CartLogic : ICartLogic
     {
         private readonly ICartRepository _cartRepository;
-        private readonly ICartItemRepository _cartItemRepository;
+        private readonly ICartItemLogic _cartItemLogic;
         private readonly ILogger<CartLogic> _logger;
+        private readonly UserManager<UserEntity> _userManager;
 
-        public CartLogic(RepositoryFactory factory, ILogger<CartLogic> logger)
+        public CartLogic(RepositoryFactory factory, ILogger<CartLogic> logger,
+            UserManager<UserEntity> httpContextAccessor, ICartItemLogic cartItemLogic)
         {
             _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
             _logger = logger;
-            _cartItemRepository = (ICartItemRepository)factory.GetRepository<CartItemEntity>();
+            _cartItemLogic = cartItemLogic;
+            _userManager = httpContextAccessor;
         }
 
         public async Task<IResponse> CreateCartAsync(CreateCartRequest dto)
         {
             try
             {
-                var cartItems = new List<CartItemEntity>();
+                var user = await _userManager.FindByIdAsync(dto.UserId);
+
+                if (user == null)
+                {
+                    _logger.LogWarning("User not found with ID: {UserId}", dto.UserId);
+                    return new ServerErrorResponse("User not found");
+                }
+
+                if (!await _cartRepository.IsCartExist(user.Id))
+                {
+                    await _cartRepository.CreateAsync(entity =>
+                    {
+                        entity.UserId = dto.UserId;
+                    });
+                }
+
+                var result = new List<CartItemEntity>();
                 foreach (var item in dto.CartItems)
                 {
-                    var cartItem = _cartItemRepository.CreateAsync(entity =>
+                    await _cartItemLogic.CreateCartItemAsync(new CreateCartItemRequest
                     {
-                        entity.ProductId = item.ProductId;
-                        entity.Quantity = item.Quantity;
+                        ProductId = item.ProductId,
+                        CartId = item.CartId,
+                        Quantity = item.Quantity
                     });
 
-                    cartItems.Add(new CartItemEntity
+                    result.Add(new CartItemEntity
                     {
+                        CartId = item.CartId,
                         ProductId = item.ProductId,
                         Quantity = item.Quantity
                     });
                 }
 
-                await _cartRepository.CreateAsync(entity =>
-                {
-                    entity.UserId = dto.UserId;
-                    entity.CartItems = cartItems;
-                });
 
-
-                return new OkResponse();
+                return new CreateCartListResponse(result);
             }
             catch (Exception ex)
             {
@@ -79,7 +99,7 @@ namespace TeamChallenge.Logic
             try
             {
                 await _cartRepository.GetByIdAsync(id);
-                return new OkResponse();
+                return new GetСartResponse(await _cartRepository.GetByIdAsync(id));
             }
             catch (Exception ex)
             {
@@ -99,9 +119,11 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
+                    _logger.LogError("Error update cart");
                     return new ServerErrorResponse("An error occurred while updating the cart");
                 }
-                return new OkResponse();
+
+                return new GetСartResponse(await _cartRepository.GetByIdAsync(id));
             }
             catch (Exception ex)
             {

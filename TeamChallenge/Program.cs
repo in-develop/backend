@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Security.Claims;
 using TeamChallenge.DbContext;
@@ -20,7 +21,34 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(optitons =>
+{
+    optitons.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = JwtBearerDefaults.AuthenticationScheme
+    });
+
+    optitons.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id=JwtBearerDefaults.AuthenticationScheme
+                }
+            },
+            []
+        }
+    });
+});
+
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 builder.Services.AddScoped<RepositoryFactory>();
 builder.Services.AddScoped<ICategoryLogic, CategoryLogic>();
@@ -72,15 +100,12 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(
     .AddApiEndpoints();
 
 
-builder.Services.AddAuthorization();
-
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-    .AddCookie()
     .AddGoogle(googleOptions =>
     {
         var clientId = googleOptions.ClientId = config["Authentication:Google:ClientId"];
@@ -146,6 +171,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

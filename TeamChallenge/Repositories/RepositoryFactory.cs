@@ -11,8 +11,12 @@ namespace TeamChallenge.Repositories
         {
             { typeof(ProductEntity), typeof(ProductRepository) },
             { typeof(CategoryEntity), typeof(CategoryRepository) },
-            { typeof(ReviewEntity), typeof(ReviewRepository) }
+            { typeof(ReviewEntity), typeof(ReviewRepository) },
+            { typeof(CartEntity), typeof(CartRepository) },
+            { typeof(CartItemEntity), typeof(CartItemRepository) }
         };
+
+        private readonly Dictionary<string, List<CategoryEntity>> _ = new Dictionary<string, List<CategoryEntity>>();
 
         public RepositoryFactory(CosmeticStoreDbContext context, ILoggerFactory loggerFactory)
         {
