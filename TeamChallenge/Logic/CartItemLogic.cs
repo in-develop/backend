@@ -15,6 +15,7 @@ namespace TeamChallenge.Logic
             _cartItemRepository = (ICartItemRepository)factory.GetRepository<CartItemEntity>();
             _logger = logger;
         }
+
         public async Task<IResponse> CreateCartItemAsync(CreateCartItemRequest dto)
         {
             try
@@ -33,7 +34,6 @@ namespace TeamChallenge.Logic
                 _logger.LogError(ex, "Error creating cart item");
                 return new ServerErrorResponse("An error occurred while creating the cart item.");
             }
-
         }
 
         public async Task<IResponse> DeleteCartItemAsync(int id)

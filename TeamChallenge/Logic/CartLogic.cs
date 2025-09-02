@@ -2,10 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Requests.Cart;
-using TeamChallenge.Models.Requests.CartItem;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Repositories;
 using TeamChallenge.Models.Responses.CartResponses;
+using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Logic
 {
@@ -46,28 +45,12 @@ namespace TeamChallenge.Logic
                     });
                 }
 
-                // There is no need to return cart items. Return OkResponse instead.
-                var result = new List<CartItemEntity>();
-                foreach (var item in dto.CartItems)
+                if (!await _cartRepository.CreateCartItemsBulk(dto.CartItems))
                 {
-                    // It's better to add method in cart item repository for creating miltiple items at once.
-                    await _cartItemLogic.CreateCartItemAsync(new CreateCartItemRequest
-                    {
-                        ProductId = item.ProductId,
-                        CartId = item.CartId,
-                        Quantity = item.Quantity
-                    });
-
-                    result.Add(new CartItemEntity
-                    {
-                        CartId = item.CartId,
-                        ProductId = item.ProductId,
-                        Quantity = item.Quantity
-                    });
+                    return new ServerErrorResponse("An error occurred while adding items to the cart.");
                 }
 
-
-                return new CreateCartListResponse(result);
+                return new OkResponse();
             }
             catch (Exception ex)
             {
@@ -81,35 +64,40 @@ namespace TeamChallenge.Logic
             try
             {
                 var result = await _cartRepository.DeleteAsync(id);
-                // Return not found response and write warning to the log. See product logic for example.
                 if (!result)
                 {
-                    return new ServerErrorResponse("An error occurred while deleting the cart");
+                    _logger.LogError($"Error delete cart. ID: {id}");
+                    return new NotFoundResponse($"An error occurred while deleting the cart. ID: {id}");
                 }
 
                 return new OkResponse();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting cart");
+                _logger.LogError(ex, $"Error deleting cart ID: {id}");
                 return new ServerErrorResponse("An error occurred while deleting the cart");
             }
-
         }
 
         public async Task<IResponse> GetByIdCartAsync(int id)
         {
             try
             {
-                // check for null
-                await _cartRepository.GetByIdAsync(id);
-                return new GetСartResponse(await _cartRepository.GetByIdAsync(id));
+                var cartEntity = await _cartRepository.GetByIdAsync(id);
+                if (cartEntity != null)
+                {
+                    return new GetСartResponse(cartEntity);
+                }
+                else
+                {
+                    _logger.LogWarning($"Cart not found with ID: {id}");
+                    return new NotFoundResponse($"Cart not found with ID: {id}");
+                }
             }
             catch (Exception ex)
-            { 
-                // please specify the ID value in log messages
-                _logger.LogError(ex, "An error occurred while finging the cart by id");
-                return new ServerErrorResponse("An error occurred while finging the cart by id");
+            {
+                _logger.LogError(ex, $"An error occurred while finging the cart by id = {id}");
+                return new ServerErrorResponse($"An error occurred while finging the cart id = {id}");
             }
         }
 
@@ -128,7 +116,7 @@ namespace TeamChallenge.Logic
                     return new ServerErrorResponse("An error occurred while updating the cart");
                 }
 
-                return new GetСartResponse(await _cartRepository.GetByIdAsync(id));
+                return new OkResponse();
             }
             catch (Exception ex)
             {
