@@ -46,9 +46,11 @@ namespace TeamChallenge.Logic
                     });
                 }
 
+                // There is no need to return cart items. Return OkResponse instead.
                 var result = new List<CartItemEntity>();
                 foreach (var item in dto.CartItems)
                 {
+                    // It's better to add method in cart item repository for creating miltiple items at once.
                     await _cartItemLogic.CreateCartItemAsync(new CreateCartItemRequest
                     {
                         ProductId = item.ProductId,
@@ -79,6 +81,7 @@ namespace TeamChallenge.Logic
             try
             {
                 var result = await _cartRepository.DeleteAsync(id);
+                // Return not found response and write warning to the log. See product logic for example.
                 if (!result)
                 {
                     return new ServerErrorResponse("An error occurred while deleting the cart");
@@ -98,11 +101,13 @@ namespace TeamChallenge.Logic
         {
             try
             {
+                // check for null
                 await _cartRepository.GetByIdAsync(id);
                 return new GetСartResponse(await _cartRepository.GetByIdAsync(id));
             }
             catch (Exception ex)
-            {
+            { 
+                // please specify the ID value in log messages
                 _logger.LogError(ex, "An error occurred while finging the cart by id");
                 return new ServerErrorResponse("An error occurred while finging the cart by id");
             }
