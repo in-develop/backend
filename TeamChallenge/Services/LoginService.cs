@@ -3,10 +3,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
+using TeamChallenge.Logic;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Login;
+using TeamChallenge.Models.Requests.Cart;
+using TeamChallenge.Models.Requests.CartItem;
 using TeamChallenge.Models.Requests.Login;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.Models.Responses.CartResponses;
 
 namespace TeamChallenge.Services
 {
@@ -16,14 +20,18 @@ namespace TeamChallenge.Services
         private readonly UserManager<UserEntity> _userManager;
         private readonly IGenerateToken _tokenService;
         private readonly IEmailSend _emailSender;
+        private readonly ICartLogic _cartLogic;
+        private readonly ICartItemLogic _cartItemLogic;
         private readonly ILogger<LoginService> _logger;
 
-        public LoginService(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IGenerateToken tokenService, IEmailSend emailSender, ILogger<LoginService> logger)
+        public LoginService(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IGenerateToken tokenService, IEmailSend emailSender, ILogger<LoginService> logger, ICartLogic cartLogic, ICartItemLogic cartItemLogic)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _tokenService = tokenService;
             _emailSender = emailSender;
+            _cartLogic = cartLogic;
+            _cartItemLogic = cartItemLogic;
             _logger = logger;
         }
 
@@ -135,15 +143,20 @@ namespace TeamChallenge.Services
                 {
                     _logger.LogInformation("User {username} created a new account with password.", request.Username);
                     await _userManager.AddToRoleAsync(user, "Member");
-
                     var roles = await _userManager.GetRolesAsync(user);
-                    await SendConfirmLetter(request.Email, request.ClientUrl, user);
+                    (bool isSucssess, IResponse value) = await CreateCart(request, user);
+                    if (!isSucssess)
+                    {
+                        return value;
+                    }
 
+                    await SendConfirmLetter(request.Email, request.ClientUrl, user);
                     user.SentEmailTime = DateTime.UtcNow;
 
                     return new OkResponse("User registered successfully.Please check your email to confirm your account.");
                 }
 
+                await _userManager.DeleteAsync(user);
                 _logger.LogWarning("User creation failed for {username}. Errors: {errors}", request.Username, string.Join(", ", result.Errors.Select(e => e.Description)));
                 return new BadRequestResponse(string.Join("\n", result.Errors.Select(x => x.Description)));
             }
@@ -151,7 +164,49 @@ namespace TeamChallenge.Services
             {
                 _logger.LogError(ex, "An error occurred during SignUp for user: {username} \n{ex}", request?.Username, ex.Message);
                 return new ServerErrorResponse("An error occurred during registration. Please try again later.");
+
             }
+        }
+
+        private async Task<(bool isSucssess, IResponse result)> CreateCart(SignUpRequest request, UserEntity user)
+        {
+            if (request.CartItems != null)
+            {
+                await _cartLogic.CreateCartAsync(new CreateCartRequest
+                {
+                    UserId = user.Id,
+                    CartItems = request.CartItems
+                });
+
+                var tempCart = (GetСartResponse)await _cartLogic.GetByUserIdCartAsync(user.Id);
+                if (tempCart == null)
+                {
+                    _logger.LogWarning("Cart creation failed for user: {username}, ID: {id}", request.Username, user.Id);
+                    await _userManager.DeleteAsync(user);
+                    return (false, new ServerErrorResponse("Cart creation failed. Please try again later."));
+                }
+
+                var temoDto = new List<CreateCartItemRequest>();
+                foreach (var cartItem in request.CartItems)
+                {
+                    temoDto.Add(new CreateCartItemRequest
+                    {
+                        ProductId = cartItem.ProductId,
+                        Quantity = cartItem.Quantity,
+                        CartId = tempCart.Data.Id
+                    });
+                }
+                await _cartItemLogic.CreateCartItemAsync(temoDto);
+            }
+            else
+            {
+                await _cartLogic.CreateCartAsync(new CreateCartRequest
+                {
+                    UserId = user.Id
+                });
+            }
+
+            return (true, new OkResponse());
         }
 
         public async Task<IResponse> ResendEmailConfirmation(string email, string clientUrl)

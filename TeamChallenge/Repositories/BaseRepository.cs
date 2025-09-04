@@ -7,7 +7,7 @@ namespace TeamChallenge.Repositories
     public class BaseRepository<T> : IRepository<T> where T : class, IEntity
     {
         private readonly CosmeticStoreDbContext _context;
-        private readonly DbSet<T> _dbSet;
+        protected readonly DbSet<T> _dbSet;
         private readonly ILogger<IRepository<T>> _logger;
 
         public BaseRepository(CosmeticStoreDbContext context, ILogger<IRepository<T>> logger)
@@ -33,6 +33,7 @@ namespace TeamChallenge.Repositories
             _logger.LogInformation("Fetching filtered records of type {0}", typeof(T).Name);
             return await DoGetFilteredAsync(filter);
         }
+
         protected virtual async Task<IEnumerable<T>> DoGetFilteredAsync(Func<T, bool> filter)
         {
             return _dbSet.AsNoTracking().Where(filter).ToList();

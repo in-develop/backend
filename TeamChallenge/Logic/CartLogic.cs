@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using TeamChallenge.Models.DTOs.Cart;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Requests.Cart;
 using TeamChallenge.Models.Responses;
@@ -12,17 +13,15 @@ namespace TeamChallenge.Logic
     public class CartLogic : ICartLogic
     {
         private readonly ICartRepository _cartRepository;
-        private readonly ICartItemLogic _cartItemLogic;
         private readonly ILogger<CartLogic> _logger;
         private readonly UserManager<UserEntity> _userManager;
 
         public CartLogic(RepositoryFactory factory, ILogger<CartLogic> logger,
-            UserManager<UserEntity> httpContextAccessor, ICartItemLogic cartItemLogic)
+            UserManager<UserEntity> userManager, ICartItemLogic cartItemLogic)
         {
             _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
             _logger = logger;
-            _cartItemLogic = cartItemLogic;
-            _userManager = httpContextAccessor;
+            _userManager = userManager;
         }
 
         public async Task<IResponse> CreateCartAsync(CreateCartRequest dto)
@@ -43,11 +42,6 @@ namespace TeamChallenge.Logic
                     {
                         entity.UserId = dto.UserId;
                     });
-                }
-
-                if (!await _cartRepository.CreateCartItemsBulk(dto.CartItems))
-                {
-                    return new ServerErrorResponse("An error occurred while adding items to the cart.");
                 }
 
                 return new OkResponse();
@@ -100,28 +94,25 @@ namespace TeamChallenge.Logic
                 return new ServerErrorResponse($"An error occurred while finging the cart id = {id}");
             }
         }
-
-        public async Task<IResponse> UpdateCartAsync(int id, UpdateCartRequest dto)
+        public async Task<IResponse> GetByUserIdCartAsync(string UserId)
         {
             try
             {
-                var result = await _cartRepository.UpdateAsync(id, entity =>
+                var cartEntity = await _cartRepository.GetCartByUserId(UserId);
+                if (cartEntity != null)
                 {
-                    entity.CartItems = dto.CartItems;
-                });
-
-                if (!result)
-                {
-                    _logger.LogError("Error update cart");
-                    return new ServerErrorResponse("An error occurred while updating the cart");
+                    return new GetСartResponse(cartEntity);
                 }
-
-                return new OkResponse();
+                else
+                {
+                    _logger.LogWarning($"User was not found with ID: {UserId}");
+                    return new NotFoundResponse($"User was not found with ID: {UserId}");
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error find by id cart");
-                return new ServerErrorResponse("An error occurred while updating the cart");
+                _logger.LogError(ex, $"An error occurred while finging the user by id = {UserId}");
+                return new ServerErrorResponse($"An error occurred while finging the user id = {UserId}");
             }
         }
     }

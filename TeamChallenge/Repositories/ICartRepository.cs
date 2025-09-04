@@ -7,6 +7,6 @@ namespace TeamChallenge.Repositories
     {
         Task<bool> IsCartExist(string UserId);
 
-        Task<bool> CreateCartItemsBulk(ICollection<CreateCartItemDTO> cartItems);
+        Task<CartEntity?> GetCartByUserId(string UserId);
     }
 }

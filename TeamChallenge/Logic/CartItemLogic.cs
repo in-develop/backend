@@ -1,6 +1,7 @@
 ﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Requests.CartItem;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.Models.Responses.CartItemResponses;
 using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Logic
@@ -36,6 +37,28 @@ namespace TeamChallenge.Logic
             }
         }
 
+        public async Task<IResponse> CreateCartItemAsync(List<CreateCartItemRequest> list)
+        {
+            try
+            {
+                _logger.LogInformation("Started addition items to cart");
+                var result = await _cartItemRepository.CreateCartItemAsync(list);
+                if (result)
+                {
+                    _logger.LogInformation("Addition completed");
+                    return new OkResponse();
+                }
+
+                _logger.LogError("Addition is failed");
+                return new ServerErrorResponse("Addition is failed");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating the list of cart items.");
+                return new ServerErrorResponse("An error occurred while creating the list of cart items.");
+            }
+        }
+
         public async Task<IResponse> DeleteCartItemAsync(int id)
         {
             try
@@ -56,14 +79,32 @@ namespace TeamChallenge.Logic
             }
         }
 
+        public async Task<IResponse> GetCartItemAsync(int id)
+        {
+            try
+            {
+                var result = await _cartItemRepository.GetByIdAsync(id);
+                if (result == null)
+                {
+                    _logger.LogError($"Cart item not found ID : {id}");
+                    return new NotFoundResponse($"Cart item not found ID : {id}");
+                }
+
+                return new GetCartItemResponse(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving cart item {id}");
+                return new ServerErrorResponse("An error occurred while retrieving the cart item.");
+            }
+        }
+
         public async Task<IResponse> UpdateCartItemAsync(int id, UpdateCartItemRequest dto)
         {
             try
             {
                 var result = await _cartItemRepository.UpdateAsync(id, entity =>
                 {
-                    entity.ProductId = dto.ProductId;
-                    entity.CartId = dto.CartId;
                     entity.Quantity = dto.Quantity;
                 });
 
