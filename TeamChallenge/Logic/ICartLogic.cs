@@ -6,9 +6,9 @@ namespace TeamChallenge.Logic
 {
     public interface ICartLogic
     {
-        Task<IResponse> GetByIdCartAsync(int id);
+        Task<IResponse> GetCartByIdAsync(int id);
         Task<IResponse> CreateCartAsync(CreateCartRequest dto);
         Task<IResponse> DeleteCartAsync(int id);
-        Task<IResponse> GetByUserIdCartAsync(string UserId);
+        Task<IResponse> GetCartByUserIdAsync(string UserId);
     }
 }

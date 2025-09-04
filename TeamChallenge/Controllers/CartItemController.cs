@@ -22,6 +22,7 @@ namespace TeamChallenge.Controllers
         {
             var result = await _cartItemLogic.GetCartItemAsync(id);
 
+            // This is old method to send responses, in master branch it handled by actionFilter so you only need to return result
             return new ObjectResult(result)
             {
                 StatusCode = result.StatusCode

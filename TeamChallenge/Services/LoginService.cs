@@ -139,26 +139,26 @@ namespace TeamChallenge.Services
                 var user = new UserEntity { UserName = request.Username, Email = request.Email, SentEmailTime = DateTime.Now };
                 var result = await _userManager.CreateAsync(user, request.Password);
 
-                if (result.Succeeded)
+                if (!result.Succeeded)
                 {
-                    _logger.LogInformation("User {username} created a new account with password.", request.Username);
-                    await _userManager.AddToRoleAsync(user, "Member");
-                    var roles = await _userManager.GetRolesAsync(user);
-                    (bool isSucssess, IResponse value) = await CreateCart(request, user);
-                    if (!isSucssess)
-                    {
-                        return value;
-                    }
-
-                    await SendConfirmLetter(request.Email, request.ClientUrl, user);
-                    user.SentEmailTime = DateTime.UtcNow;
-
-                    return new OkResponse("User registered successfully.Please check your email to confirm your account.");
+                    await _userManager.DeleteAsync(user);
+                    _logger.LogWarning("User creation failed for {username}. Errors: {errors}", request.Username, string.Join(", ", result.Errors.Select(e => e.Description)));
+                    return new BadRequestResponse(string.Join("\n", result.Errors.Select(x => x.Description)));
                 }
 
-                await _userManager.DeleteAsync(user);
-                _logger.LogWarning("User creation failed for {username}. Errors: {errors}", request.Username, string.Join(", ", result.Errors.Select(e => e.Description)));
-                return new BadRequestResponse(string.Join("\n", result.Errors.Select(x => x.Description)));
+                _logger.LogInformation("User {username} created a new account with password.", request.Username);
+                await _userManager.AddToRoleAsync(user, "Member");
+                var roles = await _userManager.GetRolesAsync(user);
+                (bool isSucssess, IResponse value) = await CreateCart(request, user);
+                if (!isSucssess)
+                {
+                    return value;
+                }
+
+                await SendConfirmLetter(request.Email, request.ClientUrl, user);
+                user.SentEmailTime = DateTime.UtcNow;
+
+                return new OkResponse("User registered successfully.Please check your email to confirm your account.");
             }
             catch (Exception ex)
             {
@@ -168,6 +168,7 @@ namespace TeamChallenge.Services
             }
         }
 
+        // Why do you return tuple? IResponse already have isSuccess field.
         private async Task<(bool isSucssess, IResponse result)> CreateCart(SignUpRequest request, UserEntity user)
         {
             if (request.CartItems != null)
@@ -178,7 +179,7 @@ namespace TeamChallenge.Services
                     CartItems = request.CartItems
                 });
 
-                var tempCart = (GetСartResponse)await _cartLogic.GetByUserIdCartAsync(user.Id);
+                var tempCart = (GetСartResponse)await _cartLogic.GetCartByUserIdAsync(user.Id);
                 if (tempCart == null)
                 {
                     _logger.LogWarning("Cart creation failed for user: {username}, ID: {id}", request.Username, user.Id);
@@ -196,6 +197,8 @@ namespace TeamChallenge.Services
                         CartId = tempCart.Data.Id
                     });
                 }
+
+                //It's better to use cart item repository directly here instead of going through cart logic again.
                 await _cartItemLogic.CreateCartItemAsync(temoDto);
             }
             else

@@ -37,6 +37,7 @@ namespace TeamChallenge.Logic
             }
         }
 
+        // how user can add multiple items to cart at once?
         public async Task<IResponse> CreateCartItemAsync(List<CreateCartItemRequest> list)
         {
             try
