@@ -26,6 +26,7 @@ builder.Services.AddScoped<RepositoryFactory>();
 builder.Services.AddScoped<ICategoryLogic, CategoryLogic>();
 builder.Services.AddScoped<IProductLogic, ProductLogic>();
 builder.Services.AddScoped<IReviewLogic, ReviewLogic>();
+builder.Services.AddScoped<ISubCategoryLogic, SubCategoryLogic>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
 builder.Services.AddSingleton<IEmailSend, EmailSenderService>();
 builder.Services.AddScoped<ILogin, LoginService>();

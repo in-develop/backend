@@ -58,7 +58,7 @@ namespace TeamChallenge.Logic
                     entity.Name = requestData.Name;
                     entity.Description = requestData.Description;
                     entity.Price = requestData.Price;
-                    entity.CategoryId = requestData.CategoryId;
+                    //entity.CategoryId = requestData.CategoryId;
                 });
 
                 return new OkResponse();
@@ -78,7 +78,7 @@ namespace TeamChallenge.Logic
                     entity.Name = requestData.Name;
                     entity.Description = requestData.Description;
                     entity.Price = requestData.Price;
-                    entity.CategoryId = requestData.CategoryId;
+                    //entity.CategoryId = requestData.CategoryId;
                 });
 
                 if (!result)

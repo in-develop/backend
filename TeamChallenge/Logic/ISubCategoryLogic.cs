@@ -1,4 +1,4 @@
-﻿using TeamChallenge.Models.Requests.Category;
+﻿using TeamChallenge.Models.Requests.SubCategory;
 using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Logic
@@ -7,8 +7,8 @@ namespace TeamChallenge.Logic
     {
         Task<IResponse> GetAllSubCategoriesAsync();
         Task<IResponse> GetSubCategoryByIdAsync(int id);
-        Task<IResponse> CreateSubCategoryByAsync(CreateCategoryRequest dto);
-        Task<IResponse> UpdateSubCategoryByAsync(int id, UpdateCategoryRequest dto);
+        Task<IResponse> CreateSubCategoryByAsync(CreateSubCategoryRequest dto);
+        Task<IResponse> UpdateSubCategoryByAsync(int id, UpdateSubCategoryRequest dto);
         Task<IResponse> DeleteSubCategoryByAsync(int id);
     }
 }

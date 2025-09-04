@@ -1,8 +1,11 @@
-﻿namespace TeamChallenge.Models.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TeamChallenge.Models.Entities
 {
     public class CategoryEntity : BaseEntity
     {
-        public required string Name { get; set; }
+        [Required]
+        public string Name { get; set; }
         public ICollection<SubCategoryEntity> SubCategories { get; set; } = new List<SubCategoryEntity>();
     }
 }

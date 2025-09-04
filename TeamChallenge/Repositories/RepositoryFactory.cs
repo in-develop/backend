@@ -11,7 +11,8 @@ namespace TeamChallenge.Repositories
         {
             { typeof(ProductEntity), typeof(ProductRepository) },
             { typeof(CategoryEntity), typeof(CategoryRepository) },
-            { typeof(ReviewEntity), typeof(ReviewRepository) }
+            { typeof(ReviewEntity), typeof(ReviewRepository) },
+            { typeof(SubCategoryEntity), typeof(SubCategoryRepository) },
         };
 
         public RepositoryFactory(CosmeticStoreDbContext context, ILoggerFactory loggerFactory)

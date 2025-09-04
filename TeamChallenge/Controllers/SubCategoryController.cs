@@ -1,0 +1,49 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using TeamChallenge.Logic;
+using TeamChallenge.Models.Requests.SubCategory;
+using TeamChallenge.Models.Responses;
+
+namespace TeamChallenge.Controllers
+{
+    [ApiController]
+    [Route("api/subcategories")]
+    public class SubCategoryController : ControllerBase
+    {
+        private readonly ISubCategoryLogic _subCategoryLogic;
+
+        public SubCategoryController(ISubCategoryLogic subCategoryLogic)
+        {
+            _subCategoryLogic = subCategoryLogic;
+        }
+
+        [HttpGet]
+        public async Task<IResponse> GetAll()
+        {
+            return await _subCategoryLogic.GetAllSubCategoriesAsync();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IResponse> GetById([FromRoute]int id)
+        {
+            return await _subCategoryLogic.GetSubCategoryByIdAsync(id);
+        }
+
+        [HttpPost("create")]
+        public async Task<IResponse> Create([FromBody] CreateSubCategoryRequest requestData)
+        {
+            return await _subCategoryLogic.CreateSubCategoryByAsync(requestData);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IResponse> Update([FromRoute]int id, [FromBody] UpdateSubCategoryRequest requestData)
+        {
+            return await _subCategoryLogic.UpdateSubCategoryByAsync(id, requestData);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IResponse> Delete([FromRoute]int id)
+        {
+            return await _subCategoryLogic.DeleteSubCategoryByAsync(id);
+        }
+    }
+}

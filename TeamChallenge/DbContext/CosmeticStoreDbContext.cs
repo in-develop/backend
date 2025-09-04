@@ -14,22 +14,36 @@ namespace TeamChallenge.DbContext
             }
         }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            builder.Entity<SubCategoryEntity>()
+            // Setting up relationship one-to-many between CategoryEntity and SubCategoryEntity
+            modelBuilder.Entity<SubCategoryEntity>()
                 .HasOne(sc => sc.Category)
                 .WithMany(c => c.SubCategories)
-                .HasForeignKey(c => c.CategoryId)
+                .HasForeignKey(sc => sc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<ProductEntity>()
-                .HasMany(p => p.SubCategories)
-                .WithMany(sc => sc.Products)
-                .UsingEntity(j => j.ToTable("ProductSubCategories"));
+            // Setting up relationship
+            modelBuilder.Entity<ProductSubCategoryEntity>()
+                .HasKey(psc => new { psc.ProductId, psc.SubCategoryId });
 
-            base.OnModelCreating(builder);
+            modelBuilder.Entity<ProductSubCategoryEntity>()
+                .HasOne(psc => psc.Product)
+                .WithMany(p => p.ProductSubCategories)
+                .HasForeignKey(psc => psc.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<CategoryEntity>()
+            modelBuilder.Entity<ProductSubCategoryEntity>()
+                .HasOne(psc => psc.SubCategory)
+                .WithMany(sc => sc.ProductSubCategories)
+                .HasForeignKey(psc => psc.SubCategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<CategoryEntity>()
                 .HasData(new CategoryEntity
                 {
                     Id = 1,
@@ -41,12 +55,11 @@ namespace TeamChallenge.DbContext
                     Name = "Category 2"
                 });
 
-            builder.Entity<ProductEntity>()
+            modelBuilder.Entity<ProductEntity>()
                 .HasData(new ProductEntity
                 {
                     Id = 1,
                     Name = "Prod 1",
-                    SubCategoryId = 1,
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 1",
@@ -55,7 +68,6 @@ namespace TeamChallenge.DbContext
                 {
                     Id = 2,
                     Name = "Prod 2",
-                    SubCategoryId = 2,
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 2",
@@ -64,7 +76,6 @@ namespace TeamChallenge.DbContext
                 {
                     Id = 3,
                     Name = "Prod 3",
-                    SubCategoryId = 1,
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 3",
