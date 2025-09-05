@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamChallenge.Models.Entities
 {
-    public class ProductEntity : BaseEntity
+    public class ProductBundleEntity : BaseEntity
     {
         [Required]
         public string Name { get; set; }
@@ -15,14 +15,7 @@ namespace TeamChallenge.Models.Entities
         [Column(TypeName = "decimal(10, 2)")]
         public decimal? DiscountPrice { get; set; }
         public int StockQuantity { get; set; }
+        public ICollection<ProductEntity> Products { get; set; }
 
-        [ForeignKey("Category"), Required]
-        public int CategoryId { get; set; }
-        public CategoryEntity Category { get; set; }
-
-        [ForeignKey("ProductBundle")]
-        public int? ProductBundleId { get; set; }
-        public ProductBundleEntity ProductBundle { get; set; }
-        public ICollection<ReviewEntity> Reviews { get; set; }
     }
 }

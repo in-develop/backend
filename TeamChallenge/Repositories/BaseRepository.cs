@@ -46,22 +46,31 @@ namespace TeamChallenge.Repositories
 
         protected virtual async Task<T?> DoGetByIdAsync(int id)
         {
-            return await _dbSet.FindAsync(id);
+            var result = await _dbSet.FindAsync(id);
+
+            if(result == null)
+            {
+                _logger.LogWarning("Entity of type {0} with ID = {1} not found.", typeof(T).Name, id);
+            }
+
+            return result;
         }
 
-        public async Task CreateAsync(Action<T> entityFieldSetter)
+        public async Task<T> CreateAsync(Action<T> entityFieldSetter)
         {
             _logger.LogInformation("Creating a new record of type {0}", typeof(T).Name);
-            await DoCreateAsync(entityFieldSetter);
+            return await DoCreateAsync(entityFieldSetter);
         }
 
-        protected virtual async Task DoCreateAsync(Action<T> entityFieldSetter)
+        protected virtual async Task<T> DoCreateAsync(Action<T> entityFieldSetter)
         {
-            var entity = Activator.CreateInstance<T>();
-            entityFieldSetter(entity);
+            var newEntity = Activator.CreateInstance<T>();
+            entityFieldSetter(newEntity);
 
-            await _dbSet.AddAsync(entity);
+            await _dbSet.AddAsync(newEntity);
             await SaveChangesAsync();
+
+            return newEntity;
         }
 
         public async Task<bool> UpdateAsync(int id, Action<T> entityFieldSetter)
@@ -75,10 +84,37 @@ namespace TeamChallenge.Repositories
             var entity = await _dbSet.FindAsync(id);
             if (entity == null)
             {
+                _logger.LogWarning("Entity of type {0} with ID = {1} not found for update.", typeof(T).Name, id);
                 return false;
             }
 
             entityFieldSetter(entity);
+            await SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> UpdateManyAsync(List<int> idList, Action<T> entityFieldSetter)
+        {
+            _logger.LogInformation("Updating multiple records of type {0} with ID's = {1}", typeof(T).Name, string.Join(",", idList));
+            return await DoUpdateAsync(idList, entityFieldSetter);
+        }
+
+        protected virtual async Task<bool> DoUpdateAsync(List<int> idList, Action<T> entityFieldSetter)
+        {
+            var entities = await _dbSet.Where(x => idList.Contains(x.Id))
+                .ToDictionaryAsync(x => x.Id, x => x);
+
+            foreach (var id in idList)
+            {
+                if (!entities.TryGetValue(id, out var entity))
+                {
+                    _logger.LogWarning("Entity of type {0} with ID = {1} not found for update.", typeof(T).Name, id);
+                    return false;
+                }
+                entityFieldSetter(entity);
+            }
+
             await SaveChangesAsync();
 
             return true;
@@ -97,6 +133,7 @@ namespace TeamChallenge.Repositories
 
             if (entity == null)
             {
+                _logger.LogWarning("Entity of type {0} with ID = {1} not found.", typeof(T).Name, id);
                 return false;
             }
 

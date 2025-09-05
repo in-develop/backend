@@ -30,6 +30,15 @@ namespace TeamChallenge.DbContext
                     Name = "Category 2"
                 });
 
+            builder.Entity<ProductBundleEntity>()
+                .HasData(new ProductBundleEntity
+                {
+                    Id = 1,
+                    Name = "Prod bundle 1",
+                    StockQuantity = 10,
+                    Price = 90.99m,
+                    Description = "Description for product bundle 1",
+                });
             builder.Entity<ProductEntity>()
                 .HasData(new ProductEntity
                 {
@@ -38,6 +47,7 @@ namespace TeamChallenge.DbContext
                     CategoryId = 1,
                     StockQuantity = 100,
                     Price = 10.99m,
+                    ProductBundleId = 1,
                     Description = "Description for product 1",
                 },
                 new ProductEntity
@@ -47,6 +57,7 @@ namespace TeamChallenge.DbContext
                     CategoryId = 2,
                     StockQuantity = 100,
                     Price = 10.99m,
+                    ProductBundleId = 1,
                     Description = "Description for product 2",
                 },
                 new ProductEntity
@@ -68,5 +79,6 @@ namespace TeamChallenge.DbContext
         public DbSet<CartItemEntity> Cartitems { get; set; }
         public DbSet<UserEntity> Users {  get; set; }
         public DbSet<ReviewEntity> Reviews {  get; set; }
+        public DbSet<ProductBundleEntity> ProductBundles {  get; set; }
     }
 }

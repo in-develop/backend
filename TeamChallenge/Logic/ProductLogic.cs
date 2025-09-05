@@ -37,7 +37,6 @@ namespace TeamChallenge.Logic
 
                 if (result == null)
                 {
-                    _logger.LogWarning("Product with Id = {id} not found.", id);
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
@@ -58,6 +57,8 @@ namespace TeamChallenge.Logic
                     entity.Name = requestData.Name;
                     entity.Description = requestData.Description;
                     entity.Price = requestData.Price;
+                    entity.StockQuantity = requestData.StockQuantity;
+                    entity.DiscountPrice = requestData.DiscountPrice;
                     entity.CategoryId = requestData.CategoryId;
                 });
 
@@ -78,12 +79,13 @@ namespace TeamChallenge.Logic
                     entity.Name = requestData.Name;
                     entity.Description = requestData.Description;
                     entity.Price = requestData.Price;
+                    entity.StockQuantity = requestData.StockQuantity;
+                    entity.DiscountPrice = requestData.DiscountPrice;
                     entity.CategoryId = requestData.CategoryId;
                 });
 
                 if (!result)
                 {
-                    _logger.LogWarning("Product with Id = {id} not found for update.", id);
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
@@ -102,7 +104,6 @@ namespace TeamChallenge.Logic
                 var result = await _productRepository.DeleteAsync(id);
                 if (!result)
                 {
-                    _logger.LogWarning("Product with Id = {id} not found for deletion.", id);
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
