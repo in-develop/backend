@@ -24,6 +24,7 @@ namespace TeamChallenge.Logic
             _userManager = userManager;
         }
 
+        // Cart Items from CreateCartRequest does not used
         public async Task<IResponse> CreateCartAsync(CreateCartRequest dto)
         {
             try
@@ -43,6 +44,10 @@ namespace TeamChallenge.Logic
                         entity.UserId = dto.UserId;
                     });
                 }
+                else
+                {
+                    _logger.LogInformation("Cart already exists for User ID: {UserId}", dto.UserId);
+                }
 
                 return new OkResponse();
             }
@@ -60,6 +65,7 @@ namespace TeamChallenge.Logic
                 var result = await _cartRepository.DeleteAsync(id);
                 if (!result)
                 {
+                    // repository will return false only if cart with given id does not found, so write to log that Cart with specific ID not found
                     _logger.LogError($"Error delete cart. ID: {id}");
                     return new NotFoundResponse($"An error occurred while deleting the cart. ID: {id}");
                 }
@@ -73,7 +79,7 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> GetByIdCartAsync(int id)
+        public async Task<IResponse> GetCartByIdAsync(int id)
         {
             try
             {
@@ -94,7 +100,7 @@ namespace TeamChallenge.Logic
                 return new ServerErrorResponse($"An error occurred while finging the cart id = {id}");
             }
         }
-        public async Task<IResponse> GetByUserIdCartAsync(string UserId)
+        public async Task<IResponse> GetCartByUserIdAsync(string UserId)
         {
             try
             {
