@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TeamChallenge.DbContext;
 
@@ -11,9 +12,11 @@ using TeamChallenge.DbContext;
 namespace TeamChallenge.Migrations
 {
     [DbContext(typeof(CosmeticStoreDbContext))]
-    partial class CosmeticStoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250905205722_AddSeedAdminUser")]
+    partial class AddSeedAdminUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,13 +183,6 @@ namespace TeamChallenge.Migrations
                         .IsUnique();
 
                     b.ToTable("Carts");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
-                        });
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.CartItemEntity", b =>
@@ -437,32 +433,6 @@ namespace TeamChallenge.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Comment = "Great product!",
-                            ProductId = 1,
-                            Rating = 5,
-                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Comment = "Good value for money.",
-                            ProductId = 1,
-                            Rating = 4,
-                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Comment = "Average quality.",
-                            ProductId = 2,
-                            Rating = 3,
-                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
-                        });
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.UserEntity", b =>

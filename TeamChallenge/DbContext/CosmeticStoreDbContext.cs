@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TeamChallenge.Models.Entities;
 
@@ -17,6 +18,37 @@ namespace TeamChallenge.DbContext
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            SetSeedData(builder);
+
+        }   
+
+        private void SetSeedData(ModelBuilder builder)
+        {
+            builder.Entity<UserEntity>()
+                .HasData(new UserEntity()
+                {
+                    // username: admin; password : admin
+                    Id = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e",
+                    UserName = "admin",
+                    NormalizedUserName = "ADMIN",
+                    Email = "admin@gmail.com",
+                    NormalizedEmail = "ADMIN@GMAIL.COM",
+                    PasswordHash = "AQAAAAIAAYagAAAAEGX+x7oprDHdtrcw9g2r0B/J6Ae4IiS7/2HhEt4k6Zx7q3KtOmCXrvFrDxMlY8ox3A==",
+                    EmailConfirmed = true,
+                    SecurityStamp = "V4WTZVKR2NZW2BOK4YAEARQOCJHSV4SK",
+                    ConcurrencyStamp = "cdca885a-43f5-4929-85c5-9b41dd697b37",
+                    TwoFactorEnabled = false,
+                    LockoutEnabled = true,
+                    AccessFailedCount = 0,
+                    SentEmailTime = DateTime.Parse("9/5/2025 11:43:34 PM")
+                });
+
+            builder.Entity<IdentityUserRole<string>>()
+                .HasData(new IdentityUserRole<string>()
+                {
+                    RoleId = "d4a7c4fb-a129-47ff-b520-df1e8799d609",
+                    UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
+                });
 
             builder.Entity<CategoryEntity>()
                 .HasData(new CategoryEntity
@@ -39,6 +71,7 @@ namespace TeamChallenge.DbContext
                     Price = 90.99m,
                     Description = "Description for product bundle 1",
                 });
+
             builder.Entity<ProductEntity>()
                 .HasData(new ProductEntity
                 {
@@ -69,7 +102,40 @@ namespace TeamChallenge.DbContext
                     Price = 10.99m,
                     Description = "Description for product 3",
                 });
-        }   
+
+            builder.Entity<ReviewEntity>()
+                .HasData(new ReviewEntity
+                {
+                    Id = 1,
+                    ProductId = 1,
+                    UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e",
+                    Rating = 5,
+                    Comment = "Great product!"
+                },
+                new ReviewEntity
+                {
+                    Id = 2,
+                    ProductId = 1,
+                    UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e",
+                    Rating = 4,
+                    Comment = "Good value for money."
+                },
+                new ReviewEntity
+                {
+                    Id = 3,
+                    ProductId = 2,
+                    UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e",
+                    Rating = 3,
+                    Comment = "Average quality."
+                });
+
+            builder.Entity<CartEntity>()
+                .HasData(new CartEntity
+                {
+                    Id = 1,
+                    UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
+                });
+        }
 
         public DbSet<CategoryEntity> Categories { get; set; }
         public DbSet<ProductEntity> Products { get; set; }
