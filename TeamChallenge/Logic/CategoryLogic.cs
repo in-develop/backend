@@ -1,8 +1,9 @@
 ﻿using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Requests.Category;
-using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Models.Responses;
 using TeamChallenge.Models.Models.Responses.SubCategoryResponse;
+using TeamChallenge.Models.Requests.Category;
+using TeamChallenge.Models.Responses;
+using TeamChallenge.Models.Responses.CategoryResponses;
 using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Logic
@@ -71,6 +72,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while creating a category.");
                 return new ServerErrorResponse(ex.Message);
             }
         }
@@ -80,27 +82,44 @@ namespace TeamChallenge.Logic
             try
             {
 
-                await _categoryRepository.CreateAsync(entity =>
+                var newCategory = new CategoryEntity
                 {
-                    entity.Name = requestData.Name;
-                });
+                    Name = requestData.Name,
+                    SubCategories = new List<SubCategoryEntity>()
+                };
 
-                //if (requestData.SubCategories.Any())
-                //{
-                //    foreach (var subCategoryId in requestData.SubCategories)
-                //    {
-                //        var subCategory = await _subCategoryRepository.GetByIdAsync(subCategoryId);
-                //        if (subCategory != null)
-                //        {
-                //            await _subCategoryRepository.UpdateAsync(subCategory.Id, entity =>
-                //            {
-                //                entity.CategoryId = subCategoryId;
-                //            });
-                //        }
-                //    }
-                //}
+                if (requestData.SubCategoryIds != null && requestData.SubCategoryIds.Any())
+                {
+                    foreach (var subId in requestData.SubCategoryIds)
+                    {
+                        var subCategory = await _subCategoryRepository.GetByIdAsync(subId);
+                        if (subCategory != null)
+                        {
+                            newCategory.SubCategories.Add(subCategory);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("SubCategory with Id = {subId} not found while creating category. Skipping.", subId);
+                            return new BadRequestResponse($"SubCategory with Id={subId} not found.");
+                        }
+                    }
+                }
 
-                return new OkResponse();
+                await _categoryRepository.AddAsync(newCategory);
+                await _categoryRepository.SaveChangesAsync();
+
+                var categoryDto = new CategoryResponse
+                {
+                    Id = newCategory.Id,
+                    Name = newCategory.Name,
+                    SubCategories = newCategory.SubCategories.Select(sc => new SubCategoryResponse
+                    {
+                        Id = sc.Id,
+                        Name = sc.Name
+                    }).ToList()
+                };
+
+                return new CreateCategoryResponse(categoryDto);
             }
             catch (Exception ex)
             {

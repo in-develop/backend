@@ -2,6 +2,7 @@
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests.Category;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.Models.Responses.CategoryResponses;
 
 namespace TeamChallenge.Controllers
 {
@@ -29,6 +30,8 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost("create")]
+        [ProducesResponseType(typeof(CreateCategoryResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(BadRequestResponse), StatusCodes.Status400BadRequest)]
         public async Task<IResponse> Create([FromBody] CreateCategoryRequest requestData)
         {
             return await _categoryLogic.CreateCategoryAsync(requestData);
