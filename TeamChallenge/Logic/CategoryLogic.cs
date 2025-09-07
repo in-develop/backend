@@ -123,6 +123,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating category with Name = {name}", requestData.Name);
                 return new ServerErrorResponse(ex.Message);
             }
         }

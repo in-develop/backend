@@ -19,7 +19,7 @@ namespace TeamChallenge.Controllers
         [HttpGet]
         public async Task<IResponse> GetAll()
         {
-            return await _subCategoryLogic.GetAllSubCategoriesAsync();
+            return await _subCategoryLogic.GetAllSubCategoryAsync();
         }
 
         [HttpGet("{id}")]

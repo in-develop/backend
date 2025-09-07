@@ -1,9 +1,8 @@
 ﻿namespace TeamChallenge.Models.Models.Responses.SubCategoryResponse
 {
-    public class SubCategoryResponse
+    public class ParentCategoryResponse
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public ParentCategoryResponse Category { get; set; }
     }
 }

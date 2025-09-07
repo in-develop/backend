@@ -5,7 +5,7 @@ namespace TeamChallenge.Logic
 {
     public interface ISubCategoryLogic
     {
-        Task<IResponse> GetAllSubCategoriesAsync();
+        Task<IResponse> GetAllSubCategoryAsync();
         Task<IResponse> GetSubCategoryByIdAsync(int id);
         Task<IResponse> CreateSubCategoryAsync(CreateSubCategoryRequest dto);
         Task<IResponse> UpdateSubCategoryAsync(int id, UpdateSubCategoryRequest dto);
