@@ -46,15 +46,22 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _subCategoryRepository.GetByIdAsync(id);
+                var subCategory = await _subCategoryRepository.GetByIdWithDetailsAsync(id);
 
-                if (result == null)
+                if (subCategory == null)
                 {
-                    _logger.LogWarning($"Sub Category with Id = {id} not found", id);
+                    _logger.LogWarning($"SubCategory with Id = {id} not found", id);
                     return new NotFoundResponse($"Sub Category with Id = {id} not found");
                 }
 
-                return new GetSubCategoryResponse(result);
+                var dto = new SubCategoryResponse
+                {
+                    Id = subCategory.Id,
+                    Name = subCategory.Name,
+                    Category = new ParentCategoryResponse { Id = subCategory.Category.Id, Name = subCategory.Category.Name }
+                };
+
+                return new GetSubCategoryResponse(dto);
             }
             catch (Exception ex)
             {
@@ -102,13 +109,46 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                //var result = await _subCategoryRepository.UpdateWithProductsAsync(id, dto.Name, dto.CategoryId, dto.ProductIds);
-                //if (!result)
-                //{
-                //    _logger.LogWarning("SubCategory with Id = {id} not found for update.", id);
-                //    return new NotFoundResponse($"SubCategory with Id={id} not found");
-                //}
-                return new OkResponse();
+                var subCategoryToUpdate = await _subCategoryRepository.GetByIdWithDetailsAsync(id);
+                if (subCategoryToUpdate == null) return new NotFoundResponse($"SubCategory with Id={id} not found.");
+
+                if (subCategoryToUpdate.CategoryId != requestData.CategoryId)
+                {
+                    var newParentCategory = await _categoryRepository.GetByIdAsync(requestData.CategoryId);
+                    if (newParentCategory != null)
+                        return new BadRequestResponse($"Category with Id={requestData.CategoryId} does not exist.");
+                }
+                subCategoryToUpdate.Name = requestData.Name;
+                subCategoryToUpdate.CategoryId = requestData.CategoryId;
+
+                var currentProductIds = subCategoryToUpdate.ProductSubCategories.Select(psc => psc.ProductId).ToList();
+                var requestedProductIds = requestData.ProductIds;
+
+                var idsToRemove = currentProductIds.Except(requestedProductIds).ToList();
+                var productLinksToRemove = subCategoryToUpdate.ProductSubCategories
+                    .Where(psc => idsToRemove.Contains(psc.ProductId)).ToList();
+
+                foreach (var link in productLinksToRemove)
+                {
+                    subCategoryToUpdate.ProductSubCategories.Remove(link);
+                }
+
+                var idsToAdd = requestedProductIds.Except(currentProductIds).ToList();
+                foreach (var productId in idsToAdd)
+                {
+                    // var product = await _productRepository.GetByIdAsync(productId);
+                    // if(product != null)
+                    // {
+                    subCategoryToUpdate.ProductSubCategories.Add(new ProductSubCategoryEntity
+                    {
+                        SubCategoryId = id,
+                        ProductId = productId
+                    });
+                    // }
+                }
+
+                await _subCategoryRepository.SaveChangesAsync();
+                return new OkResponse("SubCategory updated successfully.");
             }
             catch (Exception ex)
             {

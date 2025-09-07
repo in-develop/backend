@@ -1,10 +1,11 @@
 ﻿using TeamChallenge.Models.Entities;
+using TeamChallenge.Models.Models.Responses.SubCategoryResponse;
 
 namespace TeamChallenge.Models.Responses.SubCategoryResponses
 {
-    public class GetSubCategoryResponse : BaseDataResponse<SubCategoryEntity>
+    public class GetSubCategoryResponse : BaseDataResponse<SubCategoryResponse>
     {
-        public GetSubCategoryResponse(SubCategoryEntity data) : base(data)
+        public GetSubCategoryResponse(SubCategoryResponse data) : base(data)
         {
         }
     }
