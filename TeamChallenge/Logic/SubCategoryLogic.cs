@@ -53,7 +53,7 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> CreateSubCategoryByAsync(CreateSubCategoryRequest dto)
+        public async Task<IResponse> CreateSubCategoryAsync(CreateSubCategoryRequest dto)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> UpdateSubCategoryByAsync(int id, UpdateSubCategoryRequest dto)
+        public async Task<IResponse> UpdateSubCategoryAsync(int id, UpdateSubCategoryRequest dto)
         {
             try
             {
@@ -86,7 +86,7 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> DeleteSubCategoryByAsync(int id)
+        public async Task<IResponse> DeleteSubCategoryAsync(int id)
         {
             try
             {

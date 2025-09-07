@@ -16,14 +16,16 @@ namespace TeamChallenge.DbContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Setting up relationship one-to-many between CategoryEntity and SubCategoryEntity
-            modelBuilder.Entity<SubCategoryEntity>()
-                .HasOne(sc => sc.Category)
-                .WithMany(c => c.SubCategories)
-                .HasForeignKey(sc => sc.CategoryId)
+            // One-to-many relationship between Category-Subcategories
+            modelBuilder.Entity<CategoryEntity>()
+                .HasMany(c => c.SubCategories)
+                .WithOne(c => c.Category)
+                .HasForeignKey(c => c.CategoryId)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Setting up relationship
+
+            // Setting up relationship Many-to-Many between Products-SubCategories
             modelBuilder.Entity<ProductSubCategoryEntity>()
                 .HasKey(psc => new { psc.ProductId, psc.SubCategoryId });
 
@@ -43,16 +45,30 @@ namespace TeamChallenge.DbContext
 
             base.OnModelCreating(modelBuilder);
 
+
             modelBuilder.Entity<CategoryEntity>()
                 .HasData(new CategoryEntity
                 {
                     Id = 1,
-                    Name = "Category 1"
+                    Name = "For Face",
                 },
                 new CategoryEntity
                 {
                     Id = 2,
-                    Name = "Category 2"
+                    Name = "Category 2",
+                });
+
+            modelBuilder.Entity<SubCategoryEntity>()
+                .HasData(new SubCategoryEntity
+                {
+                    Id = 3,
+                    Name = "Facial Mask",
+                    CategoryId = 1,
+                },
+                new SubCategoryEntity {
+                    Id = 4,
+                    Name = "Facial Spray",
+                    CategoryId = 1,
                 });
 
             modelBuilder.Entity<ProductEntity>()
@@ -63,6 +79,7 @@ namespace TeamChallenge.DbContext
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 1",
+                    ProductSubCategories = [],
                 },
                 new ProductEntity
                 {
@@ -71,6 +88,7 @@ namespace TeamChallenge.DbContext
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 2",
+                    ProductSubCategories = [],
                 },
                 new ProductEntity
                 {
@@ -79,6 +97,7 @@ namespace TeamChallenge.DbContext
                     StockQuantity = 100,
                     Price = 10.99m,
                     Description = "Description for product 3",
+                    ProductSubCategories = [],
                 });
         }   
 
@@ -91,5 +110,6 @@ namespace TeamChallenge.DbContext
         public DbSet<UserEntity> Users {  get; set; }
         public DbSet<ReviewEntity> Reviews {  get; set; }
         public DbSet<SubCategoryEntity> SubCategories { get; set; }
+        public DbSet<ProductSubCategoryEntity> productSubCategoryEntities { get; set; }
     }
 }

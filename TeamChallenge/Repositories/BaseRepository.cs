@@ -55,13 +55,15 @@ namespace TeamChallenge.Repositories
             await DoCreateAsync(entityFieldSetter);
         }
 
-        protected virtual async Task DoCreateAsync(Action<T> entityFieldSetter)
+        protected virtual async Task<T> DoCreateAsync(Action<T> entityFieldSetter)
         {
             var entity = Activator.CreateInstance<T>();
             entityFieldSetter(entity);
 
             await _dbSet.AddAsync(entity);
             await SaveChangesAsync();
+            
+            return entity;
         }
 
         public async Task<bool> UpdateAsync(int id, Action<T> entityFieldSetter)

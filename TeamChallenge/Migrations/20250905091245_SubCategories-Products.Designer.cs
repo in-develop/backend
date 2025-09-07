@@ -12,8 +12,8 @@ using TeamChallenge.DbContext;
 namespace TeamChallenge.Migrations
 {
     [DbContext(typeof(CosmeticStoreDbContext))]
-    [Migration("20250815133728_refactorDb")]
-    partial class refactorDb
+    [Migration("20250905091245_SubCategories-Products")]
+    partial class SubCategoriesProducts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -296,9 +296,6 @@ namespace TeamChallenge.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -314,15 +311,12 @@ namespace TeamChallenge.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("Products");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            CategoryId = 1,
                             Description = "Description for product 1",
                             Name = "Prod 1",
                             Price = 10.99m,
@@ -331,7 +325,6 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 2,
-                            CategoryId = 2,
                             Description = "Description for product 2",
                             Name = "Prod 2",
                             Price = 10.99m,
@@ -340,12 +333,82 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 3,
-                            CategoryId = 1,
                             Description = "Description for product 3",
                             Name = "Prod 3",
                             Price = 10.99m,
                             StockQuantity = 100
                         });
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductSubCategoryEntity", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductId", "SubCategoryId");
+
+                    b.HasIndex("SubCategoryId");
+
+                    b.ToTable("productSubCategoryEntities");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ReviewEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.SubCategoryEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("SubCategories");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.UserEntity", b =>
@@ -392,6 +455,9 @@ namespace TeamChallenge.Migrations
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SentEmailTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -524,10 +590,48 @@ namespace TeamChallenge.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductEntity", b =>
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductSubCategoryEntity", b =>
+                {
+                    b.HasOne("TeamChallenge.Models.Entities.ProductEntity", "Product")
+                        .WithMany("ProductSubCategories")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeamChallenge.Models.Entities.SubCategoryEntity", "SubCategory")
+                        .WithMany("ProductSubCategories")
+                        .HasForeignKey("SubCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("SubCategory");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ReviewEntity", b =>
+                {
+                    b.HasOne("TeamChallenge.Models.Entities.ProductEntity", "Product")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeamChallenge.Models.Entities.UserEntity", "User")
+                        .WithMany("Reviews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.SubCategoryEntity", b =>
                 {
                     b.HasOne("TeamChallenge.Models.Entities.CategoryEntity", "Category")
-                        .WithMany("Products")
+                        .WithMany("SubCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -542,12 +646,24 @@ namespace TeamChallenge.Migrations
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.CategoryEntity", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.OrderEntity", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductEntity", b =>
+                {
+                    b.Navigation("ProductSubCategories");
+
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.SubCategoryEntity", b =>
+                {
+                    b.Navigation("ProductSubCategories");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.UserEntity", b =>
@@ -556,6 +672,8 @@ namespace TeamChallenge.Migrations
                         .IsRequired();
 
                     b.Navigation("Orders");
+
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

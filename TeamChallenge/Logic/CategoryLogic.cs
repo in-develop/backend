@@ -2,6 +2,7 @@
 using TeamChallenge.Models.Requests.Category;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.CategoryResponses;
+using TeamChallenge.Models.Responses.SubCategoryResponses;
 using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Logic
@@ -10,9 +11,11 @@ namespace TeamChallenge.Logic
     {
         private readonly ICategoryRepository _categoryRepository;
         private readonly ILogger<CategoryLogic> _logger;
+        private readonly ISubCategoryRepository _subCategoryRepository;
         public CategoryLogic(RepositoryFactory factory, ILogger<CategoryLogic> logger)
         {
             _categoryRepository = (ICategoryRepository)factory.GetRepository<CategoryEntity>();
+            _subCategoryRepository = (ISubCategoryRepository)factory.GetRepository<SubCategoryEntity>();
             _logger = logger;
         }
 
@@ -20,9 +23,21 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _categoryRepository.GetAllAsync();
+                var categories = await _categoryRepository.GetAllAsync();
 
-                return new GetAllCategoriesResponse(result);
+                var response = categories.Select(c => new CategoryResponse
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    SubCategories = c.SubCategories
+                    .Select(sc => new SubCategoryResponse
+                    {
+                        Id = sc.Id,
+                        Name = sc.Name
+                    }).ToList()
+                }).ToList();
+
+                return new GetAllCategoriesResponse(response);
             }
             catch (Exception ex)
             {
@@ -54,10 +69,26 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                await _categoryRepository.CreateAsync(entity => 
+
+                await _categoryRepository.CreateAsync(entity =>
                 {
                     entity.Name = requestData.Name;
                 });
+
+                if (requestData.SubCategories.Any())
+                {
+                    foreach (var subCategoryId in requestData.SubCategories)
+                    {
+                        var subCategory = await _subCategoryRepository.GetByIdAsync(subCategoryId);
+                        if (subCategory != null)
+                        {
+                            await _subCategoryRepository.UpdateAsync(subCategory.Id, entity =>
+                            {
+                                entity.CategoryId = subCategoryId;
+                            });
+                        }
+                    }
+                }
 
                 return new OkResponse();
             }

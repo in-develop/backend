@@ -10,8 +10,10 @@ namespace TeamChallenge.Models.Requests
         public string? Description { get; set; }
         
         [Required]
+        [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
+
         [Required]
-        public required int CategoryId { get; set; }
+        public List<int> SubCategories { get; set; } = new List<int>();
     }
 }

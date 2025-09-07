@@ -4,7 +4,7 @@ using TeamChallenge.Models.Entities;
 
 namespace TeamChallenge.Repositories
 {
-    public class SubCategoryRepository : BaseRepository<SubCategoryEntity>, ISubCategoryRepository
+    public class SubCategoryRepository : BaseRepository<SubCategoryEntity>, ISubCategoryRepository 
     {
         private readonly CosmeticStoreDbContext _context;
         public SubCategoryRepository(CosmeticStoreDbContext context, ILogger<SubCategoryRepository> logger) : base(context, logger)
@@ -27,6 +27,7 @@ namespace TeamChallenge.Repositories
                 .Include(sc => sc.Category)
                 .Include(sc => sc.ProductSubCategories)
                 .ThenInclude(psc => psc.Product)
+                .AsNoTracking()
                 .ToListAsync();
         }
 

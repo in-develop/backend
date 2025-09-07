@@ -8,8 +8,7 @@ namespace TeamChallenge.Models.Entities
         [Required]
         public string Name { get; set; }
 
-        [ForeignKey("Category")]
-        [Required]
+        [Required, ForeignKey("Category")]
         public int CategoryId { get; set; }
         public CategoryEntity Category { get; set; }
         public ICollection<ProductSubCategoryEntity> ProductSubCategories { get; set; } = new List<ProductSubCategoryEntity>();

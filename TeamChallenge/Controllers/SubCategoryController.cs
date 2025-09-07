@@ -31,19 +31,19 @@ namespace TeamChallenge.Controllers
         [HttpPost("create")]
         public async Task<IResponse> Create([FromBody] CreateSubCategoryRequest requestData)
         {
-            return await _subCategoryLogic.CreateSubCategoryByAsync(requestData);
+            return await _subCategoryLogic.CreateSubCategoryAsync(requestData);
         }
 
         [HttpPut("{id}")]
         public async Task<IResponse> Update([FromRoute]int id, [FromBody] UpdateSubCategoryRequest requestData)
         {
-            return await _subCategoryLogic.UpdateSubCategoryByAsync(id, requestData);
+            return await _subCategoryLogic.UpdateSubCategoryAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
         public async Task<IResponse> Delete([FromRoute]int id)
         {
-            return await _subCategoryLogic.DeleteSubCategoryByAsync(id);
+            return await _subCategoryLogic.DeleteSubCategoryAsync(id);
         }
     }
 }

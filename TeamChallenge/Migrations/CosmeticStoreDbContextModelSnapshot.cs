@@ -221,7 +221,7 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Category 1"
+                            Name = "For Face"
                         },
                         new
                         {
@@ -352,7 +352,7 @@ namespace TeamChallenge.Migrations
 
                     b.HasIndex("SubCategoryId");
 
-                    b.ToTable("ProductSubCategoryEntity");
+                    b.ToTable("productSubCategoryEntities");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.ReviewEntity", b =>
@@ -406,6 +406,20 @@ namespace TeamChallenge.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("SubCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 3,
+                            CategoryId = 1,
+                            Name = "Facial Mask"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 1,
+                            Name = "Facial Spray"
+                        });
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.UserEntity", b =>

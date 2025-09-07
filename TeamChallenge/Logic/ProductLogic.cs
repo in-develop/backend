@@ -2,18 +2,22 @@
 using TeamChallenge.Repositories;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Requests;
+using SQLitePCL;
+using TeamChallenge.DbContext;
 
 namespace TeamChallenge.Logic
 {
     public class ProductLogic : IProductLogic
     {
         private readonly IProductRepository _productRepository;
+        private readonly CosmeticStoreDbContext _context;
         private readonly ILogger<ProductLogic> _logger;
 
-        public ProductLogic(RepositoryFactory factory, ILogger<ProductLogic> logger)
+        public ProductLogic(RepositoryFactory factory, ILogger<ProductLogic> logger, CosmeticStoreDbContext context)
         {
             _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
             _logger = logger;
+            _context = context;
         }
 
         public async Task<IResponse> GetAllProductsAsync()
@@ -53,21 +57,44 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                await _productRepository.CreateAsync(entity =>
+                if (requestData.SubCategories.Any())
                 {
-                    entity.Name = requestData.Name;
-                    entity.Description = requestData.Description;
-                    entity.Price = requestData.Price;
-                    //entity.CategoryId = requestData.CategoryId;
-                });
+                    var invalidSubCategoryIds = requestData.SubCategories.Where(scId => !_context.SubCategories.Any(sc => sc.Id == scId)).ToList();
+                    if (invalidSubCategoryIds.Any())
+                    {
+                        _logger.LogWarning("Invalid SubCategoryIds provided: {invalidIds}", string.Join(", ", invalidSubCategoryIds));
+                        return new ErrorResponse($"Invalid SubCategoryIds: {string.Join(", ", invalidSubCategoryIds)}");
+                    }
+                }
 
+                var productId = await _productRepository.CreateWithSubCategoriesAsync(requestData.Name, requestData.Description, requestData.Price, requestData.SubCategories);
+                _logger.LogInformation("Successfuly created product with Id = {id} and Name = {name}", productId, requestData);
                 return new OkResponse();
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating product with Name = {name}", requestData.Name);
                 return new ServerErrorResponse(ex.Message);
             }
         }
+        //{
+        //    try
+        //    {
+        //        await _productRepository.CreateAsync(entity =>
+        //        {
+        //            entity.Name = requestData.Name;
+        //            entity.Description = requestData.Description;
+        //            entity.Price = requestData.Price;
+        //            //entity.CategoryId = requestData.CategoryId;
+        //        });
+
+        //        return new OkResponse();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ServerErrorResponse(ex.Message);
+        //    }
+        //}
 
         public async Task<IResponse> UpdateProductAsync(int id, UpdateProductRequest requestData)
         {
