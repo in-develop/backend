@@ -65,7 +65,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ServerErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.InnerException?.Message ?? "Error occured while creating review.");
             }
         }
 
