@@ -18,6 +18,8 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(GetAllCategoriesResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ServerErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IResponse> GetAll()
         {
             return await _categoryLogic.GetAllCategoriesAsync();
@@ -26,6 +28,7 @@ namespace TeamChallenge.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(GetCategoryResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ServerErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IResponse> GetById([FromRoute]int id)
         {
             return await _categoryLogic.GetCategoryByIdAsync(id);
@@ -34,6 +37,7 @@ namespace TeamChallenge.Controllers
         [HttpPost("create")]
         [ProducesResponseType(typeof(CreateCategoryResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(BadRequestResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ServerErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IResponse> Create([FromBody] CreateCategoryRequest requestData)
         {
             return await _categoryLogic.CreateCategoryAsync(requestData);
@@ -42,13 +46,18 @@ namespace TeamChallenge.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(OkResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BadRequestResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ServerErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IResponse> Update([FromRoute]int id, [FromBody] UpdateCategoryRequest requestData)
         {
             return await _categoryLogic.UpdateCategoryAsync(id, requestData);
         }
 
+
         [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(OkResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ServerErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IResponse> Delete([FromRoute]int id)
         {
             return await _categoryLogic.DeleteCategoryAsync(id);

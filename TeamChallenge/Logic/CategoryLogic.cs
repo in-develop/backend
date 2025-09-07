@@ -196,10 +196,10 @@ namespace TeamChallenge.Logic
                 if (!result)
                 {
                     _logger.LogWarning("Category with Id = {id} not found for deletion.", id);
-                    return new ErrorResponse($"Category with Id={id} not found");
+                    return new NotFoundResponse($"Category with Id={id} not found");
                 }
 
-                return new OkResponse();
+                return new OkResponse($"Category with Id = {id} was deleted.");
             }
             catch (Exception ex)
             {
