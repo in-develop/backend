@@ -10,6 +10,7 @@ namespace TeamChallenge.Repositories
         private readonly Dictionary<Type, Type> _repositoryMapping = new Dictionary<Type, Type>
         {
             { typeof(ProductEntity), typeof(ProductRepository) },
+            { typeof(ProductBundleEntity), typeof(ProductBundleRepository) },
             { typeof(CategoryEntity), typeof(CategoryRepository) },
             { typeof(ReviewEntity), typeof(ReviewRepository) }
         };
@@ -24,15 +25,15 @@ namespace TeamChallenge.Repositories
         {
             if (_repositoryMapping.TryGetValue(typeof(T), out Type repositoryType))
             {
-                var createLoggerMethod = typeof(LoggerFactoryExtensions)
+                var logger = typeof(LoggerFactoryExtensions)
                     .GetMethod(nameof(LoggerFactoryExtensions.CreateLogger), [typeof(ILoggerFactory)])
-                    .MakeGenericMethod(repositoryType);
+                    .MakeGenericMethod(repositoryType)
+                    .Invoke(null, [_loggerFactory]);
 
                 return (IRepository<T>)Activator.CreateInstance(
                     repositoryType, 
                     _context,
-                    createLoggerMethod.Invoke(null, [_loggerFactory])
-                    );
+                    logger);
             }
             else
             {
