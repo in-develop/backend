@@ -6,27 +6,24 @@ namespace TeamChallenge.Repositories
 {
     public class CategoryRepository : BaseRepository<CategoryEntity>, ICategoryRepository
     {
-        private readonly CosmeticStoreDbContext _context;
         public CategoryRepository(CosmeticStoreDbContext context, ILogger<CategoryRepository> logger) : base(context, logger)
         {
-            _context = context;
         }
 
         protected override async Task<IEnumerable<CategoryEntity>> DoGetAllAsync()
         {
-            return await _context.Categories
+            return await _dbSet
                 .Include(c => c.SubCategories)
                 .AsNoTracking()
                 .ToListAsync();
         }
-
-        protected override async Task<CategoryEntity?> DoGetByIdAsync(int id)
+        
+        public async Task<CategoryEntity?> GetByIdWithSubCategoriesAsync(int id)
         {
-            return await _context.Categories
+            return await _dbSet
                 .Include(c => c.SubCategories)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
-
     }
 }

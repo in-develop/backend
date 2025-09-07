@@ -1,5 +1,4 @@
-﻿using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Models.Responses;
+﻿using TeamChallenge.Models.Models.Responses;
 
 namespace TeamChallenge.Models.Responses
 {

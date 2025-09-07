@@ -4,8 +4,9 @@ namespace TeamChallenge.Models.Requests.Category
 {
     public class CreateCategoryRequest
     {
-        [Required, StringLength(50, MinimumLength = 3)]
+        [Required(ErrorMessage = "Name is required.")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "Name must be between 3 and 100 characters.")]
         public string Name { get; set; }
-        public List<int> SubCategories { get; set; }
+        public List<int>? SubCategories { get; set; }
     }
 }

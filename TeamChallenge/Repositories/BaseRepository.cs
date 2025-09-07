@@ -7,7 +7,7 @@ namespace TeamChallenge.Repositories
     public class BaseRepository<T> : IRepository<T> where T : class, IEntity
     {
         private readonly CosmeticStoreDbContext _context;
-        private readonly DbSet<T> _dbSet;
+        protected readonly DbSet<T> _dbSet; // Changed to "private" to be available in another repos
         private readonly ILogger<IRepository<T>> _logger;
 
         public BaseRepository(CosmeticStoreDbContext context, ILogger<IRepository<T>> logger)
@@ -108,7 +108,13 @@ namespace TeamChallenge.Repositories
             return true;
         }
 
-        protected async Task SaveChangesAsync()
+        public async Task AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+            _logger.LogInformation("Entity of type {0} was added to the context.", typeof(T).Name);
+        }
+
+        public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
             _logger.LogInformation("Changes saved to the database.");
