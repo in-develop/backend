@@ -8,10 +8,6 @@ namespace TeamChallenge.Logic
     {
         private readonly SignInManager<UserEntity> _signInManager;
         private readonly UserManager<UserEntity> _userManager;
-        private readonly IGenerateToken _tokenService;
-        private readonly IEmailSend _emailSender;
-        private readonly ICartLogic _cartLogic;
-        private readonly ICartItemLogic _cartItemLogic;
         private readonly ILogger<LoginService> _logger;
 
         public UserLogic(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, ILogger<LoginService> logger)

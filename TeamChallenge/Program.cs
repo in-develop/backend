@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Serilog;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using TeamChallenge.BaseClass;
 using TeamChallenge.DbContext;
 using TeamChallenge.Filters;
 using TeamChallenge.Logic;
@@ -21,33 +24,7 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(optitons =>
-{
-    optitons.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter a valid token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = JwtBearerDefaults.AuthenticationScheme
-    });
-
-    optitons.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type=ReferenceType.SecurityScheme,
-                    Id=JwtBearerDefaults.AuthenticationScheme
-                }
-            },
-            []
-        }
-    });
-});
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 builder.Services.AddScoped<RepositoryFactory>();
@@ -60,6 +37,8 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<ICartLogic, CartLogic>();
 builder.Services.AddScoped<ICartItemLogic, CartItemLogic>();
 builder.Services.AddScoped<IUserLogic, UserLogic>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<ValidationFilter>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 
@@ -103,19 +82,19 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(
 
 builder.Services.AddAuthentication(x =>
 {
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
+    .AddCookie(cfg => cfg.SlidingExpiration = true)
     .AddGoogle(googleOptions =>
     {
-        var clientId = googleOptions.ClientId = config["Authentication:Google:ClientId"];
+        var clientId = googleOptions.ClientId = config["Authentication:Google:ClientId"]!;
         if (clientId == null)
         {
             throw new ArgumentNullException(nameof(clientId));
         }
 
-        var clientSecret = googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"];
+        var clientSecret = googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"]!;
         if (clientSecret == null)
         {
             throw new ArgumentNullException(nameof(clientSecret));
@@ -123,16 +102,22 @@ builder.Services.AddAuthentication(x =>
         googleOptions.ClientId = clientId;
         googleOptions.ClientSecret = clientSecret;
         googleOptions.CallbackPath = "/signin-google";
-        googleOptions.Events.OnCreatingTicket = ctx =>
+        googleOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        googleOptions.Events.OnTicketReceived = async ctx =>
         {
-            var identity = (ClaimsIdentity)ctx.Principal.Identity;
-            var profilePic = ctx.User.GetProperty("picture").GetString();
-            var email = ctx.User.GetProperty("email").GetString();
-            var name = ctx.User.GetProperty("name").GetString();
-            identity.AddClaim(new Claim("profilePic", profilePic));
-            identity.AddClaim(new Claim(ClaimTypes.Email, email));
-            identity.AddClaim(new Claim(ClaimTypes.Name, name));
-            return Task.CompletedTask;
+            var identity = (ClaimsIdentity)ctx.Principal!.Identity!;
+            var email = identity.FindFirst(ClaimTypes.Email);
+            var name = identity.FindFirst(ClaimTypes.Name)?.Value;
+            var userId = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Name, name ?? string.Empty),
+                //new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.NameIdentifier, userId ?? string.Empty),
+                // new Claim("CartId", cartId.ToString()) // Uncomment if you have cartId
+            };
+            identity.AddClaims(claims);
         };
 
     })
@@ -197,6 +182,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    BaseClass.ClientUrl = config["ClientUrl:Debug"]!;
 }
 
 app.UseSwagger();

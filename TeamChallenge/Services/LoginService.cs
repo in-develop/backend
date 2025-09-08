@@ -1,16 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
-using TeamChallenge.Logic;
+using TeamChallenge.Models.ClientUrlOption;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Login;
 using TeamChallenge.Models.Requests.Cart;
 using TeamChallenge.Models.Requests.CartItem;
 using TeamChallenge.Models.Requests.Login;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.CartResponses;
+using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Services
 {
@@ -18,21 +19,26 @@ namespace TeamChallenge.Services
     {
         private readonly SignInManager<UserEntity> _signInManager;
         private readonly UserManager<UserEntity> _userManager;
+        private readonly ClientUrlOptions _clientUrls;
+        private readonly IHostEnvironment _env;
         private readonly IGenerateToken _tokenService;
         private readonly IEmailSend _emailSender;
-        private readonly ICartLogic _cartLogic;
-        private readonly ICartItemLogic _cartItemLogic;
+        private readonly ICartRepository _cartRepository;
+        private readonly ICartItemRepository _cartItemRepository;
         private readonly ILogger<LoginService> _logger;
+        private string ClientUrl => _env.IsDevelopment() ? _clientUrls.Debug! : _clientUrls.Release!;
 
-        public LoginService(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IGenerateToken tokenService, IEmailSend emailSender, ILogger<LoginService> logger, ICartLogic cartLogic, ICartItemLogic cartItemLogic)
+        public LoginService(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IGenerateToken tokenService, IEmailSend emailSender, ILogger<LoginService> logger, ICartRepository cartRepository, ICartItemRepository cartItemRepository, IOptions<ClientUrlOptions> options, IHostEnvironment env)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _tokenService = tokenService;
             _emailSender = emailSender;
-            _cartLogic = cartLogic;
-            _cartItemLogic = cartItemLogic;
             _logger = logger;
+            _cartRepository = cartRepository;
+            _cartItemRepository = cartItemRepository;
+            _clientUrls = options.Value;
+            _env = env;
         }
 
         public async Task<IResponse> Login(TCLoginRequest request)
@@ -77,7 +83,13 @@ namespace TeamChallenge.Services
                 }
 
                 var roles = await _userManager.GetRolesAsync(user);
-                (string tokenString, DateTime Expires) = _tokenService.GenerateToken(user, roles, request.RememberMe);
+                var cart = await _cartRepository.GetCartByUserId(user.Id);
+                if (cart == null)
+                {
+                    _logger.LogWarning("Cart not found for user: {username}", request.UsernameOrEmail);
+                    return new ServerErrorResponse("Cart not found. Please try again later.");
+                }
+                string tokenString = _tokenService.GenerateToken(user, roles, request.RememberMe, cart.Id);
 
                 if (result.Succeeded)
                 {
@@ -85,7 +97,6 @@ namespace TeamChallenge.Services
                     return new LoginResponse(new LoginModel
                     {
                         TokenString = tokenString,
-                        Expires = Expires
                     });
                 }
 
@@ -149,13 +160,14 @@ namespace TeamChallenge.Services
                 _logger.LogInformation("User {username} created a new account with password.", request.Username);
                 await _userManager.AddToRoleAsync(user, "Member");
                 var roles = await _userManager.GetRolesAsync(user);
-                (bool isSucssess, IResponse value) = await CreateCart(request, user);
+                bool isSucssess = await CreateCart(request, user);
                 if (!isSucssess)
                 {
-                    return value;
+                    return new ServerErrorResponse("Cart creation failed. Please try again later.");
                 }
 
-                await SendConfirmLetter(request.Email, request.ClientUrl, user);
+                
+                await SendConfirmLetter(request.Email, ClientUrl!, user);
                 user.SentEmailTime = DateTime.UtcNow;
 
                 return new OkResponse("User registered successfully.Please check your email to confirm your account.");
@@ -168,25 +180,23 @@ namespace TeamChallenge.Services
             }
         }
 
-        // Why do you return tuple? IResponse already have isSuccess field.
-        private async Task<(bool isSucssess, IResponse result)> CreateCart(SignUpRequest request, UserEntity user)
+        private async Task<bool> CreateCart(SignUpRequest request, UserEntity user)
         {
             if (request.CartItems != null)
             {
-                await _cartLogic.CreateCartAsync(new CreateCartRequest
+                await _cartItemRepository.CreateAsync(x => new CreateCartRequest
                 {
                     UserId = user.Id,
                     CartItems = request.CartItems
                 });
 
-                var tempCart = (GetСartResponse)await _cartLogic.GetCartByUserIdAsync(user.Id);
+                var tempCart = await _cartRepository.GetCartByUserId(user.Id);
                 if (tempCart == null)
                 {
                     _logger.LogWarning("Cart creation failed for user: {username}, ID: {id}", request.Username, user.Id);
                     await _userManager.DeleteAsync(user);
-                    return (false, new ServerErrorResponse("Cart creation failed. Please try again later."));
+                    return false;
                 }
-
                 var temoDto = new List<CreateCartItemRequest>();
                 foreach (var cartItem in request.CartItems)
                 {
@@ -194,25 +204,27 @@ namespace TeamChallenge.Services
                     {
                         ProductId = cartItem.ProductId,
                         Quantity = cartItem.Quantity,
-                        CartId = tempCart.Data.Id
+                        CartId = tempCart.Id
                     });
                 }
 
-                //It's better to use cart item repository directly here instead of going through cart logic again.
-                await _cartItemLogic.CreateCartItemAsync(temoDto);
+                if (!await _cartItemRepository.CreateCartItemAsync(temoDto))
+                {
+                    return false;
+                }
             }
             else
             {
-                await _cartLogic.CreateCartAsync(new CreateCartRequest
+                await _cartItemRepository.CreateAsync(x => new CreateCartRequest
                 {
                     UserId = user.Id
                 });
             }
 
-            return (true, new OkResponse());
+            return true;
         }
 
-        public async Task<IResponse> ResendEmailConfirmation(string email, string clientUrl)
+        public async Task<IResponse> ResendEmailConfirmation(string email)
         {
             try
             {
@@ -243,7 +255,7 @@ namespace TeamChallenge.Services
                     return new BadRequestResponse($"Please wait {remainingTime.Seconds} seconds before trying to resend the email.");
                 }
 
-                await SendConfirmLetter(email, clientUrl, user);
+                await SendConfirmLetter(email, ClientUrl, user);
                 user.SentEmailTime = DateTime.UtcNow;
                 _logger.LogInformation("Resent confirmation email to: {email}", email);
                 return new OkResponse("A new confirmation email has been sent. Please check your inbox.");

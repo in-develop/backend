@@ -8,7 +8,7 @@ namespace TeamChallenge.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private HttpContext HttpContext => _httpContextAccessor.HttpContext;
+        private HttpContext HttpContext => _httpContextAccessor.HttpContext!;
         public GoogleOAuthService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
@@ -28,7 +28,7 @@ namespace TeamChallenge.Services
 
             var queryParams = new Dictionary<string, string>
             {
-                {"client_id",  _configuration["Authentication:Google:ClientId"]},
+                {"client_id",  _configuration["Authentication:Google:ClientId"]!},
                 {"redirect_uri", redirectUrl },
                 {"response_type", "code" },
                 {"scope", scope },
@@ -39,7 +39,7 @@ namespace TeamChallenge.Services
                 {"prompt", "consent"}
             };
 
-            var url = QueryHelpers.AddQueryString(oAuthEndpoint, queryParams);
+            var url = QueryHelpers.AddQueryString(oAuthEndpoint, queryParams!);
             return new DataResponse<string>(url);
         }
 
@@ -52,12 +52,12 @@ namespace TeamChallenge.Services
 
             var authParams = new Dictionary<string, string>
             {
-                {"client_id", _configuration["Authentication:Google:ClientId"] },
-                {"client_secret", _configuration["Authentication:Google:ClientSecret"] },
+                {"client_id", _configuration["Authentication:Google:ClientId"]! },
+                {"client_secret", _configuration["Authentication:Google:ClientSecret"]! },
                 {"code", code },
-                {"code_verifier", codeVerifier },
+                {"code_verifier", codeVerifier! },
                 {"grant_type", "authorization_code"},
-                {"redirect_uri", redirectUri }
+                {"redirect_uri", redirectUri! }
             };
             var tokenResult = await HttpClientHelper<OAuthGoogleResponse>.SendPostRequest(tokenEndpoint, authParams);
             var refreshToken = await RefreshToken(tokenResult.RefreshToken);
@@ -73,8 +73,8 @@ namespace TeamChallenge.Services
         {
             var refreshParams = new Dictionary<string, string>
             {
-                {"client_id", _configuration["Authentication:Google:ClientId"] },
-                {"client_secret", _configuration["Authentication:Google:ClientSecret"] },
+                {"client_id", _configuration["Authentication:Google:ClientId"]! },
+                {"client_secret", _configuration["Authentication:Google:ClientSecret"]! },
                 {"grant_type", "refresh_token"},
                 {"refresh_token", refreshToken }
             };
