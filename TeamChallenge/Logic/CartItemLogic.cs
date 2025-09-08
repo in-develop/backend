@@ -1,4 +1,6 @@
-﻿using TeamChallenge.Models.Entities;
+﻿using System.Security.Claims;
+using TeamChallenge.Helpers;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Requests.CartItem;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.CartItemResponses;
@@ -9,23 +11,35 @@ namespace TeamChallenge.Logic
     public class CartItemLogic : ICartItemLogic
     {
         private readonly ICartItemRepository _cartItemRepository;
+        private readonly ICartRepository _cartRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<CartItemLogic> _logger;
 
-        public CartItemLogic(RepositoryFactory factory, ILogger<CartItemLogic> logger)
+        private HttpContext HttpContext => _httpContextAccessor.HttpContext!;
+
+        public CartItemLogic(RepositoryFactory factory, ILogger<CartItemLogic> logger, IHttpContextAccessor httpContextAccessor, ICartRepository cartRepository)
         {
             _cartItemRepository = (ICartItemRepository)factory.GetRepository<CartItemEntity>();
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
+            _cartRepository = cartRepository;
         }
 
         public async Task<IResponse> CreateCartItemAsync(CreateCartItemRequest dto)
         {
             try
             {
+                int cartId = 0;
+                if (!CartHelper.GetCartId(out cartId, HttpContext, _cartRepository, _logger))
+                {
+                    return new UnauthorizedResponse("User claims are missing or invalid.");
+                }
+
                 await _cartItemRepository.CreateAsync(entity =>
                 {
                     entity.ProductId = dto.ProductId;
-                    entity.CartId = dto.CartId;
                     entity.Quantity = dto.Quantity;
+                    entity.CartId = cartId;
                 });
 
                 return new OkResponse();
@@ -37,13 +51,18 @@ namespace TeamChallenge.Logic
             }
         }
 
-        // how user can add multiple items to cart at once?
         public async Task<IResponse> CreateCartItemAsync(List<CreateCartItemRequest> list)
         {
             try
             {
+                int cartId = 0;
+                if (!CartHelper.GetCartId(out cartId, HttpContext, _cartRepository, _logger))
+                {
+                    return new UnauthorizedResponse("User claims are missing or invalid.");
+                }
+
                 _logger.LogInformation("Started addition items to cart");
-                var result = await _cartItemRepository.CreateCartItemAsync(list);
+                var result = await _cartItemRepository.CreateCartItemAsync(list, cartId);
                 if (result)
                 {
                     _logger.LogInformation("Addition completed");
@@ -100,10 +119,17 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> UpdateCartItemAsync(int id, UpdateCartItemRequest dto)
+        public async Task<IResponse> UpdateCartItemAsync(UpdateCartItemRequest dto)
         {
             try
             {
+                int cartId = 0;
+                if (!CartHelper.GetCartId(out cartId, HttpContext, _cartRepository, _logger))
+                {
+                    return new UnauthorizedResponse("User claims are missing or invalid.");
+                }
+
+                var id = _cartItemRepository.GetFilteredAsync(x => x.CartId == cartId && x.ProductId == dto.ProductId).Result.FirstOrDefault()!.Id;
                 var result = await _cartItemRepository.UpdateAsync(id, entity =>
                 {
                     entity.Quantity = dto.Quantity;
@@ -111,8 +137,8 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
-                    _logger.LogWarning("Cart item with Id = {id} not found for update.", id);
-                    return new NotFoundResponse($"Cart item with Id = {id} not found");
+                    _logger.LogWarning("Cart item with Id = {id} not found for update.", cartId);
+                    return new NotFoundResponse($"Cart item with Id = {cartId} not found");
                 }
 
                 return new OkResponse();

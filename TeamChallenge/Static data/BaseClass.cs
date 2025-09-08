@@ -1,4 +1,4 @@
-﻿namespace TeamChallenge.BaseClass
+﻿namespace TeamChallenge.StaticData
 {
     public static class BaseClass
     {

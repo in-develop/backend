@@ -8,5 +8,6 @@ namespace TeamChallenge.Repositories
         Task<bool> IsCartExist(string UserId);
 
         Task<CartEntity?> GetCartByUserId(string UserId);
+
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
-using TeamChallenge.Models.DTOs;
 using TeamChallenge.Models.Requests.CartItem;
 
 namespace TeamChallenge.Controllers
@@ -40,9 +39,9 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost("update")]
-        public async Task<IActionResult> UpdateCartItem([FromQuery] int id, [FromBody] UpdateCartItemRequest request)
+        public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemRequest request)
         {
-            var result = await _cartItemLogic.UpdateCartItemAsync(id, request);
+            var result = await _cartItemLogic.UpdateCartItemAsync(request);
             return new ObjectResult(result)
             {
                 StatusCode = result.StatusCode

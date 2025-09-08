@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using TeamChallenge.BaseClass;
+using TeamChallenge.StaticData;
 using TeamChallenge.DbContext;
 using TeamChallenge.Filters;
 using TeamChallenge.Logic;
@@ -69,7 +69,6 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(
     {
         opt.User.RequireUniqueEmail = true;
         opt.SignIn.RequireConfirmedEmail = true;
-        opt.SignIn.RequireConfirmedEmail = true;
         opt.Password.RequireNonAlphanumeric = false;
         opt.Password.RequireUppercase = false;
         opt.Password.RequiredLength = 1;
@@ -123,6 +122,9 @@ builder.Services.AddAuthentication(x =>
     })
     .AddJwtBearer(jwtOptions =>
         {
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+
             jwtOptions.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidIssuer = config["Jwt:Issuer"],

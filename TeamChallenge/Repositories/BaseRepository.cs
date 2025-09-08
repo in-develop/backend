@@ -8,7 +8,7 @@ namespace TeamChallenge.Repositories
     {
         private readonly CosmeticStoreDbContext _context;
         protected readonly DbSet<T> _dbSet;
-        private readonly ILogger<IRepository<T>> _logger;
+        protected readonly ILogger<IRepository<T>> _logger;
 
         public BaseRepository(CosmeticStoreDbContext context, ILogger<IRepository<T>> logger)
         {
