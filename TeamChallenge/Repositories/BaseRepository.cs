@@ -108,13 +108,7 @@ namespace TeamChallenge.Repositories
             return true;
         }
 
-        public async Task AddAsync(T entity)
-        {
-            await _dbSet.AddAsync(entity);
-            _logger.LogInformation("Entity of type {0} was added to the context.", typeof(T).Name);
-        }
-
-        public async Task SaveChangesAsync()
+        protected async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
             _logger.LogInformation("Changes saved to the database.");

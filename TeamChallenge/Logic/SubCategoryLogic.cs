@@ -80,21 +80,19 @@ namespace TeamChallenge.Logic
                     return new BadRequestResponse($"Category with Id={requestData.CategoryId} does not exist.");
                 }
 
-                var newSubCategory = new SubCategoryEntity
+                var result = await _subCategoryRepository.CreateAsync(entity =>
                 {
-                    Name = requestData.Name,
-                    CategoryId = requestData.CategoryId
-                };
+                    entity.Name = requestData.Name;
+                    entity.CategoryId = requestData.CategoryId;
+                });
 
-                await _subCategoryRepository.AddAsync(newSubCategory);
-                await _subCategoryRepository.SaveChangesAsync();
-
-                var subCategoryDto = new SubCategoryResponse
+                // тут хочу:
+                /*var subCategoryDto = new SubCategoryResponse
                 {
-                    Id = newSubCategory.Id,
+                    Id = result.Name,
                     Name = newSubCategory.Name,
                     Category = new ParentCategoryResponse { Id = parentCategory.Id, Name = parentCategory.Name }
-                };
+                };*/
 
                 return new CreateSubCategoryResponse(subCategoryDto);
             }

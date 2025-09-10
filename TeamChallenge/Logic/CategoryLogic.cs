@@ -105,8 +105,7 @@ namespace TeamChallenge.Logic
                     }
                 }
 
-                await _categoryRepository.AddAsync(newCategory);
-                await _categoryRepository.SaveChangesAsync();
+                await _categoryRepository.CreateAsync(newCategory);
 
                 var categoryDto = new CategoryResponse
                 {
