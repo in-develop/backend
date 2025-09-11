@@ -7,8 +7,8 @@ namespace TeamChallenge.Repositories
     public class BaseRepository<T> : IRepository<T> where T : class, IEntity
     {
         private readonly CosmeticStoreDbContext _context;
-        private readonly DbSet<T> _dbSet;
-        private readonly ILogger<IRepository<T>> _logger;
+        protected readonly DbSet<T> _dbSet;
+        protected readonly ILogger<IRepository<T>> _logger;
 
         public BaseRepository(CosmeticStoreDbContext context, ILogger<IRepository<T>> logger)
         {
@@ -33,6 +33,7 @@ namespace TeamChallenge.Repositories
             _logger.LogInformation("Fetching filtered records of type {0}", typeof(T).Name);
             return await DoGetFilteredAsync(filter);
         }
+
         protected virtual async Task<IEnumerable<T>> DoGetFilteredAsync(Func<T, bool> filter)
         {
             return _dbSet.AsNoTracking().Where(filter).ToList();
@@ -72,6 +73,19 @@ namespace TeamChallenge.Repositories
 
             return newEntity;
         }
+        public async Task CreateManyAsync(int count, Action<List<T>> entityFieldSetter)
+        {
+            _logger.LogInformation("Creating {0} new records of type {1}", count, typeof(T).Name);
+            await DoCreateManyAsync(count, entityFieldSetter);
+        }
+        protected async Task DoCreateManyAsync(int count, Action<List<T>> entityFieldSetter)
+        {
+            var entities = Enumerable.Range(0, count).Select(_ => Activator.CreateInstance<T>()).ToList();
+            entityFieldSetter(entities);
+
+            await _dbSet.AddRangeAsync(entities);
+            await SaveChangesAsync();
+        }
 
         public async Task<bool> UpdateAsync(int id, Action<T> entityFieldSetter)
         {
@@ -94,27 +108,23 @@ namespace TeamChallenge.Repositories
             return true;
         }
 
-        public async Task<bool> UpdateManyAsync(List<int> idList, Action<T> entityFieldSetter)
+        public async Task<bool> UpdateManyAsync(Func<T, bool> filter, Action<List<T>> entityFieldSetter)
         {
-            _logger.LogInformation("Updating multiple records of type {0} with ID's = {1}", typeof(T).Name, string.Join(",", idList));
-            return await DoUpdateAsync(idList, entityFieldSetter);
+            _logger.LogInformation("Updating multiple records of type {0}", typeof(T).Name);
+            return await DoUpdateManyAsync(filter, entityFieldSetter);
         }
 
-        protected virtual async Task<bool> DoUpdateAsync(List<int> idList, Action<T> entityFieldSetter)
+        protected virtual async Task<bool> DoUpdateManyAsync(Func<T, bool> filter, Action<List<T>> entityFieldSetter)
         {
-            var entities = await _dbSet.Where(x => idList.Contains(x.Id))
-                .ToDictionaryAsync(x => x.Id, x => x);
+            var entities = _dbSet.AsNoTracking().Where(filter).ToList();
 
-            foreach (var id in idList)
+            if (entities.Count == 0)
             {
-                if (!entities.TryGetValue(id, out var entity))
-                {
-                    _logger.LogWarning("Entity of type {0} with ID = {1} not found for update.", typeof(T).Name, id);
-                    return false;
-                }
-                entityFieldSetter(entity);
+                _logger.LogWarning("No records found for update of type {0}", typeof(T).Name);
+                return false;
             }
 
+            entityFieldSetter(entities);
             await SaveChangesAsync();
 
             return true;
@@ -138,6 +148,28 @@ namespace TeamChallenge.Repositories
             }
 
             _dbSet.Remove(entity);
+            await SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteManyAsync(List<int> idList)
+        {
+            _logger.LogInformation("Deleting CartItems with IDs: {IdList}", string.Join(", ", idList));
+            return await DoDeleteManyAsync(idList);
+        }
+
+        protected virtual async Task<bool> DoDeleteManyAsync(List<int> idList)
+        {
+            var entities = await _dbSet.AsNoTracking().Where(x => idList.Contains(x.Id)).ToListAsync();
+
+            if (idList.Count != entities.Count)
+            {
+                _logger.LogWarning("Some CartItems not found for deletion: {MissingIds}", string.Join(", ", idList.Except(entities.Select(e => e.Id))));
+                return false;
+            }
+
+            _dbSet.RemoveRange(entities);
             await SaveChangesAsync();
 
             return true;

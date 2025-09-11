@@ -5,7 +5,6 @@ namespace TeamChallenge.Helpers
 {
     public static class PkceHelper
     {
-
         public static string GenerateCodeChallenge(string codeVerifier)
         {
             using var sha256 = SHA256.Create();

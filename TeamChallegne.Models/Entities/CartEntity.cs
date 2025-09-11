@@ -1,12 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TeamChallenge.Models.Entities
 {
     public class CartEntity : BaseEntity
     {
         [ForeignKey("User")]
-        public required string UserId { get; set; }
-        public UserEntity User { get; set; }
+        [Required]
+        public string UserId { get; set; }
+        public UserEntity? User { get; set; }
         public ICollection<CartItemEntity> CartItems { get; set; }
     }
 }

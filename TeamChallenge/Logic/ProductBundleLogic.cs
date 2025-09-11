@@ -64,9 +64,9 @@ namespace TeamChallenge.Logic
                     entity.DiscountPrice = requestData.DiscountPrice;
                 });
 
-                await _productRepository.UpdateManyAsync(requestData.ProductIds, entity =>
+                await _productRepository.UpdateManyAsync(x => requestData.ProductIds.Contains(x.Id), entities =>
                 {
-                    entity.ProductBundleId = bundle.Id;
+                    entities.ForEach(e => e.ProductBundleId = bundle.Id);
                 });
 
                 return new OkResponse();
@@ -95,9 +95,9 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product bundle with Id = {id} not found");
                 }
 
-                result = await _productRepository.UpdateManyAsync(requestData.ProductIds, entity =>
+                result = await _productRepository.UpdateManyAsync(x => requestData.ProductIds.Contains(x.Id), entities =>
                 {
-                    entity.ProductBundleId = id;
+                    entities.ForEach(e => e.ProductBundleId = id);
                 });
 
                 if (!result)
