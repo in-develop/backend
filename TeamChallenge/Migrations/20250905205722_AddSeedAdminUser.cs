@@ -12,6 +12,10 @@ namespace TeamChallenge.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "d4a7c4fb-a129-47ff-b520-df1e8799d609", "3f2f0e2e-2dcb-4f3c-8f7a-6e2e5f4c9b1a", "Admin", "ADMIN" });
+            migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "SentEmailTime", "TwoFactorEnabled", "UserName" },
                 values: new object[] { "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e", 0, "cdca885a-43f5-4929-85c5-9b41dd697b37", "admin@gmail.com", true, true, null, "ADMIN@GMAIL.COM", "ADMIN", "AQAAAAIAAYagAAAAEGX+x7oprDHdtrcw9g2r0B/J6Ae4IiS7/2HhEt4k6Zx7q3KtOmCXrvFrDxMlY8ox3A==", null, false, "V4WTZVKR2NZW2BOK4YAEARQOCJHSV4SK", new DateTime(2025, 9, 5, 23, 43, 34, 0, DateTimeKind.Unspecified), false, "admin" });
@@ -25,6 +29,11 @@ namespace TeamChallenge.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+
+            migrationBuilder.DeleteData(
+                table: "AspNetRoles",
+                keyColumn: "Id",
+                keyValue: "d4a7c4fb-a129-47ff-b520-df1e8799d609");
             migrationBuilder.DeleteData(
                 table: "AspNetUserRoles",
                 keyColumns: new[] { "RoleId", "UserId" },

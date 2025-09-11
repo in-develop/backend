@@ -47,6 +47,15 @@ namespace TeamChallenge.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "d4a7c4fb-a129-47ff-b520-df1e8799d609",
+                            ConcurrencyStamp = "3f2f0e2e-2dcb-4f3c-8f7a-6e2e5f4c9b1a",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

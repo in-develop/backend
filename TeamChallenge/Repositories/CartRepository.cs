@@ -15,14 +15,13 @@ namespace TeamChallenge.Repositories
             return await _dbSet.FirstOrDefaultAsync(item => item.UserId == userId);
         }
 
-        protected override async Task<IEnumerable<CartEntity>> DoGetFilteredAsync(Func<CartEntity, bool> filter)
+        public async Task<CartEntity?> GetCartWithCartItemsAsync(int id)
         {
-            return _dbSet
+            return await _dbSet
                 .AsNoTracking()
                 .Include(ci => ci.CartItems)
                     .ThenInclude(ci => ci.Product)
-                .Where(filter)
-                .ToList();
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
     }

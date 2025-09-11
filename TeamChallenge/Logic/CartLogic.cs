@@ -16,7 +16,6 @@ namespace TeamChallenge.Logic
         public CartLogic(
             RepositoryFactory factory, 
             ILogger<CartLogic> logger,
-            ICartItemLogic cartItemLogic, 
             IHttpContextAccessor httpContextAccessor)
         {
             _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
@@ -56,7 +55,7 @@ namespace TeamChallenge.Logic
                     return response;
                 }
 
-                var cart = (response as GetCartResponse).Data;
+                var cart = await _cartRepository.GetCartWithCartItemsAsync((response as GetCartResponse).Data.Id);
 
                 return new GetCartItemsResponse(cart.CartItems.Select(x => 
                     new GetCartItemsResponseModel
