@@ -10,15 +10,19 @@ namespace TeamChallenge.Repositories
         {
         }
 
-        public async Task<bool> IsCartExist(string UserId)
+        public async Task<CartEntity?> GetCartByUserId(string userId)
         {
-            var carts = await GetFilteredAsync(c => c.UserId == UserId);
-            return carts.Any();
+            return await _dbSet.FirstOrDefaultAsync(item => item.UserId == userId);
         }
 
-        public async Task<CartEntity?> GetCartByUserId(string UserId)
+        protected override async Task<IEnumerable<CartEntity>> DoGetFilteredAsync(Func<CartEntity, bool> filter)
         {
-            return await _dbSet.FirstOrDefaultAsync(item => item.UserId == UserId);
+            return _dbSet
+                .AsNoTracking()
+                .Include(ci => ci.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                .Where(filter)
+                .ToList();
         }
 
     }

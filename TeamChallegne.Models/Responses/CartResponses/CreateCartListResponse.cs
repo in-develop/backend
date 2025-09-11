@@ -1,6 +1,6 @@
 ﻿using TeamChallenge.Models.Entities;
 
-namespace TeamChallenge.Models.Responses.CartResponses
+namespace TeamChallenge.Models.Responses
 {
     public class CreateCartListResponse : DataListResponse<CartItemEntity>
     {

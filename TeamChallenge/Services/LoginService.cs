@@ -5,7 +5,6 @@ using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Login;
-using TeamChallenge.Models.Requests.Cart;
 using TeamChallenge.Models.Requests.CartItem;
 using TeamChallenge.Models.Requests.Login;
 using TeamChallenge.Models.Responses;
@@ -39,13 +38,7 @@ namespace TeamChallenge.Services
         {
             try
             {
-                if (request == null)
-                {
-                    _logger.LogWarning("Login request is null.");
-                    return new UnauthorizedResponse("Invalid credentials");
-                }
-
-                var user = new UserEntity();
+                UserEntity user;
                 if (EmailVerifyHelper.IsValidEmail(request.UsernameOrEmail))
                 {
                     _logger.LogInformation("Attempting to find user by email: {email}", request.UsernameOrEmail);
@@ -85,17 +78,18 @@ namespace TeamChallenge.Services
                 }
                 string tokenString = _tokenService.GenerateToken(user, roles, request.RememberMe, cart.Id);
 
-                if (result.Succeeded)
+                if (!result.Succeeded)
                 {
-                    _logger.LogInformation("User {username} logged in successfully.", request.UsernameOrEmail);
-                    return new LoginResponse(new LoginModel
-                    {
-                        TokenString = tokenString,
-                    });
+                    _logger.LogWarning("Login attempt failed due to missing fields for user: {username}", request.UsernameOrEmail);
+                    return new UnauthorizedResponse("All fields are require");
                 }
 
-                _logger.LogWarning("Login attempt failed due to missing fields for user: {username}", request.UsernameOrEmail);
-                return new UnauthorizedResponse("All fields are require");
+                _logger.LogInformation("User {username} logged in successfully.", request.UsernameOrEmail);
+                return new LoginResponse(new LoginResponseModel
+                {
+                    TokenString = tokenString,
+                });
+                
             }
             catch (Exception ex)
             {
@@ -123,57 +117,68 @@ namespace TeamChallenge.Services
         {
             try
             {
-                if (request == null)
-                {
-                    _logger.LogWarning("SignUp request is null.");
-                    return new BadRequestResponse("Request is null");
-                }
-
-                if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Email))
-                {
-                    _logger.LogWarning("SignUp request contains empty fields.");
-                    return new BadRequestResponse("Fields must not be empty");
-                }
-
                 if (!EmailVerifyHelper.IsValidEmail(request.Email))
                 {
                     _logger.LogWarning("Invalid email format during SignUp: {email}", request.Email);
                     return new BadRequestResponse("Your email is not valid");
                 }
 
-                if (await _userManager.FindByEmailAsync(request.Email) != null)
+                UserEntity user;
+
+                _logger.LogInformation("Attempting to find user by email: {email}", request.Email);
+                user = await _userManager.FindByEmailAsync(request.Email);
+
+                if (user == null)
                 {
-                    _logger.LogWarning("Email already in use during SignUp: {email}", request.Email);
-                    return new BadRequestResponse("Email is already in use");
+                    _logger.LogInformation("Attempting to find user by username: {username}", request.Username);
+                    user = await _userManager.FindByNameAsync(request.Username);
                 }
 
-                if (await _userManager.FindByNameAsync(request.Username) != null)
+                if (user != null)
                 {
-                    _logger.LogWarning("Username already in use during SignUp: {username}", request.Username);
-                    return new BadRequestResponse("Username is already in use");
+                    _logger.LogWarning("User already exists with provided email or username: {email}/{username}", request.Email, request.Username);
+                    return new BadRequestResponse("User already exists.");
                 }
 
-                var user = new UserEntity { UserName = request.Username, Email = request.Email, SentEmailTime = DateTime.Now };
+                user = new UserEntity { UserName = request.Username, Email = request.Email, SentEmailTime = DateTime.Now };
                 var result = await _userManager.CreateAsync(user, request.Password);
 
                 if (!result.Succeeded)
                 {
                     await _userManager.DeleteAsync(user);
-                    _logger.LogWarning("User creation failed for {username}. Errors: {errors}", request.Username, string.Join(", ", result.Errors.Select(e => e.Description)));
+                    _logger.LogError("User creation failed for {username}. Errors: {errors}", request.Username, string.Join(", ", result.Errors.Select(e => e.Description)));
                     return new BadRequestResponse(string.Join("\n", result.Errors.Select(x => x.Description)));
                 }
 
                 _logger.LogInformation("User {username} created a new account with password.", request.Username);
                 await _userManager.AddToRoleAsync(user, "Member");
-                var roles = await _userManager.GetRolesAsync(user);
-                bool isSucssess = await CreateCart(request, user);
-                if (!isSucssess)
-                {
-                    _logger.LogError("Cart creation failed. Please try again later.");
-                    await _userManager.DeleteAsync(user);
-                    return new ServerErrorResponse("Cart creation failed. Please try again later.");
-                }
 
+                var roles = await _userManager.GetRolesAsync(user);
+
+                _logger.LogInformation("Creating cart for user, ID: {id}", request.Username, user.Id);
+
+                await _cartRepository.CreateAsync(cart =>
+                {
+                    cart.UserId = user.Id;
+                });
+
+                if (request.CartItems != null)
+                {
+                    var tempCart = await _cartRepository.CreateAsync(cart =>
+                    {
+                        cart.UserId = user.Id;
+                    });
+
+                    await _cartItemRepository.CreateManyAsync(request.CartItems.Count, cartItems =>
+                    {
+                        for (int i = 0; i < request.CartItems.Count; i++)
+                        {
+                            cartItems[i].ProductId = request.CartItems[i].ProductId;
+                            cartItems[i].Quantity = request.CartItems[i].Quantity;
+                            cartItems[i].CartId = tempCart.Id;
+                        }
+                    });
+                }
 
                 await SendConfirmLetter(request.Email, BaseClass.ClientUrl, user);
                 user.SentEmailTime = DateTime.UtcNow;
@@ -188,49 +193,6 @@ namespace TeamChallenge.Services
             }
         }
 
-        private async Task<bool> CreateCart(SignUpRequest request, UserEntity user)
-        {
-            _logger.LogInformation("Creating cart for user: {username}, ID: {id}", request.Username, user.Id);
-            if (request.CartItems != null)  
-            {
-                await _cartRepository.CreateAsync(cart =>
-                {
-                    cart.UserId = user.Id;
-                });
-
-                var tempCart = await _cartRepository.GetCartByUserId(user.Id);
-                if (tempCart == null)
-                {
-                    _logger.LogError("Cart creation failed for user: {username}, ID: {id}", request.Username, user.Id);
-                    await _userManager.DeleteAsync(user);
-                    return false;
-                }
-                var temoDto = new List<CreateCartItemRequest>();
-                foreach (var cartItem in request.CartItems)
-                {
-                    temoDto.Add(new CreateCartItemRequest
-                    {
-                        ProductId = cartItem.ProductId,
-                        Quantity = cartItem.Quantity
-                    });
-                }
-
-                if (!await _cartItemRepository.CreateCartItemAsync(temoDto, tempCart.Id))
-                {
-                    _logger.LogError("Cart items creation failed for user: {username}, ID: {id}", request.Username, user.Id);
-                    return false;
-                }
-            }
-            else
-            {
-                await _cartRepository.CreateAsync(cart => 
-                {
-                    cart.UserId = user.Id;
-                });
-            }
-
-            return true;
-        }
 
         public async Task<IResponse> ResendEmailConfirmation(string email)
         {

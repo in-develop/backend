@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using TeamChallenge.Helpers;
+using System.Security.Claims;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.CartResponses;
 using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Logic
@@ -12,20 +10,18 @@ namespace TeamChallenge.Logic
     public class CartLogic : ICartLogic
     {
         private readonly ICartRepository _cartRepository;
-        private readonly ICartItemRepository _cartItemRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<CartLogic> _logger;
-        private readonly UserManager<UserEntity> _userManager;
-        private HttpContext HttpContext => _httpContextAccessor.HttpContext!;
+        private HttpContext _httpContext;
 
-        public CartLogic(RepositoryFactory factory, ILogger<CartLogic> logger,
-            UserManager<UserEntity> userManager, ICartItemLogic cartItemLogic, IHttpContextAccessor httpContextAccessor, ICartItemRepository cartItemRepository)
+        public CartLogic(
+            RepositoryFactory factory, 
+            ILogger<CartLogic> logger,
+            ICartItemLogic cartItemLogic, 
+            IHttpContextAccessor httpContextAccessor)
         {
             _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
             _logger = logger;
-            _userManager = userManager;
-            _httpContextAccessor = httpContextAccessor;
-            _cartItemRepository = cartItemRepository;
+            _httpContext = httpContextAccessor.HttpContext!;
         }
 
         public async Task<IResponse> DeleteCartAsync(int id)
@@ -48,24 +44,58 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> GetCart()
+        public async Task<IResponse> GetCartWithCartItems()
         {
             try
             {
-                int cartId = 0;
-                if (!CartHelper.GetCartId(out cartId, HttpContext, _cartRepository, _logger))
+
+                var response = await GetValidCart();
+
+                if (!response.IsSuccess)
                 {
-                    return new UnauthorizedResponse("User claims are missing or invalid.");
+                    return response;
                 }
 
-                var result = await _cartItemRepository.GetWithProductsAndCartAsync(cartId);
-                return new GetCartItemsResponse(result);
+                var cart = (response as GetCartResponse).Data;
+
+                return new GetCartItemsResponse(cart.CartItems.Select(x => 
+                    new GetCartItemsResponseModel
+                    {
+                        Id = x.Id,
+                        ProductId = x.ProductId,
+                        ProductName = x.Product.Name,
+                        Quantity = x.Quantity,
+                        Price = x.Product.Price,
+                        CartId = x.CartId
+                    }
+                ));
             }
             catch
             {
                 _logger.LogError("An error occurred while finging the user id");
                 return new ServerErrorResponse("An error occurred while finging the user id");
             }
+        }
+
+        public async Task<IResponse> GetValidCart()
+        {
+            var cartId = _httpContext.User.FindFirstValue("CartId");
+
+            if (int.TryParse(cartId, out int cartIdInt))
+            {
+                _logger.LogWarning("User claims does not contain cart id or it is invalid.");
+                return new UnauthorizedResponse("User claims does not contain cart id or it is invalid.");
+            }
+
+            var cart = await _cartRepository.GetByIdAsync(cartIdInt);
+
+            if (cart == null)
+            {
+                _logger.LogError("Cart not found. ID: {0}", cartIdInt);
+                return new NotFoundResponse($"Cart not found. ID: {cartIdInt}");
+            }
+
+            return new DataResponse<CartEntity>(cart);
         }
     }
 }

@@ -1,9 +1,6 @@
-﻿using System.Security.Claims;
-using TeamChallenge.Helpers;
-using TeamChallenge.Models.Entities;
+﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Requests.CartItem;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.CartItemResponses;
 using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Logic
@@ -11,71 +8,97 @@ namespace TeamChallenge.Logic
     public class CartItemLogic : ICartItemLogic
     {
         private readonly ICartItemRepository _cartItemRepository;
-        private readonly ICartRepository _cartRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IProductRepository _productRepository;
+        private readonly ICartLogic _cartLogic;
         private readonly ILogger<CartItemLogic> _logger;
 
-        private HttpContext HttpContext => _httpContextAccessor.HttpContext!;
-
-        public CartItemLogic(RepositoryFactory factory, ILogger<CartItemLogic> logger, IHttpContextAccessor httpContextAccessor, ICartRepository cartRepository)
+        public CartItemLogic(
+            RepositoryFactory factory, 
+            ILogger<CartItemLogic> logger, 
+            ICartLogic cartLogic)
         {
             _cartItemRepository = (ICartItemRepository)factory.GetRepository<CartItemEntity>();
+            _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
-            _cartRepository = cartRepository;
+            _cartLogic = cartLogic;
         }
 
-        public async Task<IResponse> CreateCartItemAsync(CreateCartItemRequest dto)
+        private async Task<IResponse> CheckIfProductsExists(params int[] productIds)
+        {
+            var existingProducts = await _productRepository.GetFilteredAsync(p => productIds.Contains(p.Id));
+            var existingProductIds = existingProducts.Select(p => p.Id).ToHashSet();
+            var missingProductIds = productIds.Except(existingProductIds).ToList();
+
+            if (missingProductIds.Any())
+            {
+                _logger.LogWarning("Products not found: {MissingProductIds}", string.Join(", ", missingProductIds));
+                return new NotFoundResponse($"Products not found: {string.Join(", ", missingProductIds)}");
+            }
+
+            return new OkResponse();
+        }
+
+        public async Task<IResponse> CreateCartItemAsync(CreateCartItemRequest request)
         {
             try
-            {
-                int cartId = 0;
-                if (!CartHelper.GetCartId(out cartId, HttpContext, _cartRepository, _logger))
+            {   
+                var response = await CheckIfProductsExists(request.ProductId);
+
+                if (!response.IsSuccess)
                 {
-                    return new UnauthorizedResponse("User claims are missing or invalid.");
+                    return response;
                 }
+
+                response = await _cartLogic.GetValidCart();
+
+                if (!response.IsSuccess)
+                {
+                    return response;
+                }
+
+                var cart = (response as GetCartResponse).Data;
 
                 await _cartItemRepository.CreateAsync(entity =>
                 {
-                    entity.ProductId = dto.ProductId;
-                    entity.Quantity = dto.Quantity;
-                    entity.CartId = cartId;
+                    entity.ProductId = request.ProductId;
+                    entity.Quantity = request.Quantity;
+                    entity.CartId = cart.Id;
                 });
 
                 return new OkResponse();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating cart item");
                 return new ServerErrorResponse("An error occurred while creating the cart item.");
             }
         }
 
-        public async Task<IResponse> CreateCartItemAsync(List<CreateCartItemRequest> list)
+        public async Task<IResponse> CreateCartItemAsync(int cartId, List<CreateCartItemRequest> request)
         {
             try
             {
-                int cartId = 0;
-                if (!CartHelper.GetCartId(out cartId, HttpContext, _cartRepository, _logger))
+                var response = await CheckIfProductsExists(request.Select(x => x.ProductId).ToArray());
+
+                if (!response.IsSuccess)
                 {
-                    return new UnauthorizedResponse("User claims are missing or invalid.");
+                    return response;
                 }
 
-                _logger.LogInformation("Started addition items to cart");
-                var result = await _cartItemRepository.CreateCartItemAsync(list, cartId);
-                if (result)
+                await _cartItemRepository.CreateManyAsync(request.Count ,cartItems =>
                 {
-                    _logger.LogInformation("Addition completed");
-                    return new OkResponse();
-                }
+                    for (int i = 0; i < request.Count; i++)
+                    {
+                        cartItems[i].ProductId = request[i].ProductId;
+                        cartItems[i].Quantity = request[i].Quantity;
+                        cartItems[i].CartId = cartId;
+                    }
+                });
 
-                _logger.LogError("Addition is failed");
-                return new ServerErrorResponse("Addition is failed");
+                return new OkResponse();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while creating the list of cart items.");
-                return new ServerErrorResponse("An error occurred while creating the list of cart items.");
+                return new ServerErrorResponse("An error occurred while creating the cart item.");
             }
         }
 
@@ -84,9 +107,9 @@ namespace TeamChallenge.Logic
             try
             {
                 var result = await _cartItemRepository.DeleteAsync(id);
+
                 if (!result)
                 {
-                    _logger.LogWarning("Cart item with Id = {id} not found for deletion.", id);
                     return new NotFoundResponse($"Cart item with Id = {id} not found");
                 }
 
@@ -94,58 +117,38 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting cart item");
                 return new ServerErrorResponse("An error occurred while deleting the cart item.");
             }
         }
 
-        public async Task<IResponse> GetCartItemAsync(int id)
+        public async Task<IResponse> UpdateCartItemAsync(int id, UpdateCartItemRequest request)
         {
             try
             {
-                var result = await _cartItemRepository.GetByIdAsync(id);
-                if (result == null)
+
+                var response = await _cartLogic.GetValidCart();
+
+                if (!response.IsSuccess)
                 {
-                    _logger.LogError($"Cart item not found ID : {id}");
-                    return new NotFoundResponse($"Cart item not found ID : {id}");
+                    return response;
                 }
 
-                return new GetCartItemResponse(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error retrieving cart item {id}");
-                return new ServerErrorResponse("An error occurred while retrieving the cart item.");
-            }
-        }
+                var cart = (response as GetCartResponse).Data;
 
-        public async Task<IResponse> UpdateCartItemAsync(UpdateCartItemRequest dto)
-        {
-            try
-            {
-                int cartId = 0;
-                if (!CartHelper.GetCartId(out cartId, HttpContext, _cartRepository, _logger))
-                {
-                    return new UnauthorizedResponse("User claims are missing or invalid.");
-                }
-
-                var id = _cartItemRepository.GetFilteredAsync(x => x.CartId == cartId && x.ProductId == dto.ProductId).Result.FirstOrDefault()!.Id;
                 var result = await _cartItemRepository.UpdateAsync(id, entity =>
                 {
-                    entity.Quantity = dto.Quantity;
+                    entity.Quantity = request.Quantity;
                 });
 
                 if (!result)
                 {
-                    _logger.LogWarning("Cart item with Id = {id} not found for update.", cartId);
-                    return new NotFoundResponse($"Cart item with Id = {cartId} not found");
+                    return new NotFoundResponse($"Cart item not found. ID : {id}");
                 }
 
                 return new OkResponse();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating cart item");
                 return new ServerErrorResponse("An error occurred while updating the cart item.");
             }
         }

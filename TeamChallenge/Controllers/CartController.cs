@@ -18,7 +18,7 @@ namespace TeamChallenge.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
-            var result = await _cartLogic.GetCart();
+            var result = await _cartLogic.GetCartWithCartItems();
             return new ObjectResult(result)
             {
                 StatusCode = result.StatusCode

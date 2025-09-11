@@ -16,18 +16,6 @@ namespace TeamChallenge.Controllers
             _cartItemLogic = cartItemLogic;
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCartItemById([FromRoute] int id)
-        {
-            var result = await _cartItemLogic.GetCartItemAsync(id);
-
-            // This is old method to send responses, in master branch it handled by actionFilter so you only need to return result
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
-        }
-
         [HttpPost("create")]
         public async Task<IActionResult> CreateCartItem([FromBody] CreateCartItemRequest request)
         {
@@ -38,18 +26,18 @@ namespace TeamChallenge.Controllers
             };
         }
 
-        [HttpPost("update")]
-        public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemRequest request)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCartItem([FromRoute]int id, [FromBody] UpdateCartItemRequest request)
         {
-            var result = await _cartItemLogic.UpdateCartItemAsync(request);
+            var result = await _cartItemLogic.UpdateCartItemAsync(id, request);
             return new ObjectResult(result)
             {
                 StatusCode = result.StatusCode
             };
         }
 
-        [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteCartItem([FromQuery] int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCartItem([FromRoute] int id)
         {
             var result = await _cartItemLogic.DeleteCartItemAsync(id);
             return new ObjectResult(result)

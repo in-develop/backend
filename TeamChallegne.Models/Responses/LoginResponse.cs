@@ -3,9 +3,9 @@ using TeamChallenge.Models.Login;
 
 namespace TeamChallenge.Models.Responses
 {
-    public class LoginResponse : BaseDataResponse<LoginModel>
+    public class LoginResponse : BaseDataResponse<LoginResponseModel>
     {
-        public LoginResponse(LoginModel data) : base(data)
+        public LoginResponse(LoginResponseModel data) : base(data)
         {
 
         }

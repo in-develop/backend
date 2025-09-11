@@ -1,6 +1,6 @@
-﻿namespace TeamChallenge.Models.DTOs.Cart
+﻿namespace TeamChallenge.Models.Responses
 {
-    public class GetCartItemsDTO
+    public class GetCartItemsResponseModel
     {
         public int Id { get; set; }
         public int CartId { get; set; }

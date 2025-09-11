@@ -1,11 +1,8 @@
-﻿using TeamChallenge.Models.DTOs.Cart;
-using TeamChallenge.Models.Entities;
-
-namespace TeamChallenge.Models.Responses.CartResponses
+﻿namespace TeamChallenge.Models.Responses
 {
-    public class GetCartItemsResponse : BaseDataListResponse<GetCartItemsDTO>
+    public class GetCartItemsResponse : BaseDataListResponse<GetCartItemsResponseModel>
     {
-        public GetCartItemsResponse(IEnumerable<GetCartItemsDTO> data) : base(data)
+        public GetCartItemsResponse(IEnumerable<GetCartItemsResponseModel> data) : base(data)
         {
         }
     }

@@ -50,18 +50,32 @@ namespace TeamChallenge.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task CreateAsync(Action<T> entityFieldSetter)
+        public async Task<T> CreateAsync(Action<T> entityFieldSetter)
         {
             _logger.LogInformation("Creating a new record of type {0}", typeof(T).Name);
-            await DoCreateAsync(entityFieldSetter);
+            return await DoCreateAsync(entityFieldSetter);
         }
-
-        protected virtual async Task DoCreateAsync(Action<T> entityFieldSetter)
+        protected virtual async Task<T> DoCreateAsync(Action<T> entityFieldSetter)
         {
             var entity = Activator.CreateInstance<T>();
             entityFieldSetter(entity);
 
             await _dbSet.AddAsync(entity);
+            await SaveChangesAsync();
+
+            return entity;
+        }
+        public async Task CreateManyAsync(int count, Action<List<T>> entityFieldSetter)
+        {
+            _logger.LogInformation("Creating {0} new records of type {1}", count, typeof(T).Name);
+            await DoCreateManyAsync(count, entityFieldSetter);
+        }
+        protected async Task DoCreateManyAsync(int count, Action<List<T>> entityFieldSetter)
+        {
+            var entities = Enumerable.Range(0, count).Select(_ => Activator.CreateInstance<T>()).ToList();
+            entityFieldSetter(entities);
+
+            await _dbSet.AddRangeAsync(entities);
             await SaveChangesAsync();
         }
 
@@ -76,10 +90,33 @@ namespace TeamChallenge.Repositories
             var entity = await _dbSet.FindAsync(id);
             if (entity == null)
             {
+                _logger.LogWarning("Record of type {0} with ID = {1} not found for update", typeof(T).Name, id);
                 return false;
             }
 
             entityFieldSetter(entity);
+            await SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> UpdateManyAsync(Func<T, bool> filter, Action<List<T>> entityFieldSetter)
+        {
+            _logger.LogInformation("Updating multiple records of type {0}", typeof(T).Name);
+            return await DoUpdateManyAsync(filter, entityFieldSetter);
+        }
+
+        protected virtual async Task<bool> DoUpdateManyAsync(Func<T, bool> filter, Action<List<T>> entityFieldSetter)
+        {
+            var entities = _dbSet.AsNoTracking().Where(filter).ToList();
+
+            if (entities.Count == 0)
+            {
+                _logger.LogWarning("No records found for update of type {0}", typeof(T).Name);
+                return false;
+            }
+
+            entityFieldSetter(entities);
             await SaveChangesAsync();
 
             return true;
@@ -98,10 +135,33 @@ namespace TeamChallenge.Repositories
 
             if (entity == null)
             {
+                _logger.LogWarning("Record of type {0} with ID = {1} not found for deletion", typeof(T).Name, id);
                 return false;
             }
 
             _dbSet.Remove(entity);
+            await SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteManyAsync(List<int> idList)
+        {
+            _logger.LogInformation("Deleting CartItems with IDs: {IdList}", string.Join(", ", idList));
+            return await DoDeleteManyAsync(idList);
+        }
+
+        protected virtual async Task<bool> DoDeleteManyAsync(List<int> idList)
+        {
+            var entities = await _dbSet.AsNoTracking().Where(x => idList.Contains(x.Id)).ToListAsync();
+
+            if (idList.Count != entities.Count)
+            {
+                _logger.LogWarning("Some CartItems not found for deletion: {MissingIds}", string.Join(", ", idList.Except(entities.Select(e => e.Id))));
+                return false;
+            }
+
+            _dbSet.RemoveRange(entities);
             await SaveChangesAsync();
 
             return true;
