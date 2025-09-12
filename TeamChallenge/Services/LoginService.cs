@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
+using TeamChallenge.Logic;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Login;
 using TeamChallenge.Models.Requests.CartItem;
@@ -20,18 +21,27 @@ namespace TeamChallenge.Services
         private readonly IGenerateToken _tokenService;
         private readonly IEmailSend _emailSender;
         private readonly ICartRepository _cartRepository;
+        private readonly IProductLogic _productLogic;
         private readonly ICartItemRepository _cartItemRepository;
         private readonly ILogger<LoginService> _logger;
 
-        public LoginService(SignInManager<UserEntity> signInManager, UserManager<UserEntity> userManager, IGenerateToken tokenService, IEmailSend emailSender, ILogger<LoginService> logger, ICartRepository cartRepository, ICartItemRepository cartItemRepository)
+        public LoginService(
+            SignInManager<UserEntity> signInManager, 
+            UserManager<UserEntity> userManager, 
+            IGenerateToken tokenService, 
+            IEmailSend emailSender, 
+            IProductLogic productLogic, 
+            ILogger<LoginService> logger,
+            RepositoryFactory factory)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _tokenService = tokenService;
             _emailSender = emailSender;
             _logger = logger;
-            _cartRepository = cartRepository;
-            _cartItemRepository = cartItemRepository;
+            _productLogic = productLogic;
+            _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
+            _cartItemRepository = (ICartItemRepository)factory.GetRepository<CartItemEntity>();
         }
 
         public async Task<IResponse> Login(TCLoginRequest request)
@@ -140,6 +150,16 @@ namespace TeamChallenge.Services
                     return new BadRequestResponse("User already exists.");
                 }
 
+                if (request.CartItems != null && request.CartItems.Count > 0)
+                {
+                    var response = await _productLogic.CheckIfProductsExists(request.CartItems.Select(x => x.ProductId).ToArray());
+
+                    if (!response.IsSuccess)
+                    {
+                        return response;
+                    }
+                }
+
                 user = new UserEntity { UserName = request.Username, Email = request.Email, SentEmailTime = DateTime.Now };
                 var result = await _userManager.CreateAsync(user, request.Password);
 
@@ -157,25 +177,20 @@ namespace TeamChallenge.Services
 
                 _logger.LogInformation("Creating cart for user, ID: {id}", request.Username, user.Id);
 
-                await _cartRepository.CreateAsync(cart =>
+                var cart = await _cartRepository.CreateAsync(cart =>
                 {
                     cart.UserId = user.Id;
                 });
 
-                if (request.CartItems != null)
+                if (request.CartItems != null && request.CartItems.Count > 0)
                 {
-                    var tempCart = await _cartRepository.CreateAsync(cart =>
-                    {
-                        cart.UserId = user.Id;
-                    });
-
                     await _cartItemRepository.CreateManyAsync(request.CartItems.Count, cartItems =>
                     {
                         for (int i = 0; i < request.CartItems.Count; i++)
                         {
                             cartItems[i].ProductId = request.CartItems[i].ProductId;
                             cartItems[i].Quantity = request.CartItems[i].Quantity;
-                            cartItems[i].CartId = tempCart.Id;
+                            cartItems[i].CartId = cart.Id;
                         }
                     });
                 }

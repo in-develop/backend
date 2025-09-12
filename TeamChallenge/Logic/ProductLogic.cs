@@ -24,8 +24,8 @@ namespace TeamChallenge.Logic
 
             if (missingProductIds.Any())
             {
-                _logger.LogWarning("Products not found: {MissingProductIds}", string.Join(", ", missingProductIds));
-                return new NotFoundResponse($"Products not found: {string.Join(", ", missingProductIds)}");
+                _logger.LogWarning("Products not found with IDs: {MissingProductIds}", string.Join(", ", missingProductIds));
+                return new NotFoundResponse($"Products not found with IDs: {string.Join(", ", missingProductIds)}");
             }
 
             return new OkResponse();

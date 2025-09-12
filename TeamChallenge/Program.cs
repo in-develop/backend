@@ -38,8 +38,6 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<ICartLogic, CartLogic>();
 builder.Services.AddScoped<ICartItemLogic, CartItemLogic>();
 builder.Services.AddScoped<IUserLogic, UserLogic>();
-builder.Services.AddScoped<ICartRepository, CartRepository>();
-builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<ValidationFilter>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 
