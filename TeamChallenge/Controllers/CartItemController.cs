@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests.CartItem;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers
 {
@@ -16,34 +17,22 @@ namespace TeamChallenge.Controllers
             _cartItemLogic = cartItemLogic;
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateCartItem([FromBody] CreateCartItemRequest request)
+        [HttpPost]
+        public async Task<IResponse> CreateCartItem([FromBody] CreateCartItemRequest request)
         {
-            var result = await _cartItemLogic.CreateCartItemAsync(request);
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _cartItemLogic.CreateCartItemAsync(request);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCartItem([FromRoute]int id, [FromBody] UpdateCartItemRequest request)
+        public async Task<IResponse> UpdateCartItem([FromRoute]int id, [FromBody] UpdateCartItemRequest request)
         {
-            var result = await _cartItemLogic.UpdateCartItemAsync(id, request);
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _cartItemLogic.UpdateCartItemAsync(id, request);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCartItem([FromRoute] int id)
+        public async Task<IResponse> DeleteCartItem([FromRoute] int id)
         {
-            var result = await _cartItemLogic.DeleteCartItemAsync(id);
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _cartItemLogic.DeleteCartItemAsync(id);
         }
     }
 }

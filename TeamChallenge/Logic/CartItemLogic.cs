@@ -8,41 +8,27 @@ namespace TeamChallenge.Logic
     public class CartItemLogic : ICartItemLogic
     {
         private readonly ICartItemRepository _cartItemRepository;
-        private readonly IProductRepository _productRepository;
         private readonly ICartLogic _cartLogic;
+        private readonly IProductLogic _productLogic;
         private readonly ILogger<CartItemLogic> _logger;
 
         public CartItemLogic(
             RepositoryFactory factory, 
             ILogger<CartItemLogic> logger, 
-            ICartLogic cartLogic)
+            ICartLogic cartLogic,
+            IProductLogic productLogic)
         {
             _cartItemRepository = (ICartItemRepository)factory.GetRepository<CartItemEntity>();
-            _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
             _logger = logger;
             _cartLogic = cartLogic;
-        }
-
-        private async Task<IResponse> CheckIfProductsExists(params int[] productIds)
-        {
-            var existingProducts = await _productRepository.GetFilteredAsync(p => productIds.Contains(p.Id));
-            var existingProductIds = existingProducts.Select(p => p.Id).ToHashSet();
-            var missingProductIds = productIds.Except(existingProductIds).ToList();
-
-            if (missingProductIds.Any())
-            {
-                _logger.LogWarning("Products not found: {MissingProductIds}", string.Join(", ", missingProductIds));
-                return new NotFoundResponse($"Products not found: {string.Join(", ", missingProductIds)}");
-            }
-
-            return new OkResponse();
+            _productLogic = productLogic;
         }
 
         public async Task<IResponse> CreateCartItemAsync(CreateCartItemRequest request)
         {
             try
             {   
-                var response = await CheckIfProductsExists(request.ProductId);
+                var response = await _productLogic.CheckIfProductsExists(request.ProductId);
 
                 if (!response.IsSuccess)
                 {
@@ -77,7 +63,7 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var response = await CheckIfProductsExists(request.Select(x => x.ProductId).ToArray());
+                var response = await _productLogic.CheckIfProductsExists(request.Select(x => x.ProductId).ToArray());
 
                 if (!response.IsSuccess)
                 {

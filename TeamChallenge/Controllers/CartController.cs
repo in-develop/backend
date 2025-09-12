@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers
 {
@@ -16,13 +17,9 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCart()
+        public async Task<IResponse> GetCart()
         {
-            var result = await _cartLogic.GetCartWithCartItems();
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _cartLogic.GetCartWithCartItems();
         }
     }
 }

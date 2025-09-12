@@ -16,6 +16,21 @@ namespace TeamChallenge.Logic
             _logger = logger;
         }
 
+        public async Task<IResponse> CheckIfProductsExists(params int[] productIds)
+        {
+            var existingProducts = await _productRepository.GetFilteredAsync(p => productIds.Contains(p.Id));
+            var existingProductIds = existingProducts.Select(p => p.Id).ToHashSet();
+            var missingProductIds = productIds.Except(existingProductIds).ToList();
+
+            if (missingProductIds.Any())
+            {
+                _logger.LogWarning("Products not found: {MissingProductIds}", string.Join(", ", missingProductIds));
+                return new NotFoundResponse($"Products not found: {string.Join(", ", missingProductIds)}");
+            }
+
+            return new OkResponse();
+        }
+
         public async Task<IResponse> GetAllProductsAsync()
         {
             try
