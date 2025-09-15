@@ -41,6 +41,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching all Categories.");
                 return new ServerErrorResponse(ex.Message);
             }
         }
@@ -105,7 +106,7 @@ namespace TeamChallenge.Logic
                     }
                 }
 
-                await _categoryRepository.CreateAsync(newCategory);
+                // await _categoryRepository.CreateAsync(newCategory);
 
                 var categoryDto = new CategoryResponse
                 {
@@ -176,7 +177,6 @@ namespace TeamChallenge.Logic
                         }
                     }
                 }
-                await _categoryRepository.SaveChangesAsync();
 
                 return new OkResponse("Category updated successfully.");
             }

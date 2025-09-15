@@ -7,6 +7,7 @@ namespace TeamChallenge.Models.Responses.SubCategoryResponses
     {
         public GetSubCategoryResponse(SubCategoryResponse data) : base(data)
         {
+            Message = $"successfully obtained SubCategory with Id = {data.Id}";
         }
     }
 }

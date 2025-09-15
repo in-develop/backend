@@ -49,10 +49,10 @@ namespace TeamChallenge.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task CreateAsync(Action<T> entityFieldSetter)
+        public async Task<T> CreateAsync(Action<T> entityFieldSetter)
         {
             _logger.LogInformation("Creating a new record of type {0}", typeof(T).Name);
-            await DoCreateAsync(entityFieldSetter);
+            return await DoCreateAsync(entityFieldSetter);
         }
 
         protected virtual async Task<T> DoCreateAsync(Action<T> entityFieldSetter)

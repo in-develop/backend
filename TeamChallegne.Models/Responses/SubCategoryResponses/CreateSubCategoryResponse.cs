@@ -7,6 +7,7 @@ namespace TeamChallenge.Models.Responses.SubCategoryResponses
         public CreateSubCategoryResponse(SubCategoryResponse data) : base(data)
         {
             StatusCode = 201;
+            Message = "SubCategory has been successfully created";
         }
     }
 }
