@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests;
+using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers
 {
@@ -15,58 +16,33 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IResponse> GetAll()
         {
-            var result = await _reviewLogic.GetAllReviewsAsync();
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _reviewLogic.GetAllReviewsAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById([FromRoute] int id)
+        public async Task<IResponse> GetById([FromRoute] int id)
         {
-            var result = await _reviewLogic.GetReviewByIdAsync(id);
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _reviewLogic.GetReviewByIdAsync(id);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateReviewRequest requestData)
+        public async Task<IResponse> Create([FromBody] CreateReviewRequest requestData)
         {
-            var result = await _reviewLogic.CreateReviewAsync(requestData);
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _reviewLogic.CreateReviewAsync(requestData);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateReviewRequest requestData)
+        public async Task<IResponse> Update([FromRoute] int id, [FromBody] UpdateReviewRequest requestData)
         {
-            var result = await _reviewLogic.UpdateReviewAsync(id, requestData);
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _reviewLogic.UpdateReviewAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IResponse> Delete([FromRoute] int id)
         {
-            var result = await _reviewLogic.DeleteReviewAsync(id);
-
-            return new ObjectResult(result)
-            {
-                StatusCode = result.StatusCode
-            };
+            return await _reviewLogic.DeleteReviewAsync(id);
         }
     }
 }

@@ -9,11 +9,27 @@ namespace TeamChallenge.Models.Entities
         public string Name { get; set; }
         public string? Description { get; set; }
 
+        [Column(TypeName = "decimal(10, 2)"), Required]
+        public decimal Price { get; set; }
+
         [Column(TypeName = "decimal(10, 2)")]
+<<<<<<< HEAD
         [Required]
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
         public ICollection<ProductSubCategoryEntity> ProductSubCategories { get; set; } = new List<ProductSubCategoryEntity>();
+=======
+        public decimal? DiscountPrice { get; set; }
+        public int StockQuantity { get; set; }
+
+        [ForeignKey("Category"), Required]
+        public int CategoryId { get; set; }
+        public CategoryEntity Category { get; set; }
+
+        [ForeignKey("ProductBundle")]
+        public int? ProductBundleId { get; set; }
+        public ProductBundleEntity ProductBundle { get; set; }
+>>>>>>> master
         public ICollection<ReviewEntity> Reviews { get; set; }
     }
 }

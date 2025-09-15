@@ -8,11 +8,13 @@ namespace TeamChallenge.Logic
     public class ReviewLogic : IReviewLogic
     {
         private readonly IReviewRepository _reviewRepository;
+        private readonly IUserLogic _userLogic;
         private readonly ILogger<ReviewLogic> _logger;
-        public ReviewLogic(RepositoryFactory factory, ILogger<ReviewLogic> logger)
+        public ReviewLogic(RepositoryFactory factory, IUserLogic userLogic, ILogger<ReviewLogic> logger)
         {
             _reviewRepository = (IReviewRepository)factory.GetRepository<ReviewEntity>();
             _logger = logger;
+            _userLogic = userLogic;
         }
 
         public async Task<IResponse> GetAllReviewsAsync()
@@ -53,6 +55,12 @@ namespace TeamChallenge.Logic
         {
             try
             {
+                if (!await _userLogic.CheckIfUserExists(requestData.UserId))
+                {
+                    _logger.LogWarning("User with Id = {id} is not found.", requestData.UserId);
+                    return new ConflictResponse($"User with Id = {requestData.UserId} is not found.");
+                }
+
                 await _reviewRepository.CreateAsync(entity =>
                 {
                     entity.Rating = requestData.Rating;
@@ -65,7 +73,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ServerErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.InnerException?.Message ?? "Error occured while creating review.");
             }
         }
 
@@ -73,6 +81,12 @@ namespace TeamChallenge.Logic
         {
             try
             {
+                if (!await _userLogic.CheckIfUserExists(requestData.UserId))
+                {
+                    _logger.LogWarning("User with Id = {id} is not found.", requestData.UserId);
+                    return new ConflictResponse($"User with Id = {requestData.UserId} is not found.");
+                }
+
                 var result = await _reviewRepository.UpdateAsync(id, entity =>
                 {
                     entity.Rating = requestData.Rating;

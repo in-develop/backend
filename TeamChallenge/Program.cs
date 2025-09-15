@@ -1,9 +1,13 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using TeamChallenge.StaticData;
 using TeamChallenge.DbContext;
 using TeamChallenge.Filters;
 using TeamChallenge.Logic;
@@ -21,15 +25,20 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
 builder.Services.AddScoped<RepositoryFactory>();
 builder.Services.AddScoped<ICategoryLogic, CategoryLogic>();
 builder.Services.AddScoped<IProductLogic, ProductLogic>();
+builder.Services.AddScoped<IProductBundleLogic, ProductBundleLogic>();
 builder.Services.AddScoped<IReviewLogic, ReviewLogic>();
 builder.Services.AddScoped<ISubCategoryLogic, SubCategoryLogic>();
 builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
 builder.Services.AddSingleton<IEmailSend, EmailSenderService>();
-builder.Services.AddScoped<ILogin, LoginService>();
+builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<ICartLogic, CartLogic>();
+builder.Services.AddScoped<ICartItemLogic, CartItemLogic>();
+builder.Services.AddScoped<IUserLogic, UserLogic>();
 builder.Services.AddScoped<ValidationFilter>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 
@@ -60,7 +69,6 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(
     {
         opt.User.RequireUniqueEmail = true;
         opt.SignIn.RequireConfirmedEmail = true;
-        opt.SignIn.RequireConfirmedEmail = true;
         opt.Password.RequireNonAlphanumeric = false;
         opt.Password.RequireUppercase = false;
         opt.Password.RequiredLength = 1;
@@ -71,24 +79,21 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(
     .AddApiEndpoints();
 
 
-builder.Services.AddAuthorization();
-
 builder.Services.AddAuthentication(x =>
 {
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
-    .AddCookie()
+    .AddCookie(cfg => cfg.SlidingExpiration = true)
     .AddGoogle(googleOptions =>
     {
-        var clientId = googleOptions.ClientId = config["Authentication:Google:ClientId"];
+        var clientId = googleOptions.ClientId = config["Authentication:Google:ClientId"]!;
         if (clientId == null)
         {
             throw new ArgumentNullException(nameof(clientId));
         }
 
-        var clientSecret = googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"];
+        var clientSecret = googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"]!;
         if (clientSecret == null)
         {
             throw new ArgumentNullException(nameof(clientSecret));
@@ -96,21 +101,30 @@ builder.Services.AddAuthentication(x =>
         googleOptions.ClientId = clientId;
         googleOptions.ClientSecret = clientSecret;
         googleOptions.CallbackPath = "/signin-google";
-        googleOptions.Events.OnCreatingTicket = ctx =>
+        googleOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        googleOptions.Events.OnTicketReceived = async ctx =>
         {
-            var identity = (ClaimsIdentity)ctx.Principal.Identity;
-            var profilePic = ctx.User.GetProperty("picture").GetString();
-            var email = ctx.User.GetProperty("email").GetString();
-            var name = ctx.User.GetProperty("name").GetString();
-            identity.AddClaim(new Claim("profilePic", profilePic));
-            identity.AddClaim(new Claim(ClaimTypes.Email, email));
-            identity.AddClaim(new Claim(ClaimTypes.Name, name));
-            return Task.CompletedTask;
+            var identity = (ClaimsIdentity)ctx.Principal!.Identity!;
+            var email = identity.FindFirst(ClaimTypes.Email);
+            var name = identity.FindFirst(ClaimTypes.Name)?.Value;
+            var userId = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Name, name ?? string.Empty),
+                //new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.NameIdentifier, userId ?? string.Empty),
+                // new Claim("CartId", cartId.ToString()) // Uncomment if you have cartId
+            };
+            identity.AddClaims(claims);
         };
 
     })
     .AddJwtBearer(jwtOptions =>
         {
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+
             jwtOptions.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidIssuer = config["Jwt:Issuer"],
@@ -146,12 +160,14 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = new[] { "Admin", "Member", "Unauthorized" };
+    var roles = new[] { "Member", "Unauthorized" };
 
     foreach (var role in roles)
     {
@@ -168,7 +184,11 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    BaseClass.ClientUrl = config["ClientUrl:Debug"]!;
 }
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseSerilogRequestLogging();
 

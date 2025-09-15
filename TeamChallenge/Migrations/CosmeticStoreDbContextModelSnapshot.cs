@@ -47,6 +47,15 @@ namespace TeamChallenge.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "d4a7c4fb-a129-47ff-b520-df1e8799d609",
+                            ConcurrencyStamp = "3f2f0e2e-2dcb-4f3c-8f7a-6e2e5f4c9b1a",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -134,6 +143,13 @@ namespace TeamChallenge.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e",
+                            RoleId = "d4a7c4fb-a129-47ff-b520-df1e8799d609"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -173,6 +189,13 @@ namespace TeamChallenge.Migrations
                         .IsUnique();
 
                     b.ToTable("Carts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
+                        });
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.CartItemEntity", b =>
@@ -285,7 +308,7 @@ namespace TeamChallenge.Migrations
                     b.ToTable("OrderItems");
                 });
 
-            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductEntity", b =>
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductBundleEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -295,6 +318,9 @@ namespace TeamChallenge.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("DiscountPrice")
+                        .HasColumnType("decimal(10, 2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -308,6 +334,55 @@ namespace TeamChallenge.Migrations
 
                     b.HasKey("Id");
 
+                    b.ToTable("ProductBundles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Description for product bundle 1",
+                            Name = "Prod bundle 1",
+                            Price = 90.99m,
+                            StockQuantity = 10
+                        });
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("DiscountPrice")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int?>("ProductBundleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+<<<<<<< HEAD
+=======
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ProductBundleId");
+
+>>>>>>> master
                     b.ToTable("Products");
 
                     b.HasData(
@@ -317,6 +392,7 @@ namespace TeamChallenge.Migrations
                             Description = "Description for product 1",
                             Name = "Prod 1",
                             Price = 10.99m,
+                            ProductBundleId = 1,
                             StockQuantity = 100
                         },
                         new
@@ -325,6 +401,7 @@ namespace TeamChallenge.Migrations
                             Description = "Description for product 2",
                             Name = "Prod 2",
                             Price = 10.99m,
+                            ProductBundleId = 1,
                             StockQuantity = 100
                         },
                         new
@@ -384,6 +461,32 @@ namespace TeamChallenge.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Comment = "Great product!",
+                            ProductId = 1,
+                            Rating = 5,
+                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Comment = "Good value for money.",
+                            ProductId = 1,
+                            Rating = 4,
+                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Comment = "Average quality.",
+                            ProductId = 2,
+                            Rating = 3,
+                            UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
+                        });
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.SubCategoryEntity", b =>
@@ -488,6 +591,25 @@ namespace TeamChallenge.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "cdca885a-43f5-4929-85c5-9b41dd697b37",
+                            Email = "admin@gmail.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = true,
+                            NormalizedEmail = "ADMIN@GMAIL.COM",
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGX+x7oprDHdtrcw9g2r0B/J6Ae4IiS7/2HhEt4k6Zx7q3KtOmCXrvFrDxMlY8ox3A==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "V4WTZVKR2NZW2BOK4YAEARQOCJHSV4SK",
+                            SentEmailTime = new DateTime(2025, 9, 5, 23, 43, 34, 0, DateTimeKind.Unspecified),
+                            TwoFactorEnabled = false,
+                            UserName = "admin"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -609,6 +731,7 @@ namespace TeamChallenge.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+<<<<<<< HEAD
                     b.HasOne("TeamChallenge.Models.Entities.SubCategoryEntity", "SubCategory")
                         .WithMany("ProductSubCategories")
                         .HasForeignKey("SubCategoryId")
@@ -618,6 +741,15 @@ namespace TeamChallenge.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("SubCategory");
+=======
+                    b.HasOne("TeamChallenge.Models.Entities.ProductBundleEntity", "ProductBundle")
+                        .WithMany("Products")
+                        .HasForeignKey("ProductBundleId");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("ProductBundle");
+>>>>>>> master
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.ReviewEntity", b =>
@@ -663,6 +795,11 @@ namespace TeamChallenge.Migrations
             modelBuilder.Entity("TeamChallenge.Models.Entities.OrderEntity", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductBundleEntity", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.ProductEntity", b =>
