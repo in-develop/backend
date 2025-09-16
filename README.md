@@ -19,7 +19,6 @@
   "username": "string",
   "email": "string",
   "password": "string",
-  "clientUrl": "string",
   "cartItems": [
     {
       "productId": 0,
@@ -46,7 +45,6 @@ If the cart is empty, send `cartItems` as `null`:
   "username": "string",
   "email": "string",
   "password": "string",
-  "clientUrl": "string",
   "cartItems": null
 }
 ```
@@ -71,8 +69,8 @@ If the cart is empty, send `cartItems` as `null`:
 }
 ```
 
-### **POST** `/api/auth/logout`
-
+### **GET** `/api/auth/logout`
+- **Authentication:** Requires JWT Bearer token.
 #### Response Body
 ```json
 {
@@ -82,15 +80,12 @@ If the cart is empty, send `cartItems` as `null`:
 }
 ```
 
----
-
 ### **POST** `/api/auth/resend-email-confirmation`
 
 #### Request Body
 ```json
 {
   "email": "string",
-  "clientUrl": "string"
 }
 ```
 
@@ -103,25 +98,25 @@ If the cart is empty, send `cartItems` as `null`:
 }
 ```
 
+---
 
 ## Products
 
 ### **GET** `/api/products`
-
 #### Response Body
 ```json
 {
   "data": [
     {
+      "id": 1,
       "name": "Prod 1",
       "description": "Description for product 1",
       "price": 10.99,
+      "discountPrice": 0,
       "stockQuantity": 100,
       "categoryId": 1,
-      "category": null,
-      "reviews": null,
-      "id": 1
-    }
+      "productBundleId": 1
+    },
   ],
   "statusCode": 200,
   "isSuccess": true,
@@ -130,14 +125,16 @@ If the cart is empty, send `cartItems` as `null`:
 ```
 
 ### **POST** `/api/products`
-
+- **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Request Body
 ```json
 {
   "name": "string",
   "description": "string",
-  "price": 1,
-  "categoryId": 1
+  "stockQuantity": 0,
+  "price": 0,
+  "discountPrice": 0,
+  "categoryId": 0
 }
 ```
 
@@ -153,39 +150,39 @@ If the cart is empty, send `cartItems` as `null`:
 ### **GET** `/api/products/{id}`
 
 Example: `/api/products/1`
-
 #### Response Body
 ```json
 {
-  "data": {
-    "name": "Prod 1",
-    "description": "Description for product 1",
-    "price": 10.99,
-    "stockQuantity": 100,
-    "categoryId": 1,
-    "category": null,
-    "reviews": null,
-    "id": 1
-  },
+  "data": 
+    {
+      "id": 1,
+      "name": "Prod 1",
+      "description": "Description for product 1",
+      "price": 10.99,
+      "discountPrice": 0,
+      "stockQuantity": 100,
+      "categoryId": 1,
+      "productBundleId": 1
+    },
   "statusCode": 200,
   "isSuccess": true,
   "message": ""
 }
 ```
 
----
-
 ### **PUT** `/api/products/{id}`
 
 Example: `/api/products/1`
-
+- **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Request Body
 ```json
 {
   "name": "string",
   "description": "string",
-  "price": 2,
-  "categoryId": 1
+  "stockQuantity": 0,
+  "price": 0,
+  "discountPrice": 0,
+  "categoryId": 0
 }
 ```
 
@@ -201,24 +198,10 @@ Example: `/api/products/1`
 ### **DELETE** `/api/products/{id}`
 
 Example: `/api/products/1`
-
+- **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Response Body
 ```json
 {
-  "statusCode": 200,
-  "isSuccess": true,
-  "message": ""
-}
-```
-
-## Reviews
-
-### **GET** `/api/reviews`
-
-#### Response Body
-```json
-{
-  "data": [],
   "statusCode": 200,
   "isSuccess": true,
   "message": ""
@@ -227,8 +210,33 @@ Example: `/api/products/1`
 
 ---
 
+## Reviews
+
+### **GET** `/api/reviews`
+- **Authorization:** Requires JWT Bearer token.
+#### Response Body
+```json
+{
+  "data": [
+    {
+      "userId": "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e",
+      "user": null,
+      "productId": 1,
+      "product": null,
+      "rating": 5,
+      "comment": "Great product!",
+      "id": 1
+    }
+  ],
+  "statusCode": 200,
+  "isSuccess": true,
+  "message": ""
+}
+```
+
 ### **POST** `/api/reviews`
 
+- **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Request Body
 ```json
 {
@@ -252,17 +260,18 @@ Example: `/api/products/1`
 
 Example: `/api/reviews/5`
 
+- **Authorization:** Requires JWT Bearer token.
 #### Response Body
 ```json
 {
   "data": {
-    "userId": "5e6f1df4-75a3-4cc6-914d-20dc56a30888",
-    "user": null,
-    "productId": 2,
-    "product": null,
-    "rating": 5,
-    "comment": "string",
-    "id": 5
+      "userId": "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e",
+      "user": null,
+      "productId": 1,
+      "product": null,
+      "rating": 5,
+      "comment": "Great product!",
+      "id": 1
   },
   "statusCode": 200,
   "isSuccess": true,
@@ -270,12 +279,10 @@ Example: `/api/reviews/5`
 }
 ```
 
----
-
 ### **PUT** `/api/reviews/{id}`
 
 Example: `/api/reviews/5`
-
+- **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Request Body
 ```json
 {
@@ -298,7 +305,7 @@ Example: `/api/reviews/5`
 ### **DELETE** `/api/reviews/{id}`
 
 Example: `/api/reviews/5`
-
+- **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Response Body
 ```json
 {
@@ -307,32 +314,42 @@ Example: `/api/reviews/5`
   "message": ""
 }
 ```
+---
+## Cart
 
-## Cart Items
-
-### **GET** `/api/cart-items/{id}`
-
-Example: `/api/cart-items/1`
-
+### **GET** `/api/cart`
+- **Description:** Get user cart with all cart items.
+- **Authorization:** Requires JWT Bearer token.
 #### Response Body
 ```json
 {
-  "statusCode": 404,
-  "isSuccess": false,
-  "message": "Cart item not found ID : 1"
+    "data": [
+        {
+            "id": 1,
+            "cartId": 1,
+            "productId": 1,
+            "productName": "Prod 1",
+            "price": 10.99,
+            "quantity": 2
+        }
+    ],
+    "statusCode": 200,
+    "isSuccess": true,
+    "message": ""
 }
 ```
 
 ---
+## Cart Items
 
 ### **POST** `/api/cart-items/create`
 
+- **Authorization:** Requires JWT Bearer token.
 #### Request Body
 ```json
 {
-  "productId": 1,
-  "cartId": 1,
-  "quantity": 1
+  "productId": 0,
+  "quantity": 0
 }
 ```
 
@@ -345,8 +362,10 @@ Example: `/api/cart-items/1`
 }
 ```
 
-### **PUT** `/api/cart-items/update`
+### **PUT** `/api/cart-items/{id}`
 
+Example: `/api/cart-items/1`
+- **Authorization:** Requires JWT Bearer token.
 #### Request Body
 ```json
 {
@@ -365,8 +384,145 @@ Example: `/api/cart-items/1`
 
 ---
 
-### **DELETE** `/api/cart-items/delete/{id}`
+### **DELETE** `/api/cart-items/{id}`
 
+Example: `/api/cart-items/1`
+- **Authorization:** Requires JWT Bearer token.
+#### Response Body
+```json
+{
+  "statusCode": 200,
+  "isSuccess": true,
+  "message": ""
+}
+```
+---
+## Product Bundles
+
+### **GET** `/api/bundles`
+#### Response Body
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Prod bundle 1",
+      "description": "Description for product bundle 1",
+      "price": 90.99,
+      "discountPrice": 0,
+      "stockQuantity": 10,
+      "products": [
+        {
+          "id": 1,
+          "name": "Prod 1",
+          "description": "Description for product 1",
+          "price": 10.99,
+          "discountPrice": 0,
+          "stockQuantity": 100,
+          "categoryId": 1,
+          "productBundleId": 1
+        }
+      ]
+    }
+  ],
+  "statusCode": 200,
+  "isSuccess": true,
+  "message": ""
+}
+```
+
+### **POST** `/api/bundles`
+
+- **Authorization:** Requires JWT Bearer token with **admin** role.
+#### Request Body
+```json
+{
+  "name": "string",
+  "description": "string",
+  "stockQuantity": 0,
+  "price": 0,
+  "discountPrice": 0,
+  "productIds": [
+    0,
+    0
+  ]
+}
+```
+
+#### Response Body
+```json
+{
+  "statusCode": 200,
+  "isSuccess": true,
+  "message": ""
+}
+```
+
+### **GET** `/api/bundles/{id}`
+
+Example: `/api/bundles/5`
+- **Authorization:** Requires JWT Bearer token.
+#### Response Body
+```json
+{
+  "data": {
+      "id": 1,
+      "name": "Prod bundle 1",
+      "description": "Description for product bundle 1",
+      "price": 90.99,
+      "discountPrice": 0,
+      "stockQuantity": 10,
+      "products": [
+        {
+          "id": 1,
+          "name": "Prod 1",
+          "description": "Description for product 1",
+          "price": 10.99,
+          "discountPrice": 0,
+          "stockQuantity": 100,
+          "categoryId": 1,
+          "productBundleId": 1
+        }
+      ]
+    }
+  "statusCode": 200,
+  "isSuccess": true,
+  "message": ""
+}
+```
+
+### **PUT** `/api/bundles/{id}`
+
+Example: `/api/bundles/5`
+- **Authorization:** Requires JWT Bearer token with **admin** role.
+#### Request Body
+```json
+{
+  "name": "string",
+  "description": "string",
+  "stockQuantity": 0,
+  "price": 0,
+  "discountPrice": 0,
+  "productIds": [
+    0,
+    0
+  ]
+}
+```
+
+#### Response Body
+```json
+{
+  "statusCode": 200,
+  "isSuccess": true,
+  "message": ""
+}
+```
+
+### **DELETE** `/api/bundles/{id}`
+
+Example: `/api/bundles/5`
+- **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Response Body
 ```json
 {
