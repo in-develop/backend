@@ -24,6 +24,7 @@ namespace TeamChallenge.Services
         private readonly IProductLogic _productLogic;
         private readonly ICartItemRepository _cartItemRepository;
         private readonly ILogger<LoginService> _logger;
+        private readonly IConfiguration _configuration;
 
         public LoginService(
             SignInManager<UserEntity> signInManager, 
@@ -32,7 +33,8 @@ namespace TeamChallenge.Services
             IEmailSend emailSender, 
             IProductLogic productLogic, 
             ILogger<LoginService> logger,
-            RepositoryFactory factory)
+            RepositoryFactory factory,
+            IConfiguration configuration)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -40,6 +42,7 @@ namespace TeamChallenge.Services
             _emailSender = emailSender;
             _logger = logger;
             _productLogic = productLogic;
+            _configuration = configuration;
             _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
             _cartItemRepository = (ICartItemRepository)factory.GetRepository<CartItemEntity>();
         }
@@ -232,7 +235,7 @@ namespace TeamChallenge.Services
                     return new BadRequestResponse("Your email address is already confirmed.");
                 }
 
-                var cooldownTime = TimeSpan.FromMinutes(1);
+                var cooldownTime = TimeSpan.FromMinutes(int.Parse(_configuration["Sender:Timeout"]!));
                 if ((DateTime.UtcNow - user.SentEmailTime) < cooldownTime)
                 {
                     _logger.LogWarning("ResendEmailConfirmation attempted too soon for email: {email}", email);

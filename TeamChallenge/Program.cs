@@ -134,7 +134,8 @@ builder.Services.AddAuthentication(x =>
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
-                RoleClaimType = ClaimTypes.Role
+                RoleClaimType = ClaimTypes.Role,
+                
             };
 
             jwtOptions.Events = new JwtBearerEvents
