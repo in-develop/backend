@@ -460,8 +460,7 @@ Example: `/api/cart-items/1`
 
 ### **GET** `/api/bundles/{id}`
 
-Example: `/api/reviews/5`
-
+Example: `/api/bundles/5`
 - **Authorization:** Requires JWT Bearer token.
 #### Response Body
 ```json
@@ -494,7 +493,7 @@ Example: `/api/reviews/5`
 
 ### **PUT** `/api/bundles/{id}`
 
-Example: `/api/reviews/5`
+Example: `/api/bundles/5`
 - **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Request Body
 ```json
@@ -522,7 +521,7 @@ Example: `/api/reviews/5`
 
 ### **DELETE** `/api/bundles/{id}`
 
-Example: `/api/reviews/5`
+Example: `/api/bundles/5`
 - **Authorization:** Requires JWT Bearer token with **admin** role.
 #### Response Body
 ```json
