@@ -4,8 +4,9 @@ using System.Security.Claims;
 using System.Text;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Services;
+using TeamChallenge.StaticData;
 
-public class GenerateTokenService: IGenerateToken
+public partial class GenerateTokenService: IGenerateToken
 {
     private readonly IConfiguration _configuration;
     
@@ -46,11 +47,11 @@ public class GenerateTokenService: IGenerateToken
     {
         var claims = new List<Claim>
         {
+            new Claim(CustomClaimTypes.CartId, cartId.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.Name, user.UserName!),
             new Claim(ClaimTypes.Email, user.Email!),
             new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Actor, cartId.ToString())
         };
 
         foreach (var role in roles)

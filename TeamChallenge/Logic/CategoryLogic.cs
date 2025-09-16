@@ -1,5 +1,5 @@
 ﻿using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Requests.Category;
+using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.CategoryResponses;
 using TeamChallenge.Repositories;

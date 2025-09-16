@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
@@ -6,6 +7,7 @@ using TeamChallenge.Models.Responses;
 namespace TeamChallenge.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/reviews")]
     public class ReviewController : ControllerBase
     {

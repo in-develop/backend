@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TeamChallenge.Models.Requests.Category
+namespace TeamChallenge.Models.Requests
 {
     public class UpdateCategoryRequest
     {

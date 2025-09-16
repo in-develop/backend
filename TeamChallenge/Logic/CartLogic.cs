@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using TeamChallenge.Helpers;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Repositories;
+using TeamChallenge.Services;
 
 namespace TeamChallenge.Logic
 {
@@ -11,51 +12,54 @@ namespace TeamChallenge.Logic
     {
         private readonly ICartRepository _cartRepository;
         private readonly ILogger<CartLogic> _logger;
-        private HttpContext _httpContext;
+        private readonly ITokenReaderService _tokenReader;
 
         public CartLogic(
             RepositoryFactory factory, 
             ILogger<CartLogic> logger,
-            IHttpContextAccessor httpContextAccessor)
+            ITokenReaderService tokenReader)
         {
             _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
             _logger = logger;
-            _httpContext = httpContextAccessor.HttpContext!;
+            _tokenReader = tokenReader;
         }
 
-        public async Task<IResponse> DeleteCartAsync(int id)
+        public async Task<IResponse> DeleteCartAsync()
         {
+            var response = await GetCart();
+
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
+
+            var cartId = response.As<GetCartResponse>().Data.Id;
+
             try
             {
-                var result = await _cartRepository.DeleteAsync(id);
-                if (!result)
-                {
-                    _logger.LogError($"Error delete cart. ID: {id}");
-                    return new NotFoundResponse($"An error occurred while deleting the cart. ID: {id}");
-                }
-
+                var result = await _cartRepository.DeleteAsync(cartId);
                 return new OkResponse();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error deleting cart ID: {id}");
-                return new ServerErrorResponse("An error occurred while deleting the cart");
+                return new ServerErrorResponse($"Fail to delete cart. ID : {cartId}");
             }
         }
 
         public async Task<IResponse> GetCartWithCartItems()
         {
+            var response = await GetCart();
+
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
+
+            var cartId = response.As<GetCartResponse>().Data.Id;
+
             try
             {
-
-                var response = await GetValidCart();
-
-                if (!response.IsSuccess)
-                {
-                    return response;
-                }
-
-                var cart = await _cartRepository.GetCartWithCartItemsAsync((response as GetCartResponse).Data.Id);
+                var cart = await _cartRepository.GetCartWithCartItemsAsync(cartId);
 
                 return new GetCartItemsResponse(cart.CartItems.Select(x => 
                     new GetCartItemsResponseModel
@@ -71,30 +75,29 @@ namespace TeamChallenge.Logic
             }
             catch
             {
-                _logger.LogError("An error occurred while finging the user id");
-                return new ServerErrorResponse("An error occurred while finging the user id");
+                return new ServerErrorResponse($"Fail to get cart. ID : {cartId}");
             }
         }
 
-        public async Task<IResponse> GetValidCart()
+        public async Task<IResponse> GetCart()
         {
-            var cartId = _httpContext.User.FindFirstValue("CartId");
+            var response = _tokenReader.GetCartId();
 
-            if (int.TryParse(cartId, out int cartIdInt))
+            if (!response.IsSuccess)
             {
-                _logger.LogWarning("User claims does not contain cart id or it is invalid.");
-                return new UnauthorizedResponse("User claims does not contain cart id or it is invalid.");
+                return response;
             }
 
-            var cart = await _cartRepository.GetByIdAsync(cartIdInt);
+            var cartId = response.As<GetCartIdResponse>().Data;
+            var cart = await _cartRepository.GetByIdAsync(cartId);
 
             if (cart == null)
             {
-                _logger.LogError("Cart not found. ID: {0}", cartIdInt);
-                return new NotFoundResponse($"Cart not found. ID: {cartIdInt}");
+                _logger.LogError("Cart not found. ID: {0}", cartId);
+                return new NotFoundResponse($"Cart not found. ID: {cartId}");
             }
 
-            return new DataResponse<CartEntity>(cart);
+            return new GetCartResponse(cart);
         }
     }
 }

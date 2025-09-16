@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TeamChallenge.Models.Requests.Login
+namespace TeamChallenge.Models.Requests
 {
     public class TCLoginRequest
     {

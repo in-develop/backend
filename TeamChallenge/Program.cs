@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using TeamChallenge.StaticData;
 using TeamChallenge.DbContext;
 using TeamChallenge.Filters;
 using TeamChallenge.Logic;
@@ -15,6 +15,7 @@ using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.SendEmailModels;
 using TeamChallenge.Repositories;
 using TeamChallenge.Services;
+using TeamChallenge.StaticData;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -38,6 +39,7 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<ICartLogic, CartLogic>();
 builder.Services.AddScoped<ICartItemLogic, CartItemLogic>();
 builder.Services.AddScoped<IUserLogic, UserLogic>();
+builder.Services.AddScoped<ITokenReaderService, TokenReaderService>();
 builder.Services.AddScoped<ValidationFilter>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 
@@ -81,6 +83,7 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>(
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
     .AddCookie(cfg => cfg.SlidingExpiration = true)
@@ -167,7 +170,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = new[] { "Member", "Unauthorized" };
+    var roles = new[] { GlobalConsts.Roles.Member, GlobalConsts.Roles.Unauthorized };
 
     foreach (var role in roles)
     {
@@ -184,7 +187,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    BaseClass.ClientUrl = config["ClientUrl:Debug"]!;
+    GlobalConsts.ClientUrl = config["ClientUrl:Debug"]!;
 }
 
 app.UseSwagger();

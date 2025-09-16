@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Models.Requests.Login;
+using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Services;
 
@@ -29,7 +29,7 @@ namespace TeamChallenge.Controllers
             return await _service.SignUp(request);
         }
 
-        [HttpPost("logout")]
+        [HttpGet("logout")]
         [Authorize]
         public async Task<IResponse> Logout()
         {

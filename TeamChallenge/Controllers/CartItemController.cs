@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
-using TeamChallenge.Models.Requests.CartItem;
+using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers

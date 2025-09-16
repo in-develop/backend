@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TeamChallenge.Models.Entities;
+using TeamChallenge.StaticData;
 
 namespace TeamChallenge.DbContext
 {
@@ -47,7 +48,7 @@ namespace TeamChallenge.DbContext
                 .HasData(new IdentityRole()
                 {
                     Id = "d4a7c4fb-a129-47ff-b520-df1e8799d609",
-                    Name = "Admin",
+                    Name = GlobalConsts.Roles.Admin,
                     NormalizedName = "ADMIN",
                     ConcurrencyStamp = "3f2f0e2e-2dcb-4f3c-8f7a-6e2e5f4c9b1a"
                 });

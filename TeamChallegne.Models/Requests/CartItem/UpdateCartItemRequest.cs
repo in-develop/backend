@@ -1,7 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 
-namespace TeamChallenge.Models.Requests.CartItem
+namespace TeamChallenge.Models.Requests
 {
     public class UpdateCartItemRequest
     {

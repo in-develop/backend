@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TeamChallenge.Models.Login;
-using TeamChallenge.Models.Requests.Login;
+﻿using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Services

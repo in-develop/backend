@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text.Encodings.Web;
 using TeamChallenge.Helpers;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Login;
-using TeamChallenge.Models.Requests.CartItem;
-using TeamChallenge.Models.Requests.Login;
+using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Repositories;
 using TeamChallenge.StaticData;
@@ -27,11 +25,11 @@ namespace TeamChallenge.Services
         private readonly IConfiguration _configuration;
 
         public LoginService(
-            SignInManager<UserEntity> signInManager, 
-            UserManager<UserEntity> userManager, 
-            IGenerateToken tokenService, 
-            IEmailSend emailSender, 
-            IProductLogic productLogic, 
+            SignInManager<UserEntity> signInManager,
+            UserManager<UserEntity> userManager,
+            IGenerateToken tokenService,
+            IEmailSend emailSender,
+            IProductLogic productLogic,
             ILogger<LoginService> logger,
             RepositoryFactory factory,
             IConfiguration configuration)
@@ -111,7 +109,6 @@ namespace TeamChallenge.Services
             }
         }
 
-        [Authorize]
         public async Task<IResponse> Logout()
         {
             try
@@ -178,7 +175,7 @@ namespace TeamChallenge.Services
 
                 var roles = await _userManager.GetRolesAsync(user);
 
-                _logger.LogInformation("Creating cart for user, ID: {id}", request.Username, user.Id);
+                _logger.LogInformation("Creating cart for user {0}, ID: {1}", request.Username, user.Id);
 
                 var cart = await _cartRepository.CreateAsync(cart =>
                 {
@@ -198,7 +195,7 @@ namespace TeamChallenge.Services
                     });
                 }
 
-                await SendConfirmLetter(request.Email, BaseClass.ClientUrl, user);
+                await SendConfirmLetter(request.Email, GlobalConsts.ClientUrl, user);
                 user.SentEmailTime = DateTime.UtcNow;
 
                 return new OkResponse("User registered successfully.Please check your email to confirm your account.");
@@ -243,7 +240,7 @@ namespace TeamChallenge.Services
                     return new BadRequestResponse($"Please wait {remainingTime.Seconds} seconds before trying to resend the email.");
                 }
 
-                await SendConfirmLetter(email, BaseClass.ClientUrl, user);
+                await SendConfirmLetter(email, GlobalConsts.ClientUrl, user);
                 user.SentEmailTime = DateTime.UtcNow;
                 _logger.LogInformation("Resent confirmation email to: {email}", email);
                 return new OkResponse("A new confirmation email has been sent. Please check your inbox.");

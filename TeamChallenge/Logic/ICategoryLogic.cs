@@ -1,4 +1,4 @@
-﻿using TeamChallenge.Models.Requests.Category;
+﻿using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Logic

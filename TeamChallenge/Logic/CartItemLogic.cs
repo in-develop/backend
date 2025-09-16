@@ -1,5 +1,7 @@
-﻿using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Requests.CartItem;
+﻿using Azure;
+using TeamChallenge.Helpers;
+using TeamChallenge.Models.Entities;
+using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Repositories;
 
@@ -35,14 +37,14 @@ namespace TeamChallenge.Logic
                     return response;
                 }
 
-                response = await _cartLogic.GetValidCart();
+                response = await _cartLogic.GetCart();
 
                 if (!response.IsSuccess)
                 {
                     return response;
                 }
 
-                var cart = (response as GetCartResponse).Data;
+                var cart = response.As<GetCartResponse>().Data;
 
                 await _cartItemRepository.CreateAsync(entity =>
                 {
@@ -53,38 +55,9 @@ namespace TeamChallenge.Logic
 
                 return new OkResponse();
             }
-            catch (Exception ex)
+            catch
             {
-                return new ServerErrorResponse("An error occurred while creating the cart item.");
-            }
-        }
-
-        public async Task<IResponse> CreateCartItemAsync(int cartId, List<CreateCartItemRequest> request)
-        {
-            try
-            {
-                var response = await _productLogic.CheckIfProductsExists(request.Select(x => x.ProductId).ToArray());
-
-                if (!response.IsSuccess)
-                {
-                    return response;
-                }
-
-                await _cartItemRepository.CreateManyAsync(request.Count ,cartItems =>
-                {
-                    for (int i = 0; i < request.Count; i++)
-                    {
-                        cartItems[i].ProductId = request[i].ProductId;
-                        cartItems[i].Quantity = request[i].Quantity;
-                        cartItems[i].CartId = cartId;
-                    }
-                });
-
-                return new OkResponse();
-            }
-            catch (Exception ex)
-            {
-                return new ServerErrorResponse("An error occurred while creating the cart item.");
+                return new ServerErrorResponse($"An error occurred while creating the cart item.");
             }
         }
 
@@ -107,20 +80,34 @@ namespace TeamChallenge.Logic
             }
         }
 
+        public async Task<IResponse> DeleteCartItemFromCartAsync()
+        {
+
+            var response = await _cartLogic.GetCart();
+
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
+
+            var cart = response.As<GetCartResponse>().Data;
+
+            try
+            {
+                await _cartItemRepository.DeleteManyAsync(x => x.CartId == cart.Id);
+
+                return new OkResponse();
+            }
+            catch
+            {
+                return new ServerErrorResponse($"An error occurred while deleting the cart items from cart. Cart ID : {cart.Id}");
+            }
+        }
+
         public async Task<IResponse> UpdateCartItemAsync(int id, UpdateCartItemRequest request)
         {
             try
             {
-
-                var response = await _cartLogic.GetValidCart();
-
-                if (!response.IsSuccess)
-                {
-                    return response;
-                }
-
-                var cart = (response as GetCartResponse).Data;
-
                 var result = await _cartItemRepository.UpdateAsync(id, entity =>
                 {
                     entity.Quantity = request.Quantity;

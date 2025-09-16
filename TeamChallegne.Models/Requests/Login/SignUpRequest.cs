@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using TeamChallenge.Models.Requests.CartItem;
 
-namespace TeamChallenge.Models.Requests.Login
+namespace TeamChallenge.Models.Requests
 {
     public class SignUpRequest
     {

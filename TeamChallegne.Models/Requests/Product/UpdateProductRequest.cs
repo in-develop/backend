@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TeamChallenge.Models.Requests
+﻿namespace TeamChallenge.Models.Requests
 {
     public class UpdateProductRequest : CreateProductRequest
     {

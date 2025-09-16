@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.StaticData;
 
 namespace TeamChallenge.Controllers
 {
     [ApiController]
+    [Authorize(GlobalConsts.Roles.Admin)]
     [Route("api/bundles")]
     public class ProductBundleController : ControllerBase
     {
@@ -29,18 +32,21 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Create([FromBody] CreateProductBundleRequest requestData)
         {
             return await _bundleLogic.CreateProductBundleAsync(requestData);
         }
 
         [HttpPut("{id}")]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Update([FromRoute] int id, [FromBody] UpdateProductBundleRequest requestData)
         {
             return await _bundleLogic.UpdateProductBundleAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Delete([FromRoute] int id)
         {
             return await _bundleLogic.DeleteProductBundleAsync(id);
