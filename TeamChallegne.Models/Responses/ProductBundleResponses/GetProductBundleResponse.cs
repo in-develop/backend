@@ -2,9 +2,9 @@
 
 namespace TeamChallenge.Models.Responses;
 
-public class GetProductBundleResponse : BaseDataResponse<ProductBundleEntity>
+public class GetProductBundleResponse : BaseDataResponse<GetProductBundleResponseModel>
 {
-    public GetProductBundleResponse(ProductBundleEntity data) : base(data)
+    public GetProductBundleResponse(GetProductBundleResponseModel data) : base(data)
     {
     }
 }

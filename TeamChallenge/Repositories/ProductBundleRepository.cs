@@ -10,6 +10,11 @@ namespace TeamChallenge.Repositories
         {
         }
 
+        protected override async Task<IEnumerable<ProductBundleEntity>> DoGetAllAsync()
+        {
+            return await _dbSet.AsNoTracking().Include(x => x.Products).ToListAsync();
+        }
+
         protected async override Task<ProductBundleEntity?> DoGetByIdAsync(int id)
         {
             var result = await _dbSet.Include(x => x.Products).FirstOrDefaultAsync(x => x.Id == id);

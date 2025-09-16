@@ -43,9 +43,9 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost("resend-email-confirmation")]
-        public async Task<IResponse> ResendEmailConfirmation([FromQuery] string email)
+        public async Task<IResponse> ResendEmailConfirmation([FromBody]ResendEmailConfirmationRequest request)
         {
-            return await _service.ResendEmailConfirmation(email);
+            return await _service.ResendEmailConfirmation(request);
         }
     }
 }

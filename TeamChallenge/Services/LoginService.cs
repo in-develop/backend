@@ -209,45 +209,45 @@ namespace TeamChallenge.Services
         }
 
 
-        public async Task<IResponse> ResendEmailConfirmation(string email)
+        public async Task<IResponse> ResendEmailConfirmation(ResendEmailConfirmationRequest request)
         {
             try
             {
-                if (string.IsNullOrEmpty(email))
+                if (string.IsNullOrEmpty(request.Email))
                 {
                     _logger.LogWarning("ResendEmailConfirmation called with empty email.");
                     return new BadRequestResponse("Email address is required.");
                 }
 
-                var user = await _userManager.FindByEmailAsync(email);
+                var user = await _userManager.FindByEmailAsync(request.Email);
                 if (user == null)
                 {
-                    _logger.LogWarning("No user found with email: {email}", email);
+                    _logger.LogWarning("No user found with email: {email}", request.Email);
                     return new OkResponse("If an account exists for that email, a confirmation link has been resent.");
                 }
 
                 if (await _userManager.IsEmailConfirmedAsync(user))
                 {
-                    _logger.LogInformation("Email already confirmed for user with email: {email}", email);
+                    _logger.LogInformation("Email already confirmed for user with email: {email}", request.Email);
                     return new BadRequestResponse("Your email address is already confirmed.");
                 }
 
                 var cooldownTime = TimeSpan.FromMinutes(int.Parse(_configuration["Sender:Timeout"]!));
                 if ((DateTime.UtcNow - user.SentEmailTime) < cooldownTime)
                 {
-                    _logger.LogWarning("ResendEmailConfirmation attempted too soon for email: {email}", email);
+                    _logger.LogWarning("ResendEmailConfirmation attempted too soon for email: {email}", request.Email);
                     var remainingTime = cooldownTime - (DateTime.UtcNow - user.SentEmailTime);
                     return new BadRequestResponse($"Please wait {remainingTime.Seconds} seconds before trying to resend the email.");
                 }
 
-                await SendConfirmLetter(email, GlobalConsts.ClientUrl, user);
+                await SendConfirmLetter(request.Email, GlobalConsts.ClientUrl, user);
                 user.SentEmailTime = DateTime.UtcNow;
-                _logger.LogInformation("Resent confirmation email to: {email}", email);
+                _logger.LogInformation("Resent confirmation email to: {email}", request.Email);
                 return new OkResponse("A new confirmation email has been sent. Please check your inbox.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while resending confirmation email to: {email}\n{ex}", email, ex.Message);
+                _logger.LogError(ex, "An error occurred while resending confirmation email to: {email}\n{ex}", request.Email, ex.Message);
                 return new ServerErrorResponse("An error occurred while resending the confirmation email. Please try again later.");
             }
         }

@@ -28,7 +28,7 @@ namespace TeamChallenge.Logic
             try
             {
                 var result = await _bundleRepository.GetAllAsync();
-                return new GetAllProductBundlesResponse(result);
+                return new GetAllProductBundlesResponse(result.Select(x => new GetProductBundleResponseModel(x)));
             }
             catch (Exception ex)
             {
@@ -47,7 +47,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product bundle with Id = {id} not found");
                 }
 
-                return new GetProductBundleResponse(result);
+                return new GetProductBundleResponse(new GetProductBundleResponseModel(result));
             }
             catch (Exception ex)
             {

@@ -36,7 +36,7 @@ namespace TeamChallenge.Logic
             try
             {
                 var result = await _productRepository.GetAllAsync();
-                return new GetAllProductsResponse(result);
+                return new GetAllProductsResponse(result.Select(x => new GetProductResponseModel(x)));
             }
             catch (Exception ex)
             {
@@ -55,7 +55,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
-                return new GetProductResponse(result);
+                return new GetProductResponse(new GetProductResponseModel(result));
             }
             catch (Exception ex)
             {

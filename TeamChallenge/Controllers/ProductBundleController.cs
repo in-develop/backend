@@ -8,7 +8,6 @@ using TeamChallenge.StaticData;
 namespace TeamChallenge.Controllers
 {
     [ApiController]
-    [Authorize(GlobalConsts.Roles.Admin)]
     [Route("api/bundles")]
     public class ProductBundleController : ControllerBase
     {
