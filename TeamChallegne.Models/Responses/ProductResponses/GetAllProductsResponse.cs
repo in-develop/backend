@@ -2,9 +2,9 @@
 
 namespace TeamChallenge.Models.Responses;
 
-public class GetAllProductsResponse : BaseDataListResponse<ProductEntity>
+public class GetAllProductsResponse : BaseDataListResponse<GetProductResponseModel>
 {
-    public GetAllProductsResponse(IEnumerable<ProductEntity> data) : base(data)
+    public GetAllProductsResponse(IEnumerable<GetProductResponseModel> data) : base(data)
     {
     }
 }

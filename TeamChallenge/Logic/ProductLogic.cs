@@ -20,12 +20,27 @@ namespace TeamChallenge.Logic
             _context = context;
         }
 
+        public async Task<IResponse> CheckIfProductsExists(params int[] productIds)
+        {
+            var existingProducts = await _productRepository.GetFilteredAsync(p => productIds.Contains(p.Id));
+            var existingProductIds = existingProducts.Select(p => p.Id).ToHashSet();
+            var missingProductIds = productIds.Except(existingProductIds).ToList();
+
+            if (missingProductIds.Any())
+            {
+                _logger.LogWarning("Products not found with IDs: {MissingProductIds}", string.Join(", ", missingProductIds));
+                return new NotFoundResponse($"Products not found with IDs: {string.Join(", ", missingProductIds)}");
+            }
+
+            return new OkResponse();
+        }
+
         public async Task<IResponse> GetAllProductsAsync()
         {
             try
             {
                 var result = await _productRepository.GetAllAsync();
-                return new GetAllProductsResponse(result);
+                return new GetAllProductsResponse(result.Select(x => new GetProductResponseModel(x)));
             }
             catch (Exception ex)
             {
@@ -41,11 +56,10 @@ namespace TeamChallenge.Logic
 
                 if (result == null)
                 {
-                    _logger.LogWarning("Product with Id = {id} not found.", id);
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
-                return new GetProductResponse(result);
+                return new GetProductResponse(new GetProductResponseModel(result));
             }
             catch (Exception ex)
             {
@@ -59,13 +73,13 @@ namespace TeamChallenge.Logic
             {
                 if (requestData.SubCategories.Any())
                 {
-                    var invalidSubCategoryIds = requestData.SubCategories.Where(scId => !_context.SubCategories.Any(sc => sc.Id == scId)).ToList();
-                    if (invalidSubCategoryIds.Any())
-                    {
-                        _logger.LogWarning("Invalid SubCategoryIds provided: {invalidIds}", string.Join(", ", invalidSubCategoryIds));
-                        return new ErrorResponse($"Invalid SubCategoryIds: {string.Join(", ", invalidSubCategoryIds)}");
-                    }
-                }
+                    entity.Name = requestData.Name;
+                    entity.Description = requestData.Description;
+                    entity.Price = requestData.Price;
+                    entity.StockQuantity = requestData.StockQuantity;
+                    entity.DiscountPrice = requestData.DiscountPrice;
+                    entity.CategoryId = requestData.CategoryId;
+                });
 
                 var productId = await _productRepository.CreateWithSubCategoriesAsync(requestData.Name, requestData.Description, requestData.Price, requestData.SubCategories);
                 _logger.LogInformation("Successfuly created product with Id = {id} and Name = {name}", productId, requestData);
@@ -105,12 +119,13 @@ namespace TeamChallenge.Logic
                     entity.Name = requestData.Name;
                     entity.Description = requestData.Description;
                     entity.Price = requestData.Price;
-                    //entity.CategoryId = requestData.CategoryId;
+                    entity.StockQuantity = requestData.StockQuantity;
+                    entity.DiscountPrice = requestData.DiscountPrice;
+                    entity.CategoryId = requestData.CategoryId;
                 });
 
                 if (!result)
                 {
-                    _logger.LogWarning("Product with Id = {id} not found for update.", id);
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
@@ -129,7 +144,6 @@ namespace TeamChallenge.Logic
                 var result = await _productRepository.DeleteAsync(id);
                 if (!result)
                 {
-                    _logger.LogWarning("Product with Id = {id} not found for deletion.", id);
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 

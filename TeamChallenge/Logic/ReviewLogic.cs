@@ -2,17 +2,24 @@
 using TeamChallenge.Repositories;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Requests;
+using TeamChallenge.Services;
+using TeamChallenge.Helpers;
 
 namespace TeamChallenge.Logic
 {
     public class ReviewLogic : IReviewLogic
     {
         private readonly IReviewRepository _reviewRepository;
+        private readonly ITokenReaderService _tokenReader;
         private readonly ILogger<ReviewLogic> _logger;
-        public ReviewLogic(RepositoryFactory factory, ILogger<ReviewLogic> logger)
+        public ReviewLogic(
+            RepositoryFactory factory, 
+            ILogger<ReviewLogic> logger,
+            ITokenReaderService tokenReader)
         {
             _reviewRepository = (IReviewRepository)factory.GetRepository<ReviewEntity>();
             _logger = logger;
+            _tokenReader = tokenReader;
         }
 
         public async Task<IResponse> GetAllReviewsAsync()
@@ -51,13 +58,22 @@ namespace TeamChallenge.Logic
 
         public async Task<IResponse> CreateReviewAsync(CreateReviewRequest requestData)
         {
+            var response = _tokenReader.GetUserId();
+
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
+
+            var userId = response.As<GetUserIdResponse>().Data;
+
             try
             {
                 await _reviewRepository.CreateAsync(entity =>
                 {
                     entity.Rating = requestData.Rating;
                     entity.Comment = requestData.Comment;
-                    entity.UserId = requestData.UserId;
+                    entity.UserId = userId;
                     entity.ProductId = requestData.ProductId;
                 });
 
@@ -65,19 +81,28 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ServerErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.InnerException?.Message ?? $"Error occured while creating review. User ID : {userId}");
             }
         }
 
         public async Task<IResponse> UpdateReviewAsync(int id, UpdateReviewRequest requestData)
         {
+            var response = _tokenReader.GetUserId();
+
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
+
+            var userId = response.As<GetUserIdResponse>().Data;
+
             try
             {
                 var result = await _reviewRepository.UpdateAsync(id, entity =>
                 {
                     entity.Rating = requestData.Rating;
                     entity.Comment = requestData.Comment;
-                    entity.UserId = requestData.UserId;
+                    entity.UserId = userId;
                     entity.ProductId = requestData.ProductId;
                 });
 
@@ -91,7 +116,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ServerErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.InnerException?.Message ?? $"Error occured while creating review. User ID : {userId}");
             }
         }
 
@@ -110,7 +135,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                return new ServerErrorResponse(ex.Message);
+                return new ServerErrorResponse(ex.InnerException?.Message ?? $"Error occured while creating review.");
             }
         }
     }

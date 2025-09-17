@@ -11,7 +11,5 @@ namespace TeamChallenge.Models.Requests
 
         [Required]
         public int ProductId { get; set; }
-        [Required]
-        public string UserId { get; set; }
     }
 }

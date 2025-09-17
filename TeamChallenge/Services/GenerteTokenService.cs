@@ -4,36 +4,34 @@ using System.Security.Claims;
 using System.Text;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Services;
+using TeamChallenge.StaticData;
 
-public class GenerateTokenService: IGenerateToken
+public partial class GenerateTokenService: IGenerateToken
 {
     private readonly IConfiguration _configuration;
-
+    
     public GenerateTokenService(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public (string, DateTime) GenerateToken(UserEntity user, IList<string> roles)
+    public string GenerateToken(UserEntity user, IList<string> roles, bool remebmerMe, int cartId)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+        List<Claim> claims = CreateClaims(user, roles, cartId);
+        var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
-        var claims = new List<Claim>
+        double time;
+        if (remebmerMe)
         {
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(ClaimTypes.NameIdentifier, user.Id)
-        };
-
-        foreach (var role in roles)
+            time = double.Parse(_configuration["Jwt:RememberMe"]!);
+        }
+        else
         {
-            claims.Add(new Claim(ClaimTypes.Role, role));
+            time = double.Parse(_configuration["Jwt:Expires"]!);
         }
 
-        var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
-        var tokenExpiration = DateTime.UtcNow.Add(TimeSpan.Parse(_configuration["Jwt:Expires"]!)) ;
+        var tokenExpiration = DateTime.UtcNow.Add(TimeSpan.FromMinutes(time));
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
@@ -41,6 +39,26 @@ public class GenerateTokenService: IGenerateToken
             expires: tokenExpiration,
             signingCredentials: creds);
 
-        return (tokenHandler.WriteToken(token), tokenExpiration);
+        var tokenHandler = new JwtSecurityTokenHandler().WriteToken(token);
+        return tokenHandler;
+    }
+
+    private static List<Claim> CreateClaims(UserEntity user, IList<string> roles, int cartId)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(CustomClaimTypes.CartId, cartId.ToString()),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Name, user.UserName!),
+            new Claim(ClaimTypes.Email, user.Email!),
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+        };
+
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+
+        return claims;
     }
 }

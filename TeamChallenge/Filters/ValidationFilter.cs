@@ -15,7 +15,18 @@ namespace TeamChallenge.Filters
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
-
+            if (context.ActionArguments.TryGetValue("id", out var id) &&
+                ((id is int idInt &&
+                idInt <= 0) ||
+                (id is string idStr &&
+                string.IsNullOrEmpty(idStr))))
+            {
+                _logger.LogWarning("Invalid ID: {Id}", id);
+                context.Result = new BadRequestObjectResult(
+                    new BadRequestResponse("Invalid ID"));
+                
+                return;
+            }
         }
 
         public void OnActionExecuted(ActionExecutedContext context)

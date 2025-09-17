@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.StaticData;
 
 namespace TeamChallenge.Controllers
 {
@@ -29,18 +31,21 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Create([FromBody] CreateProductRequest requestData)
         {
             return await _productLogic.CreateProductAsync(requestData);
         }
 
         [HttpPut("{id}")]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Update([FromRoute]int id, [FromBody] UpdateProductRequest requestData)
         {
             return await _productLogic.UpdateProductAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Delete([FromRoute]int id)
         {
             return await _productLogic.DeleteProductAsync(id);

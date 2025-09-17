@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
-using TeamChallenge.Models.Requests.Category;
+using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.StaticData;
 
 namespace TeamChallenge.Controllers
 {
@@ -19,31 +21,34 @@ namespace TeamChallenge.Controllers
         [HttpGet]
         public async Task<IResponse> GetAll()
         {
-            return await _categoryLogic.GetAllCategoriesAsync();
+            return await _productLogic.GetAllCategoriesAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<IResponse> GetById([FromRoute]int id)
         {
-            return await _categoryLogic.GetCategoryByIdAsync(id);
+            return await _productLogic.GetCategoryByIdAsync(id);
         }
 
-        [HttpPost("create")]
+        [HttpPost]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Create([FromBody] CreateCategoryRequest requestData)
         {
-            return await _categoryLogic.CreateCategoryAsync(requestData);
+            return await _productLogic.CreateCategoryAsync(requestData);
         }
 
         [HttpPut("{id}")]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Update([FromRoute]int id, [FromBody] UpdateCategoryRequest requestData)
         {
-            return await _categoryLogic.UpdateCategoryAsync(id, requestData);
+            return await _productLogic.UpdateCategoryAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
-         public async Task<IResponse> Delete([FromRoute]int id)
+        [Authorize(GlobalConsts.Roles.Admin)]
+        public async Task<IResponse> Delete([FromRoute]int id)
         {
-            return await _categoryLogic.DeleteCategoryAsync(id);
+            return await _productLogic.DeleteCategoryAsync(id);
         }
     }
 }
