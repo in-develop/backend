@@ -1,7 +1,7 @@
 ﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Models.Responses;
 using TeamChallenge.Models.Models.Responses.SubCategoryResponse;
-using TeamChallenge.Models.Requests.Category;
+using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.CategoryResponses;
 using TeamChallenge.Repositories;

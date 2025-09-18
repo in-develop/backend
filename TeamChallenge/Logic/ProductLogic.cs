@@ -69,28 +69,30 @@ namespace TeamChallenge.Logic
 
         public async Task<IResponse> CreateProductAsync(CreateProductRequest requestData)
         {
-            try
-            {
-                if (requestData.SubCategories.Any())
-                {
-                    entity.Name = requestData.Name;
-                    entity.Description = requestData.Description;
-                    entity.Price = requestData.Price;
-                    entity.StockQuantity = requestData.StockQuantity;
-                    entity.DiscountPrice = requestData.DiscountPrice;
-                    entity.CategoryId = requestData.CategoryId;
-                });
-
-                var productId = await _productRepository.CreateWithSubCategoriesAsync(requestData.Name, requestData.Description, requestData.Price, requestData.SubCategories);
-                _logger.LogInformation("Successfuly created product with Id = {id} and Name = {name}", productId, requestData);
-                return new OkResponse();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating product with Name = {name}", requestData.Name);
-                return new ServerErrorResponse(ex.Message);
-            }
+            return new OkResponse();
         }
+        // try
+            // {
+            //     if (requestData.SubCategories.Any())
+            //     {
+            //         entity.Name = requestData.Name;
+            //         entity.Description = requestData.Description;
+            //         entity.Price = requestData.Price;
+            //         entity.StockQuantity = requestData.StockQuantity;
+            //         entity.DiscountPrice = requestData.DiscountPrice;
+            //         entity.CategoryId = requestData.CategoryId;
+            //     };
+            //
+            //     var productId = await _productRepository.CreateWithSubCategoriesAsync(requestData.Name, requestData.Description, requestData.Price, requestData.SubCategories);
+            //     _logger.LogInformation("Successfuly created product with Id = {id} and Name = {name}", productId, requestData);
+            //     return new OkResponse();
+            // }
+            // catch (Exception ex)
+            // {
+            //     _logger.LogError(ex, "Error creating product with Name = {name}", requestData.Name);
+            //     return new ServerErrorResponse(ex.Message);
+            // }
+        // }
         //{
         //    try
         //    {
@@ -121,7 +123,7 @@ namespace TeamChallenge.Logic
                     entity.Price = requestData.Price;
                     entity.StockQuantity = requestData.StockQuantity;
                     entity.DiscountPrice = requestData.DiscountPrice;
-                    entity.CategoryId = requestData.CategoryId;
+                    // entity.CategoryId = requestData.CategoryId;
                 });
 
                 if (!result)

@@ -86,8 +86,6 @@ namespace TeamChallenge.Repositories
 
             await _dbSet.AddRangeAsync(entities);
             await SaveChangesAsync();
-            
-            return entity;
         }
 
         public async Task<bool> UpdateAsync(int id, Action<T> entityFieldSetter)

@@ -27,5 +27,4 @@ namespace TeamChallenge.Repositories
             return result;
         }
     }
-
 }

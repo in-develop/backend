@@ -24,5 +24,7 @@ namespace TeamChallenge.Models.Entities
         public int? ProductBundleId { get; set; }
         public ProductBundleEntity ProductBundle { get; set; }
         public ICollection<ReviewEntity> Reviews { get; set; }
+
+        public ICollection<ProductSubCategoryEntity> ProductSubCategories { get; set; } = new List<ProductSubCategoryEntity>();
     }
 }

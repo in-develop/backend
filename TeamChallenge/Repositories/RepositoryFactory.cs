@@ -13,6 +13,7 @@ namespace TeamChallenge.Repositories
             { typeof(ProductBundleEntity), typeof(ProductBundleRepository) },
             { typeof(CategoryEntity), typeof(CategoryRepository) },
             { typeof(ReviewEntity), typeof(ReviewRepository) },
+            { typeof(SubCategoryEntity), typeof(SubCategoryRepository)},
             { typeof(CartEntity), typeof(CartRepository) },
             { typeof(CartItemEntity), typeof(CartItemRepository) }
         };

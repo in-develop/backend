@@ -1,8 +1,4 @@
-﻿using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.SubCategoryResponses;
-
-namespace TeamChallenge.Models.Models.Responses
+﻿namespace TeamChallenge.Models.Models.Responses
 {
     public class CategoryResponse
     {

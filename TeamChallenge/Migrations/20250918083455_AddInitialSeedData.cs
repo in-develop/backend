@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TeamChallenge.Migrations
 {
     /// <inheritdoc />
-    public partial class SubCategoriesProducts : Migration
+    public partial class AddInitialSeedData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -67,7 +67,7 @@ namespace TeamChallenge.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "ProductBundles",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -75,11 +75,12 @@ namespace TeamChallenge.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    DiscountPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
                     StockQuantity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_ProductBundles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -250,31 +251,33 @@ namespace TeamChallenge.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Reviews",
+                name: "Products",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    DiscountPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
+                    StockQuantity = table.Column<int>(type: "int", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    ProductBundleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Reviews", x => x.Id);
+                    table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reviews_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        name: "FK_Products_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Reviews_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Products_ProductBundles_ProductBundleId",
+                        column: x => x.ProductBundleId,
+                        principalTable: "ProductBundles",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -332,7 +335,7 @@ namespace TeamChallenge.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "productSubCategoryEntities",
+                name: "ProductSubCategoryEntities",
                 columns: table => new
                 {
                     ProductId = table.Column<int>(type: "int", nullable: false),
@@ -341,38 +344,129 @@ namespace TeamChallenge.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_productSubCategoryEntities", x => new { x.ProductId, x.SubCategoryId });
+                    table.PrimaryKey("PK_ProductSubCategoryEntities", x => new { x.ProductId, x.SubCategoryId });
                     table.ForeignKey(
-                        name: "FK_productSubCategoryEntities_Products_ProductId",
+                        name: "FK_ProductSubCategoryEntities_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductSubCategoryEntities_SubCategories_SubCategoryId",
+                        column: x => x.SubCategoryId,
+                        principalTable: "SubCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Reviews",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Rating = table.Column<int>(type: "int", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reviews", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Reviews_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Reviews_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_productSubCategoryEntities_SubCategories_SubCategoryId",
-                        column: x => x.SubCategoryId,
-                        principalTable: "SubCategories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "d4a7c4fb-a129-47ff-b520-df1e8799d609", "3f2f0e2e-2dcb-4f3c-8f7a-6e2e5f4c9b1a", "Admin", "ADMIN" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "SentEmailTime", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e", 0, "cdca885a-43f5-4929-85c5-9b41dd697b37", "admin@gmail.com", true, true, null, "ADMIN@GMAIL.COM", "ADMIN", "AQAAAAIAAYagAAAAEGX+x7oprDHdtrcw9g2r0B/J6Ae4IiS7/2HhEt4k6Zx7q3KtOmCXrvFrDxMlY8ox3A==", null, false, "V4WTZVKR2NZW2BOK4YAEARQOCJHSV4SK", new DateTime(2025, 5, 9, 23, 43, 34, 0, DateTimeKind.Unspecified), false, "admin" });
 
             migrationBuilder.InsertData(
                 table: "Categories",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Category 1" },
-                    { 2, "Category 2" }
+                    { 1, "Face Care" },
+                    { 2, "Makeup" },
+                    { 3, "Hair Care" }
                 });
 
             migrationBuilder.InsertData(
+                table: "ProductBundles",
+                columns: new[] { "Id", "Description", "DiscountPrice", "Name", "Price", "StockQuantity" },
+                values: new object[] { 1, "Description for product bundle 1", null, "Prod bundle 1", 90.99m, 10 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[] { "d4a7c4fb-a129-47ff-b520-df1e8799d609", "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" });
+
+            migrationBuilder.InsertData(
+                table: "Carts",
+                columns: new[] { "Id", "UserId" },
+                values: new object[] { 1, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" });
+
+            migrationBuilder.InsertData(
                 table: "Products",
-                columns: new[] { "Id", "Description", "Name", "Price", "StockQuantity" },
+                columns: new[] { "Id", "CategoryId", "Description", "DiscountPrice", "Name", "Price", "ProductBundleId", "StockQuantity" },
                 values: new object[,]
                 {
-                    { 1, "Description for product 1", "Prod 1", 10.99m, 100 },
-                    { 2, "Description for product 2", "Prod 2", 10.99m, 100 },
-                    { 3, "Description for product 3", "Prod 3", 10.99m, 100 }
+                    { 1, 1, "A gentle, non-stripping cleanser for all skin types.", null, "Gentle Hydrating Cleanser", 15.99m, null, 100 },
+                    { 2, 1, "A lightweight moisturizer with broad-spectrum sun protection.", null, "Daily Defense Moisturizer SPF 30", 28.50m, null, 80 },
+                    { 3, 2, "A buildable, medium-coverage foundation with a radiant finish.", null, "Luminous Silk Foundation", 45.00m, null, 60 },
+                    { 4, 2, "A long-lasting, highly pigmented matte lipstick.", null, "Velvet Matte Lipstick - Classic Red", 22.00m, null, 120 },
+                    { 5, 3, "Adds body and shine to fine, flat hair.", null, "Volume Boost Shampoo", 18.00m, null, 90 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "SubCategories",
+                columns: new[] { "Id", "CategoryId", "Name" },
+                values: new object[,]
+                {
+                    { 1, 1, "Cleansers" },
+                    { 2, 1, "Moisturizers" },
+                    { 3, 2, "Foundation" },
+                    { 4, 2, "Lipstick" },
+                    { 5, 3, "Shampoo" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ProductSubCategoryEntities",
+                columns: new[] { "ProductId", "SubCategoryId", "Id" },
+                values: new object[,]
+                {
+                    { 1, 1, 1 },
+                    { 2, 2, 2 },
+                    { 3, 2, 6 },
+                    { 3, 3, 3 },
+                    { 4, 4, 4 },
+                    { 5, 5, 5 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Reviews",
+                columns: new[] { "Id", "Comment", "ProductId", "Rating", "UserId" },
+                values: new object[,]
+                {
+                    { 1, "Great product!", 1, 5, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" },
+                    { 2, "Good value for money.", 1, 4, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" },
+                    { 3, "Average quality.", 2, 3, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -446,8 +540,18 @@ namespace TeamChallenge.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_productSubCategoryEntities_SubCategoryId",
-                table: "productSubCategoryEntities",
+                name: "IX_Products_CategoryId",
+                table: "Products",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_ProductBundleId",
+                table: "Products",
+                column: "ProductBundleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductSubCategoryEntities_SubCategoryId",
+                table: "ProductSubCategoryEntities",
                 column: "SubCategoryId");
 
             migrationBuilder.CreateIndex(
@@ -491,7 +595,7 @@ namespace TeamChallenge.Migrations
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
-                name: "productSubCategoryEntities");
+                name: "ProductSubCategoryEntities");
 
             migrationBuilder.DropTable(
                 name: "Reviews");
@@ -516,6 +620,9 @@ namespace TeamChallenge.Migrations
 
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "ProductBundles");
         }
     }
 }

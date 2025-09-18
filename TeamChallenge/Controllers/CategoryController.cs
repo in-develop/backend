@@ -21,34 +21,34 @@ namespace TeamChallenge.Controllers
         [HttpGet]
         public async Task<IResponse> GetAll()
         {
-            return await _productLogic.GetAllCategoriesAsync();
+            return await _categoryLogic.GetAllCategoriesAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<IResponse> GetById([FromRoute]int id)
         {
-            return await _productLogic.GetCategoryByIdAsync(id);
+            return await _categoryLogic.GetCategoryByIdAsync(id);
         }
 
         [HttpPost]
         [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Create([FromBody] CreateCategoryRequest requestData)
         {
-            return await _productLogic.CreateCategoryAsync(requestData);
+            return await _categoryLogic.CreateCategoryAsync(requestData);
         }
 
         [HttpPut("{id}")]
         [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Update([FromRoute]int id, [FromBody] UpdateCategoryRequest requestData)
         {
-            return await _productLogic.UpdateCategoryAsync(id, requestData);
+            return await _categoryLogic.UpdateCategoryAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
         [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Delete([FromRoute]int id)
         {
-            return await _productLogic.DeleteCategoryAsync(id);
+            return await _categoryLogic.DeleteCategoryAsync(id);
         }
     }
 }

@@ -8,7 +8,6 @@ namespace TeamChallenge.Repositories
         private readonly CosmeticStoreDbContext _context;
         public ProductRepository(CosmeticStoreDbContext context, ILogger<ProductRepository> logger) : base(context, logger) 
         {
-            _context = context;
         }
 
         public async Task<int> CreateWithSubCategoriesAsync(string name, string? description, decimal price, List<int> subCategoryIds)
