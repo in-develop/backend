@@ -2,6 +2,7 @@
 using TeamChallenge.Repositories;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Requests;
+using TeamChallenge.Services;
 
 namespace TeamChallenge.Logic
 {
@@ -9,11 +10,13 @@ namespace TeamChallenge.Logic
     {
         private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductLogic> _logger;
+        private readonly IRedisCacheService _cache;
 
-        public ProductLogic(RepositoryFactory factory, ILogger<ProductLogic> logger)
+        public ProductLogic(RepositoryFactory factory, ILogger<ProductLogic> logger, IRedisCacheService cache)
         {
             _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
             _logger = logger;
+            _cache = cache;
         }
 
         public async Task<IResponse> CheckIfProductsExists(params int[] productIds)
@@ -48,12 +51,21 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _productRepository.GetByIdAsync(id);
+                var result = await _cache.GetValueAsync<ProductEntity>(id);
+
+                if (result != null)
+                {
+                    return new GetProductResponse(new GetProductResponseModel(result));
+                }
+
+                result = await _productRepository.GetByIdAsync(id);
 
                 if (result == null)
                 {
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
+
+                await _cache.SetValueAsync(result, id);
 
                 return new GetProductResponse(new GetProductResponseModel(result));
             }
@@ -104,6 +116,8 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
+                await _cache.RemoveValueAsync<ProductEntity>(id);
+
                 return new OkResponse();
             }
             catch (Exception ex)
@@ -121,6 +135,8 @@ namespace TeamChallenge.Logic
                 {
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
+
+                await _cache.RemoveValueAsync<ProductEntity>(id);
 
                 return new OkResponse();
             }

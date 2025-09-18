@@ -7,4 +7,5 @@ namespace TeamChallenge.Services
         IResponse GetCartId();
         IResponse GetUserId();
     }
+
 }

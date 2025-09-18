@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,13 +11,11 @@ using TeamChallenge.DbContext;
 using TeamChallenge.Filters;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.SendEmailModels;
 using TeamChallenge.Repositories;
 using TeamChallenge.Services;
 using TeamChallenge.StaticData;
 
 var builder = WebApplication.CreateBuilder(args);
-var config = builder.Configuration;
 
 builder.Host.UseSerilog((context, loggerConfiguration) =>
     loggerConfiguration.ReadFrom.Configuration(context.Configuration));
@@ -27,65 +24,89 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IGenerateToken, GenerateTokenService>();
-builder.Services.AddScoped<RepositoryFactory>();
-builder.Services.AddScoped<ICategoryLogic, CategoryLogic>();
-builder.Services.AddScoped<IProductLogic, ProductLogic>();
-builder.Services.AddScoped<IProductBundleLogic, ProductBundleLogic>();
-builder.Services.AddScoped<IReviewLogic, ReviewLogic>();
-builder.Services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
-builder.Services.AddSingleton<IEmailSend, EmailSenderService>();
-builder.Services.AddScoped<ILoginService, LoginService>();
-builder.Services.AddScoped<ICartLogic, CartLogic>();
-builder.Services.AddScoped<ICartItemLogic, CartItemLogic>();
-builder.Services.AddScoped<IUserLogic, UserLogic>();
-builder.Services.AddScoped<ITokenReaderService, TokenReaderService>();
-builder.Services.AddScoped<ValidationFilter>();
-var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
+SetupCustomServices(builder.Services);
+SetupDatabase(builder.Services, builder.Configuration);
+SetupFilters(builder.Services);
+SetupAuthentication(builder.Services, builder.Configuration);
+SetupInMemoryStorage(builder.Services, builder.Configuration);
 
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
-builder.Services.AddDistributedMemoryCache();
+var app = builder.Build();
 
-builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
+using (var scope = app.Services.CreateScope())
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-    if (builder.Environment.IsDevelopment())
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var roles = new[] { GlobalConsts.Roles.Member, GlobalConsts.Roles.Unauthorized };
+
+    foreach (var role in roles)
     {
-        options.EnableSensitiveDataLogging();
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
     }
-});
+}
 
-builder.Services.AddControllers(opt =>
+//Configure the HTTP request pipeline.
+
+if (app.Environment.IsDevelopment())
 {
-    opt.Filters.Add<ValidationFilter>();
-});
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    GlobalConsts.ClientUrl = app.Configuration["ClientUrl:Debug"]!;
+}
 
-builder.Services.AddIdentity<UserEntity, IdentityRole>(
-    opt =>
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseSerilogRequestLogging();
+
+app.UseSession();
+app.UseHttpsRedirection();
+app.MapIdentityApi<IdentityUser>();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+
+#region Inner methods
+
+void SetupFilters(IServiceCollection services)
+{
+    services.AddControllers(options =>
     {
-        opt.User.RequireUniqueEmail = true;
-        opt.SignIn.RequireConfirmedEmail = true;
-        opt.Password.RequireNonAlphanumeric = false;
-        opt.Password.RequireUppercase = false;
-        opt.Password.RequiredLength = 1;
-        opt.Password.RequireDigit = false;
-    })
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<CosmeticStoreDbContext>()
-    .AddApiEndpoints();
-
-
-builder.Services.AddAuthentication(x =>
+        options.Filters.Add<ValidationFilter>();
+    });
+}
+void SetupCustomServices(IServiceCollection services)
 {
-    x.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-})
+    services.AddSingleton<IGenerateToken, GenerateTokenService>();
+    services.AddScoped<RepositoryFactory>();
+    services.AddScoped<ICategoryLogic, CategoryLogic>();
+    services.AddScoped<IProductLogic, ProductLogic>();
+    services.AddScoped<IProductBundleLogic, ProductBundleLogic>();
+    services.AddScoped<IReviewLogic, ReviewLogic>();
+    services.AddScoped<IGoogleOAuth, GoogleOAuthService>();
+    services.AddSingleton<IEmailSend, EmailSenderService>();
+    services.AddScoped<ILoginService, LoginService>();
+    services.AddScoped<ICartLogic, CartLogic>();
+    services.AddScoped<ICartItemLogic, CartItemLogic>();
+    services.AddScoped<IUserLogic, UserLogic>();
+    services.AddScoped<ITokenReaderService, TokenReaderService>();
+    services.AddScoped<IRedisCacheService, RedisCacheService>();
+    services.AddScoped<ValidationFilter>();
+}
+void SetupAuthentication(IServiceCollection services, IConfiguration config)
+{
+    services.AddAuthentication(x =>
+    {
+        x.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    })
     .AddCookie(cfg => cfg.SlidingExpiration = true)
     .AddGoogle(googleOptions =>
     {
@@ -123,85 +144,87 @@ builder.Services.AddAuthentication(x =>
 
     })
     .AddJwtBearer(jwtOptions =>
-        {
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-            JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
-
-            jwtOptions.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidIssuer = config["Jwt:Issuer"],
-                ValidAudience = config["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    System.Text.Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
-                ValidateIssuerSigningKey = true,
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                RoleClaimType = ClaimTypes.Role,
-                
-            };
-
-            jwtOptions.Events = new JwtBearerEvents
-            {
-                OnAuthenticationFailed = context =>
-                {
-                    Console.WriteLine("Authentication failed: " + context.Exception.Message);
-                    return Task.CompletedTask;
-                },
-                OnTokenValidated = context =>
-                {
-                    Console.WriteLine("Token validated successfully!");
-                    return Task.CompletedTask;
-                }
-            };
-        });
-
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.Cookie.SameSite = SameSiteMode.Strict;
-});
-
-builder.Services.AddAuthorization();
-
-var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = new[] { GlobalConsts.Roles.Member, GlobalConsts.Roles.Unauthorized };
-
-    foreach (var role in roles)
     {
-        if (!await roleManager.RoleExistsAsync(role))
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+
+        jwtOptions.TokenValidationParameters = new TokenValidationParameters
         {
-            await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
+            ValidIssuer = config["Jwt:Issuer"],
+            ValidAudience = config["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                System.Text.Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            RoleClaimType = ClaimTypes.Role,
+
+        };
+
+        jwtOptions.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine("Authentication failed: " + context.Exception.Message);
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token validated successfully!");
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+    builder.Services.AddAuthorization();
 }
-
-//Configure the HTTP request pipeline.
-
-if (app.Environment.IsDevelopment())
+void SetupDatabase(IServiceCollection services, IConfiguration config)
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    GlobalConsts.ClientUrl = config["ClientUrl:Debug"]!;
+    builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+        if (builder.Environment.IsDevelopment())
+        {
+            options.EnableSensitiveDataLogging();
+        }
+    });
+
+    builder.Services.AddIdentity<UserEntity, IdentityRole>(
+        opt =>
+        {
+            opt.User.RequireUniqueEmail = true;
+            opt.SignIn.RequireConfirmedEmail = true;
+            opt.Password.RequireNonAlphanumeric = false;
+            opt.Password.RequireUppercase = false;
+            opt.Password.RequiredLength = 1;
+            opt.Password.RequireDigit = false;
+        })
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<CosmeticStoreDbContext>()
+        .AddApiEndpoints();
+}
+void SetupInMemoryStorage(IServiceCollection services, IConfiguration config)
+{
+    builder.Services.AddSession(options =>
+    {
+        options.IdleTimeout = TimeSpan.FromMinutes(30);
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+    });
+
+    builder.Services.ConfigureApplicationCookie(options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+    });
+
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = config.GetConnectionString("Redis");
+        options.InstanceName = "TeamChallenge_";
+    });
 }
 
-app.UseSwagger();
-app.UseSwaggerUI();
-
-app.UseSerilogRequestLogging();
-
-app.UseSession();
-app.UseHttpsRedirection();
-app.MapIdentityApi<IdentityUser>();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+#endregion Inner methods
