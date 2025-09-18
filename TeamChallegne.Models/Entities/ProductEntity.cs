@@ -13,6 +13,12 @@ namespace TeamChallenge.Models.Entities
         public decimal Price { get; set; }
 
         [Column(TypeName = "decimal(10, 2)")]
+<<<<<<< HEAD
+        [Required]
+        public decimal Price { get; set; }
+        public int StockQuantity { get; set; }
+        public ICollection<ProductSubCategoryEntity> ProductSubCategories { get; set; } = new List<ProductSubCategoryEntity>();
+=======
         public decimal? DiscountPrice { get; set; }
         public int StockQuantity { get; set; }
 

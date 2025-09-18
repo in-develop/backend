@@ -93,6 +93,14 @@ namespace TeamChallenge.Logic
             //     return new ServerErrorResponse(ex.Message);
             // }
         // }
+                return new OkResponse();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating product with Name = {name}", requestData.Name);
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
         //{
         //    try
         //    {
@@ -115,7 +123,7 @@ namespace TeamChallenge.Logic
         public async Task<IResponse> UpdateProductAsync(int id, UpdateProductRequest requestData)
         {
             try
-            {
+                    // entity.CategoryId = requestData.CategoryId;
                 var result = await _productRepository.UpdateAsync(id, entity =>
                 {
                     entity.Name = requestData.Name;
@@ -123,7 +131,10 @@ namespace TeamChallenge.Logic
                     entity.Price = requestData.Price;
                     entity.StockQuantity = requestData.StockQuantity;
                     entity.DiscountPrice = requestData.DiscountPrice;
-                    // entity.CategoryId = requestData.CategoryId;
+                    entity.CategoryId = requestData.CategoryId;
+=========
+                    //entity.CategoryId = requestData.CategoryId;
+>>>>>>>>> Temporary merge branch 2
                 });
 
                 if (!result)
