@@ -233,7 +233,7 @@ namespace TeamChallenge.Services
                 }
 
                 var cooldownTime = TimeSpan.FromMinutes(int.Parse(_configuration["Sender:Timeout"]!));
-                if ((DateTime.UtcNow - user.SentEmailTime) < cooldownTime)
+                if ((DateTime.Now - user.SentEmailTime) < cooldownTime)
                 {
                     _logger.LogWarning("ResendEmailConfirmation attempted too soon for email: {email}", request.Email);
                     var remainingTime = cooldownTime - (DateTime.UtcNow - user.SentEmailTime);
@@ -241,7 +241,8 @@ namespace TeamChallenge.Services
                 }
 
                 await SendConfirmLetter(request.Email, GlobalConsts.ClientUrl, user);
-                user.SentEmailTime = DateTime.UtcNow;
+                user.SentEmailTime = DateTime.Now;
+                await _userManager.UpdateAsync(user);
                 _logger.LogInformation("Resent confirmation email to: {email}", request.Email);
                 return new OkResponse("A new confirmation email has been sent. Please check your inbox.");
             }
