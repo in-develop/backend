@@ -9,6 +9,7 @@ namespace TeamChallenge.Logic
         Task<IResponse> GetCategoryByIdAsync(int id);
         Task<IResponse> CreateCategoryAsync(CreateCategoryRequest dto);
         Task<IResponse> UpdateCategoryAsync(int id, UpdateCategoryRequest dto);
+        Task<IResponse> UpdateCategoryManyAsync(List<UpdateCategoryManyRequest> requestData);
         Task<IResponse> DeleteCategoryAsync(int id);
     }
 }

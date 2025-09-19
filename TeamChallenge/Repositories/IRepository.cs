@@ -9,7 +9,7 @@ namespace TeamChallenge.Repositories
         Task<IEnumerable<T>> GetFilteredAsync(Expression<Func<T, bool>> filter);
         Task<T?> GetByIdAsync(int id);
         Task<T> CreateAsync(Action<T> entityFieldSetter);
-        Task CreateManyAsync(int count, Action<List<T>> entityFieldSettera);
+        Task CreateManyAsync(int count, Action<List<T>> entityFieldSetter);
         Task<bool> UpdateAsync(int id, Action<T> entityFieldSetter);
         Task<bool> UpdateManyAsync(Expression<Func<T, bool>> filter, Action<List<T>> entityFieldSetter);
         Task<bool> DeleteAsync(int id);

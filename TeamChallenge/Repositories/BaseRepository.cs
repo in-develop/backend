@@ -117,7 +117,7 @@ namespace TeamChallenge.Repositories
 
         protected virtual async Task<bool> DoUpdateManyAsync(Expression<Func<T, bool>> filter, Action<List<T>> entityFieldSetter)
         {
-            var entities = await _dbSet.AsNoTracking().Where(filter).ToListAsync();
+            var entities = await _dbSet.Where(filter).ToListAsync(); // AsNoTracking deleted
 
             if (entities.Count == 0)
             {
@@ -125,7 +125,7 @@ namespace TeamChallenge.Repositories
                 return false;
             }
 
-            entityFieldSetter(entities);
+            entityFieldSetter(entities); // ExecuteUpdateAsync way effective?
             await SaveChangesAsync();
 
             return true;
@@ -162,9 +162,9 @@ namespace TeamChallenge.Repositories
 
         protected virtual async Task<bool> DoDeleteManyAsync(Expression<Func<T, bool>> filter)
         {
-            var entities = await _dbSet.AsNoTracking().Where(filter).ToListAsync();
+            var entities = await _dbSet.Where(filter).ToListAsync(); // AsNoTracking deleted
 
-            _dbSet.RemoveRange(entities);
+            _dbSet.RemoveRange(entities); // ExecuteDeleteAsync way effective? 
 
             _logger.LogInformation("Entities deleted. IDs : {0}", string.Join(", ", entities.Select(x => x.Id)));
 

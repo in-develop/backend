@@ -186,6 +186,43 @@ namespace TeamChallenge.Logic
             }
         }
 
+        public async Task<IResponse> UpdateCategoryManyAsync(List<UpdateCategoryManyRequest> requestData)
+        {
+            try
+            {
+                if (requestData == null || !requestData.Any())
+                {
+                    return new BadRequestResponse("The list of categories cannot be empty.");
+                }
+
+                var idsToUpdate = requestData.Select(r => r.Id).ToList();
+
+                var wasSuccessful = await _categoryRepository.UpdateManyAsync(
+                    category => idsToUpdate.Contains(category.Id), entities =>
+                    {
+                        var requestDict = requestData.ToDictionary(r => r.Id);
+                        foreach (var entity in entities)
+                        {
+                            if (requestDict.TryGetValue(entity.Id, out var dto))
+                            {
+                                entity.Name = dto.Name;
+                            }
+                        }
+                    });
+
+                if (!wasSuccessful)
+                {
+                    return new NotFoundResponse("None of the specified categories were found.");
+                }
+                return new OkResponse("Categories were updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating multiple categories.");
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
+
         public async Task<IResponse> DeleteCategoryAsync(int id)
         {
             try
