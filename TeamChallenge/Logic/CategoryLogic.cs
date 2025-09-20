@@ -273,5 +273,28 @@ namespace TeamChallenge.Logic
                 return new ServerErrorResponse(ex.Message);
             }
         }
+
+        public async Task<IResponse> DeleteCategoryManyAsync(List<int> ids)
+        {
+            try
+            {
+                if (ids == null || !ids.Any())
+                {
+                    return new BadRequestResponse("No category IDs provided for deletion.");
+                }
+                var wasSuccessful = await _categoryRepository.DeleteManyAsync(c => ids.Contains(c.Id));
+                if (!wasSuccessful)
+                {
+                    return new NotFoundResponse("None of the specified categories were found to delete.");
+                }
+
+                return new OkResponse("Categories deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while deleting multiple categories.");
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
     }
 }

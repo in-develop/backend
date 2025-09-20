@@ -66,5 +66,11 @@ namespace TeamChallenge.Controllers
         {
             return await _categoryLogic.DeleteCategoryAsync(id);
         }
+
+        [HttpDelete("bulk")]
+        public async Task<IResponse> Delete([FromBody] DeleteCategoryManyRequest requestData)
+        {
+            return await _categoryLogic.DeleteCategoryManyAsync(requestData.Ids);
+        }
     }
 }

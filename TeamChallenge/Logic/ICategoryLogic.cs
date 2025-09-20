@@ -12,5 +12,6 @@ namespace TeamChallenge.Logic
         Task<IResponse> UpdateCategoryAsync(int id, UpdateCategoryRequest dto);
         Task<IResponse> UpdateCategoryManyAsync(List<UpdateCategoryManyRequest> requestData);
         Task<IResponse> DeleteCategoryAsync(int id);
+        Task<IResponse> DeleteCategoryManyAsync(List<int> ids);
     }
 }
