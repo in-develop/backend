@@ -87,7 +87,6 @@ namespace TeamChallenge.Logic
                 {
                     Id = result.Id,
                     Name = result.Name,
-                    CategoryId = requestData.CategoryId,
                 };
                 
                 return new CreateSubCategoryResponse(subCategoryDto);

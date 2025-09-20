@@ -128,6 +128,37 @@ namespace TeamChallenge.Logic
             }
         }
 
+        public async Task<IResponse> CreateCategoryManyAsync(List<CreateCategoryManyRequest> requestData)
+        {
+            try
+            {
+                if (requestData == null || !requestData.Any())
+                {
+                    return new BadRequestResponse("The list of categories cannot be empty.");
+                }
+
+                int count = requestData.Count;
+
+                await _categoryRepository.CreateManyAsync(count, entities =>
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        entities[i].Name = requestData[i].Name;
+                    }
+                });
+
+                return new OkResponse($"{count} categories created successfully.")
+                {
+                    StatusCode = 201
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating multiple categories.");
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
+
         public async Task<IResponse> UpdateCategoryAsync(int id, UpdateCategoryRequest requestData)
         {
             try

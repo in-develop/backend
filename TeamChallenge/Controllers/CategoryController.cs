@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
@@ -37,12 +38,25 @@ namespace TeamChallenge.Controllers
             return await _categoryLogic.CreateCategoryAsync(requestData);
         }
 
+        [HttpPost("bulk")]
+        public async Task<IResponse> CreateMany([FromBody] List<CreateCategoryManyRequest> requestData)
+        {
+            return await _categoryLogic.CreateCategoryManyAsync(requestData);
+        }
+
         [HttpPut("{id}")]
         [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Update([FromRoute]int id, [FromBody] UpdateCategoryRequest requestData)
         {
             return await _categoryLogic.UpdateCategoryAsync(id, requestData);
         }
+
+        [HttpPut("bulk")]
+        public async Task<IResponse> UpdateMany([FromBody] List<UpdateCategoryManyRequest> requestData)
+        {
+            return await _categoryLogic.UpdateCategoryManyAsync(requestData);
+        }
+
 
         [HttpDelete("{id}")]
         [Authorize(GlobalConsts.Roles.Admin)]
