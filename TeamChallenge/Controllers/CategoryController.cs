@@ -26,6 +26,7 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet("{id}")]
+
         public async Task<IResponse> GetById([FromRoute]int id)
         {
             return await _categoryLogic.GetCategoryByIdAsync(id);
@@ -39,6 +40,7 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost("bulk")]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> CreateMany([FromBody] List<CreateCategoryManyRequest> requestData)
         {
             return await _categoryLogic.CreateCategoryManyAsync(requestData);
@@ -52,11 +54,11 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPut("bulk")]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> UpdateMany([FromBody] List<UpdateCategoryManyRequest> requestData)
         {
             return await _categoryLogic.UpdateCategoryManyAsync(requestData);
         }
-
 
         [HttpDelete("{id}")]
         [Authorize(GlobalConsts.Roles.Admin)]
