@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
+using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Requests.SubCategory;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.CategoryResponses;
@@ -34,6 +35,12 @@ namespace TeamChallenge.Controllers
         public async Task<IResponse> Create([FromBody] CreateSubCategoryRequest requestData)
         {
             return await _subCategoryLogic.CreateSubCategoryAsync(requestData);
+        }
+
+        [HttpPost("bulk")]
+        public async Task<IResponse> CreateMany([FromBody] List<CreateSubCategoryManyRequest> requestData)
+        {
+            return await _subCategoryLogic.CreateSubCategoryManyAsync(requestData);
         }
 
         [HttpPut("{id}")]

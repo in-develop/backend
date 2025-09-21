@@ -98,7 +98,7 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> CreateMultipleSubCategoriesAsync(List<CreateSubCategoryManyRequest> requestData)
+        public async Task<IResponse> CreateSubCategoryManyAsync(List<CreateSubCategoryManyRequest> requestData)
         {
             try
             {
