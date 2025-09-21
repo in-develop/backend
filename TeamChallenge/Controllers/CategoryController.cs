@@ -68,7 +68,8 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpDelete("bulk")]
-        public async Task<IResponse> Delete([FromBody] DeleteCategoryManyRequest requestData)
+        [Authorize(GlobalConsts.Roles.Admin)]
+        public async Task<IResponse> DeleteMany([FromBody] DeleteCategoryManyRequest requestData)
         {
             return await _categoryLogic.DeleteCategoryManyAsync(requestData.Ids);
         }

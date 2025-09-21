@@ -142,6 +142,57 @@ namespace TeamChallenge.Logic
             }
         }
 
+        public async Task<IResponse> UpdateSubCategoryManyAsync(List<UpdateSubCategoryManyRequest> requestData)
+        {
+            try
+            {
+                if (requestData == null || !requestData.Any())
+                {
+                    return new BadRequestResponse("The list of subcategories cannot be empty.");
+                }
+
+                var parentIds = requestData.Where(r => r.CategoryId.HasValue).
+                        Select(r => r.CategoryId.Value).Distinct().ToList();
+
+                if (parentIds.Any())
+                {
+                    var existingCategories = await _categoryRepository.GetFilteredAsync(c => parentIds.Contains(c.Id));
+                    if (existingCategories.Count() != parentIds.Count)
+                    {
+                        return new BadRequestResponse("One or more specified parent CategoryIds are invalid. No subcategories were updated.");
+                    }
+                }
+
+                var idsToUpdate = requestData.Select(r => r.Id).ToList();
+
+                var wasSuccessful = await _subCategoryRepository.UpdateManyAsync(
+                    subCategory => idsToUpdate.Contains(subCategory.Id),
+                    entities =>
+                    {
+                        var requestDict = requestData.ToDictionary(r => r.Id);
+                        foreach (var entity in entities)
+                        {
+                            if (requestDict.TryGetValue(entity.Id, out var dto))
+                            {
+                                entity.Name = dto.Name;
+                                if (dto.CategoryId.HasValue)
+                                {
+                                    entity.CategoryId = dto.CategoryId.Value;
+                                }
+                            }
+                        }
+                    });
+
+                return new OkResponse("Subcategories were updated successfully.");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating multiple subcategories.");
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
+
         public async Task<IResponse> UpdateSubCategoryAsync(int id, UpdateSubCategoryRequest requestData)
         {
             try
@@ -179,5 +230,27 @@ namespace TeamChallenge.Logic
             }
         }
 
+        public async Task<IResponse> DeleteSubCategoryManyAsync(List<int> ids)
+        {
+            try
+            {
+                if (ids == null || !ids.Any())
+                {
+                    return new BadRequestResponse("No category IDs provided for deletion.");
+                }
+                var wasSuccessful = await _subCategoryRepository.DeleteManyAsync(c => ids.Contains(c.Id));
+                if (!wasSuccessful)
+                {
+                    return new NotFoundResponse("None of the specified categories were found to delete.");
+                }
+
+                return new OkResponse("Subcategories deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while deleting multiple subcategories.");
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
     }
 }
