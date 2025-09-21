@@ -98,14 +98,55 @@ namespace TeamChallenge.Logic
             }
         }
 
+        public async Task<IResponse> CreateMultipleSubCategoriesAsync(List<CreateSubCategoryManyRequest> requestData)
+        {
+            try
+            {
+                if (requestData == null || !requestData.Any())
+                {
+                    return new BadRequestResponse("The list of categories cannot be empty.");
+                }
+
+                
+
+                // Creating List of unique CategoryIds to check whether they are in DB
+                var requestedParentIds = requestData.Select(r => r.CategoryId).Distinct().ToList();
+                
+                // Retrieving existing parent Categories
+                var existingCategories =
+                    await _categoryRepository.GetFilteredAsync(c => requestedParentIds.Contains(c.Id));
+
+
+                if (existingCategories.Count() != requestedParentIds.Count())
+                {
+                    // If the number of results found does not match the number of unique queries,
+                    // then one or more categories do not exist. Reject the entire query.
+                    return new BadRequestResponse("One or more specified parent CategoryIds are invalid.");
+                }
+
+                int count = requestData.Count;
+                await _subCategoryRepository.CreateManyAsync(count, entities =>
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        entities[i].Name = requestData[i].Name;
+                        entities[i].CategoryId = requestData[i].CategoryId;
+                    }
+                });
+                return new OkResponse($"{count} subcategories created successfully.") { StatusCode = 201 };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating multiple subcategories.");
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
+
         public async Task<IResponse> UpdateSubCategoryAsync(int id, UpdateSubCategoryRequest requestData)
         {
             try
             {
-
-                var subCategory = await _subCategoryRepository.GetByIdAsync(id);
-
-                var result = await _subCategoryRepository.UpdateAsync(id, entity =>
+                await _subCategoryRepository.UpdateAsync(id, entity =>
                 {
                     entity.Name = requestData.Name;
                 });
