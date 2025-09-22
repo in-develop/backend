@@ -14,7 +14,8 @@ namespace TeamChallenge.Repositories
             { typeof(CategoryEntity), typeof(CategoryRepository) },
             { typeof(ReviewEntity), typeof(ReviewRepository) },
             { typeof(CartEntity), typeof(CartRepository) },
-            { typeof(CartItemEntity), typeof(CartItemRepository) }
+            { typeof(CartItemEntity), typeof(CartItemRepository) },
+            { typeof(ImageEntity), typeof(ImageRepository) }
         };
 
         private readonly Dictionary<string, List<CategoryEntity>> _ = new Dictionary<string, List<CategoryEntity>>();

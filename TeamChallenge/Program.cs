@@ -40,6 +40,7 @@ builder.Services.AddScoped<ICartLogic, CartLogic>();
 builder.Services.AddScoped<ICartItemLogic, CartItemLogic>();
 builder.Services.AddScoped<IUserLogic, UserLogic>();
 builder.Services.AddScoped<ITokenReaderService, TokenReaderService>();
+builder.Services.AddScoped<IImageLogic, ImageLogic>();
 builder.Services.AddScoped<ValidationFilter>();
 var sender = builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 

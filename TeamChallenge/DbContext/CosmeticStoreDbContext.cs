@@ -6,7 +6,7 @@ using TeamChallenge.StaticData;
 
 namespace TeamChallenge.DbContext
 {
-    public class CosmeticStoreDbContext: IdentityDbContext<UserEntity>
+    public class CosmeticStoreDbContext : IdentityDbContext<UserEntity>
     {
         public CosmeticStoreDbContext(DbContextOptions<CosmeticStoreDbContext> options) : base(options)
         {
@@ -21,7 +21,7 @@ namespace TeamChallenge.DbContext
             base.OnModelCreating(builder);
             SetSeedData(builder);
 
-        }   
+        }
 
         private void SetSeedData(ModelBuilder builder)
         {
@@ -153,8 +153,9 @@ namespace TeamChallenge.DbContext
         public DbSet<OrderItemEntity> OrderItems { get; set; }
         public DbSet<CartEntity> Carts { get; set; }
         public DbSet<CartItemEntity> Cartitems { get; set; }
-        public DbSet<UserEntity> Users {  get; set; }
-        public DbSet<ReviewEntity> Reviews {  get; set; }
-        public DbSet<ProductBundleEntity> ProductBundles {  get; set; }
+        public DbSet<UserEntity> Users { get; set; }
+        public DbSet<ReviewEntity> Reviews { get; set; }
+        public DbSet<ProductBundleEntity> ProductBundles { get; set; }
+        public DbSet<ImageEntity> Images { get; set; }
     }
 }
