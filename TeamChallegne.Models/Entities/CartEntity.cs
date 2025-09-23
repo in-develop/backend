@@ -9,6 +9,6 @@ namespace TeamChallenge.Models.Entities
         [Required]
         public string UserId { get; set; }
         public UserEntity? User { get; set; }
-        public ICollection<CartItemEntity> CartItems { get; set; }
+        public List<CartItemEntity> CartItems { get; set; }
     }
 }

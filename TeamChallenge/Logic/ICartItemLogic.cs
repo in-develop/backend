@@ -8,6 +8,6 @@ namespace TeamChallenge.Logic
         Task<IResponse> CreateCartItemAsync(CreateCartItemRequest dto);
         Task<IResponse> UpdateCartItemAsync(int id, UpdateCartItemRequest dto);
         Task<IResponse> DeleteCartItemAsync(int id);
-        Task<IResponse> DeleteCartItemFromCartAsync();
+        Task<IResponse> DeleteCartItemsFromCartAsync();
     }
 }

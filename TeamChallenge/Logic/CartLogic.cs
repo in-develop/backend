@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using TeamChallenge.Helpers;
+﻿using TeamChallenge.Helpers;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Repositories;
@@ -7,7 +6,6 @@ using TeamChallenge.Services;
 
 namespace TeamChallenge.Logic
 {
-    [Authorize]
     public class CartLogic : ICartLogic
     {
         private readonly ICartRepository _cartRepository;
