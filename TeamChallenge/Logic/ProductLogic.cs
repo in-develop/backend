@@ -10,12 +10,18 @@ namespace TeamChallenge.Logic
     {
         private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductLogic> _logger;
+        private readonly ICategoryLogic _categoryLogic;
         private readonly IRedisCacheService _cache;
 
-        public ProductLogic(RepositoryFactory factory, ILogger<ProductLogic> logger, IRedisCacheService cache)
+        public ProductLogic(
+            RepositoryFactory factory, 
+            ILogger<ProductLogic> logger, 
+            ICategoryLogic categoryLogic,
+            IRedisCacheService cache)
         {
             _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
             _logger = logger;
+            _categoryLogic = categoryLogic;
             _cache = cache;
         }
 
@@ -79,6 +85,13 @@ namespace TeamChallenge.Logic
         {
             try
             {
+                var response = await _categoryLogic.CheckIfCategoriesExists(requestData.CategoryId);
+
+                if (!response.IsSuccess)
+                {
+                    return response;
+                }
+
                 await _productRepository.CreateAsync(entity =>
                 {
                     entity.Name = requestData.Name;
@@ -89,7 +102,7 @@ namespace TeamChallenge.Logic
                     entity.CategoryId = requestData.CategoryId;
                 });
 
-                return new OkResponse();
+                return response;
             }
             catch (Exception ex)
             {
@@ -101,6 +114,13 @@ namespace TeamChallenge.Logic
         {
             try
             {
+                var response = await _categoryLogic.CheckIfCategoriesExists(requestData.CategoryId);
+
+                if (!response.IsSuccess)
+                {
+                    return response;
+                }
+
                 var result = await _productRepository.UpdateAsync(id, entity =>
                 {
                     entity.Name = requestData.Name;
@@ -118,7 +138,7 @@ namespace TeamChallenge.Logic
 
                 await _cache.RemoveValueAsync<ProductEntity>(id);
 
-                return new OkResponse();
+                return response;
             }
             catch (Exception ex)
             {

@@ -16,6 +16,21 @@ namespace TeamChallenge.Logic
             _logger = logger;
         }
 
+        public async Task<IResponse> CheckIfCategoriesExists(params int[] categoryIDs)
+        {
+            var existingCategories = await _categoryRepository.GetFilteredAsync(p => categoryIDs.Contains(p.Id));
+            var existingCategoryIds = existingCategories.Select(p => p.Id).ToHashSet();
+            var missingCategoryIds = categoryIDs.Except(existingCategoryIds).ToList();
+
+            if (missingCategoryIds.Any())
+            {
+                _logger.LogWarning("Categories not found with IDs: {MissingProductIds}", string.Join(", ", missingCategoryIds));
+                return new NotFoundResponse($"Categories not found with IDs: {string.Join(", ", missingCategoryIds)}");
+            }
+
+            return new OkResponse();
+        }
+
         public async Task<IResponse> GetAllCategoriesAsync()
         {
             try

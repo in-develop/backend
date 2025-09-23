@@ -5,6 +5,7 @@ namespace TeamChallenge.Logic
 {
     public interface ICategoryLogic
     {
+        Task<IResponse> CheckIfCategoriesExists(params int[] categoryIDs);
         Task<IResponse> GetAllCategoriesAsync();
         Task<IResponse> GetCategoryByIdAsync(int id);
         Task<IResponse> CreateCategoryAsync(CreateCategoryRequest dto);
