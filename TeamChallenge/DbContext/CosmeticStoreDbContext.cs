@@ -41,7 +41,7 @@ namespace TeamChallenge.DbContext
                 .HasOne(psc => psc.SubCategory)
                 .WithMany(sc => sc.ProductSubCategories)
                 .HasForeignKey(psc => psc.SubCategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
 
 
@@ -120,7 +120,7 @@ namespace TeamChallenge.DbContext
                         Description = "A gentle, non-stripping cleanser for all skin types.",
                         Price = 15.99m,
                         StockQuantity = 100,
-                        CategoryId = 1 // Linked to "Face Care"
+                        
                     },
                     new ProductEntity
                     {
@@ -129,7 +129,6 @@ namespace TeamChallenge.DbContext
                         Description = "A lightweight moisturizer with broad-spectrum sun protection.",
                         Price = 28.50m,
                         StockQuantity = 80,
-                        CategoryId = 1 // Linked to "Face Care"
                     },
                     new ProductEntity
                     {
@@ -138,7 +137,6 @@ namespace TeamChallenge.DbContext
                         Description = "A buildable, medium-coverage foundation with a radiant finish.",
                         Price = 45.00m,
                         StockQuantity = 60,
-                        CategoryId = 2 // Linked to "Makeup"
                     },
                     new ProductEntity
                     {
@@ -147,7 +145,6 @@ namespace TeamChallenge.DbContext
                         Description = "A long-lasting, highly pigmented matte lipstick.",
                         Price = 22.00m,
                         StockQuantity = 120,
-                        CategoryId = 2 // Linked to "Makeup"
                     },
                     new ProductEntity
                     {
@@ -156,7 +153,6 @@ namespace TeamChallenge.DbContext
                         Description = "Adds body and shine to fine, flat hair.",
                         Price = 18.00m,
                         StockQuantity = 90,
-                        CategoryId = 3 // Linked to "Hair Care"
                     });
 
             builder.Entity<ProductSubCategoryEntity>().HasData(

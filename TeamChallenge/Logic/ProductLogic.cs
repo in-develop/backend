@@ -1,9 +1,11 @@
-﻿using TeamChallenge.Models.Entities;
-using TeamChallenge.Repositories;
-using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Requests;
+﻿using Azure.Core;
 using SQLitePCL;
 using TeamChallenge.DbContext;
+using TeamChallenge.Models.Entities;
+using TeamChallenge.Models.Models.Responses.SubCategoryResponse;
+using TeamChallenge.Models.Requests.Product;
+using TeamChallenge.Models.Responses;
+using TeamChallenge.Repositories;
 using TeamChallenge.Services;
 
 namespace TeamChallenge.Logic
@@ -13,7 +15,7 @@ namespace TeamChallenge.Logic
         private readonly IProductRepository _productRepository;
         private readonly CosmeticStoreDbContext _context;
         private readonly ILogger<ProductLogic> _logger;
-        private readonly ICategoryLogic _categoryLogic;
+        private readonly ISubCategoryRepository _subCategoryRepository;
         private readonly IRedisCacheService _cache;
 
         public ProductLogic(
@@ -23,8 +25,8 @@ namespace TeamChallenge.Logic
             IRedisCacheService cache)
         {
             _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
+            _subCategoryRepository = (ISubCategoryRepository)factory.GetRepository<SubCategoryEntity>();
             _logger = logger;
-            _categoryLogic = categoryLogic;
             _cache = cache;
         }
 
@@ -61,7 +63,7 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _productRepository.GetAllAsync();
+                var result = await _productRepository.GetAllWithSubCategoriesAsync();
                 return new GetAllProductsResponse(result.Select(x => new GetProductResponseModel(x)));
             }
             catch (Exception ex)
@@ -70,6 +72,7 @@ namespace TeamChallenge.Logic
             }
         }
 
+        // Looping error
         public async Task<IResponse> GetProductByIdAsync(int id)
         {
             try
@@ -81,7 +84,7 @@ namespace TeamChallenge.Logic
                     return new GetProductResponse(new GetProductResponseModel(result));
                 }
 
-                result = await _productRepository.GetByIdAsync(id);
+                result = await _productRepository.GetByIdWithSubCategoriesAsync(id);
 
                 if (result == null)
                 {
@@ -100,78 +103,97 @@ namespace TeamChallenge.Logic
 
         public async Task<IResponse> CreateProductAsync(CreateProductRequest requestData)
         {
-            return new OkResponse();
-        }
-        // try
-            // {
-            //     if (requestData.SubCategories.Any())
-            //     {
-            //         entity.Name = requestData.Name;
-            //         entity.Description = requestData.Description;
-            //         entity.Price = requestData.Price;
-            //         entity.StockQuantity = requestData.StockQuantity;
-            //         entity.DiscountPrice = requestData.DiscountPrice;
-            //         entity.CategoryId = requestData.CategoryId;
-            //     };
-            //
-            //     var productId = await _productRepository.CreateWithSubCategoriesAsync(requestData.Name, requestData.Description, requestData.Price, requestData.SubCategories);
-            //     _logger.LogInformation("Successfuly created product with Id = {id} and Name = {name}", productId, requestData);
-            //     return new OkResponse();
-            // }
-            // catch (Exception ex)
-            // {
-            //     _logger.LogError(ex, "Error creating product with Name = {name}", requestData.Name);
-            //     return new ServerErrorResponse(ex.Message);
-            // }
-        // }
-        //{
-        //    try
-        //    {
-        //        await _productRepository.CreateAsync(entity =>
-        //        {
-        //            entity.Name = requestData.Name;
-        //            entity.Description = requestData.Description;
-        //            entity.Price = requestData.Price;
-        //            //entity.CategoryId = requestData.CategoryId;
-        //        });
+            try
+            {
+                var existingSubCategories = await _subCategoryRepository.GetFilteredAsync(sc => requestData.SubCategoryIds.Contains(sc.Id));
 
-        //        return new OkResponse();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new ServerErrorResponse(ex.Message);
-        //    }
-        //}
+                if (existingSubCategories.Count() != requestData.SubCategoryIds.Distinct().Count())
+                {
+                    return new BadRequestResponse("One or more provided SubCategoryIds are invalid.");
+                }
+
+                await _productRepository.CreateAsync(entity =>
+                {
+                    entity.Name = requestData.Name;
+                    entity.Description = requestData.Description;
+                    entity.Price = requestData.Price;
+                    entity.DiscountPrice = requestData.DiscountPrice;
+                    entity.StockQuantity = requestData.StockQuantity;
+
+                    foreach(var subId in requestData.SubCategoryIds)
+                    {
+                        entity.ProductSubCategories.Add(new ProductSubCategoryEntity { SubCategoryId = subId });
+                    }
+                });
+
+                return new OkResponse("Product successfully created") { StatusCode = 201 };
+
+            }
+            catch (Exception ex)
+            {
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
+
+
 
         public async Task<IResponse> UpdateProductAsync(int id, UpdateProductRequest requestData)
         {
             try
             {
-                var response = await _categoryLogic.CheckIfCategoriesExists(requestData.CategoryId);
+                var productToUpdate = await _productRepository.GetByIdWithSubCategoriesAsync(id);
 
-                if (!response.IsSuccess)
-                {
-                    return response;
-                }
-
-                var result = await _productRepository.UpdateAsync(id, entity =>
-                {
-                    entity.Name = requestData.Name;
-                    entity.Description = requestData.Description;
-                    entity.Price = requestData.Price;
-                    entity.StockQuantity = requestData.StockQuantity;
-                    entity.DiscountPrice = requestData.DiscountPrice;
-                    //entity.CategoryId = requestData.CategoryId;
-                });
-
-                if (!result)
+                if (productToUpdate == null)
                 {
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
-                await _cache.RemoveValueAsync<ProductEntity>(id);
+                var existingSubCategories = await _subCategoryRepository.GetFilteredAsync(sc => requestData.SubCategoryIds.Contains(sc.Id));
 
-                return response;
+                if (existingSubCategories.Count() != requestData.SubCategoryIds.Distinct().Count())
+                {
+                    return new BadRequestResponse("One or more provided SubCategoryIds are invalid.");
+                }
+
+                await _productRepository.UpdateAsync(id, entity =>
+                {
+                    entity.Name = requestData.Name;
+                    entity.Description = requestData.Description;
+                    entity.Price = requestData.Price;
+                    entity.DiscountPrice = requestData.DiscountPrice;
+                    entity.StockQuantity = requestData.StockQuantity;
+
+                    entity.ProductSubCategories.Clear();
+                    foreach (var subId in requestData.SubCategoryIds)
+                    {
+                        entity.ProductSubCategories.Add(new ProductSubCategoryEntity { SubCategoryId = subId });
+                    }
+                });
+
+                //if (!response.IsSuccess)
+                //{
+                //    return response;
+                //}
+
+                //var result = await _productRepository.UpdateAsync(id, entity =>
+                //{
+                //    entity.Name = requestData.Name;
+                //    entity.Description = requestData.Description;
+                //    entity.Price = requestData.Price;
+                //    entity.StockQuantity = requestData.StockQuantity;
+                //    entity.DiscountPrice = requestData.DiscountPrice;
+                //    //entity.CategoryId = requestData.CategoryId;
+                //});
+
+                //if (!result)
+                //{
+                //    return new NotFoundResponse($"Product with Id = {id} not found");
+                //}
+
+                //await _cache.RemoveValueAsync<ProductEntity>(id);
+
+                //return response;
+                return new OkResponse("Ok");
             }
             catch (Exception ex)
             {

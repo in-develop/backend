@@ -7,6 +7,5 @@ namespace TeamChallenge.Models.Entities
         [Required]
         public string Name { get; set; }
         public ICollection<SubCategoryEntity> SubCategories { get; set; } = new List<SubCategoryEntity>();
-        public ICollection<ProductEntity> Products { get; set; } = new List<ProductEntity>();
     }
 }

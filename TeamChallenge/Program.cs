@@ -86,6 +86,7 @@ void SetupCustomServices(IServiceCollection services)
     services.AddSingleton<IGenerateToken, GenerateTokenService>();
     services.AddScoped<RepositoryFactory>();
     services.AddScoped<ICategoryLogic, CategoryLogic>();
+    services.AddScoped<ISubCategoryLogic, SubCategoryLogic>();
     services.AddScoped<IProductLogic, ProductLogic>();
     services.AddScoped<IProductBundleLogic, ProductBundleLogic>();
     services.AddScoped<IReviewLogic, ReviewLogic>();

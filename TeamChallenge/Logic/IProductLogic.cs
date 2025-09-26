@@ -1,4 +1,4 @@
-﻿using TeamChallenge.Models.Requests;
+﻿using TeamChallenge.Models.Requests.Product;
 using TeamChallenge.Models.Responses;
 
 

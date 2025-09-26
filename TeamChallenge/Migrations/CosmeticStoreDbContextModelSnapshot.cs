@@ -386,14 +386,11 @@ namespace TeamChallenge.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("DiscountPrice")
-                        .HasColumnType("decimal(10, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -410,8 +407,6 @@ namespace TeamChallenge.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("ProductBundleId");
 
                     b.ToTable("Products");
@@ -420,7 +415,6 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 1,
-                            CategoryId = 1,
                             Description = "A gentle, non-stripping cleanser for all skin types.",
                             Name = "Gentle Hydrating Cleanser",
                             Price = 15.99m,
@@ -429,7 +423,6 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 2,
-                            CategoryId = 1,
                             Description = "A lightweight moisturizer with broad-spectrum sun protection.",
                             Name = "Daily Defense Moisturizer SPF 30",
                             Price = 28.50m,
@@ -438,7 +431,6 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 3,
-                            CategoryId = 2,
                             Description = "A buildable, medium-coverage foundation with a radiant finish.",
                             Name = "Luminous Silk Foundation",
                             Price = 45.00m,
@@ -447,7 +439,6 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 4,
-                            CategoryId = 2,
                             Description = "A long-lasting, highly pigmented matte lipstick.",
                             Name = "Velvet Matte Lipstick - Classic Red",
                             Price = 22.00m,
@@ -456,7 +447,6 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 5,
-                            CategoryId = 3,
                             Description = "Adds body and shine to fine, flat hair.",
                             Name = "Volume Boost Shampoo",
                             Price = 18.00m,
@@ -842,17 +832,9 @@ namespace TeamChallenge.Migrations
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.ProductEntity", b =>
                 {
-                    b.HasOne("TeamChallenge.Models.Entities.CategoryEntity", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("TeamChallenge.Models.Entities.ProductBundleEntity", "ProductBundle")
                         .WithMany("Products")
                         .HasForeignKey("ProductBundleId");
-
-                    b.Navigation("Category");
 
                     b.Navigation("ProductBundle");
                 });
@@ -862,7 +844,7 @@ namespace TeamChallenge.Migrations
                     b.HasOne("TeamChallenge.Models.Entities.ProductEntity", "Product")
                         .WithMany("ProductSubCategories")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TeamChallenge.Models.Entities.SubCategoryEntity", "SubCategory")
@@ -913,8 +895,6 @@ namespace TeamChallenge.Migrations
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.CategoryEntity", b =>
                 {
-                    b.Navigation("Products");
-
                     b.Navigation("SubCategories");
                 });
 

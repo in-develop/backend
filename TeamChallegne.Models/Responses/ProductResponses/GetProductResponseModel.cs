@@ -1,4 +1,5 @@
 ﻿using TeamChallenge.Models.Entities;
+using TeamChallenge.Models.Responses.SubCategoryResponses;
 
 namespace TeamChallenge.Models.Responses
 {
@@ -12,8 +13,17 @@ namespace TeamChallenge.Models.Responses
             Price = entity.Price;
             DiscountPrice = entity.DiscountPrice ?? 0;
             StockQuantity = entity.StockQuantity;
-            CategoryId = entity.CategoryId;
             ProductBundleId = entity.ProductBundleId ?? 0;
+
+            if (entity.ProductSubCategories != null)
+            {
+                SubCategories = entity.ProductSubCategories
+                    .Select(psc => new SubCategoryResponseModel
+                    {
+                        Id = psc.SubCategory.Id,
+                        Name = psc.SubCategory.Name
+                    }).ToList();
+            }
 
         }
         public int Id { get; set; }
@@ -22,7 +32,7 @@ namespace TeamChallenge.Models.Responses
         public decimal Price { get; set; }
         public decimal DiscountPrice { get; set; }
         public int StockQuantity { get; set; }
-        public int CategoryId { get; set; }
         public int ProductBundleId { get; set; }
+        public List<SubCategoryResponseModel> SubCategories { get; set; } = new List<SubCategoryResponseModel>();
     }
 }

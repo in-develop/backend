@@ -61,6 +61,22 @@ namespace TeamChallenge.Repositories
             await _context.SaveChangesAsync();
             return product.Id;
         }
+
+        public async Task<IEnumerable<ProductEntity>> GetAllWithSubCategoriesAsync()
+        {
+            return await _dbSet
+                .Include(p => p.ProductSubCategories)
+                .ThenInclude(psc => psc.SubCategory)
+                .ToListAsync();
+        }
+
+        public async Task<ProductEntity?> GetByIdWithSubCategoriesAsync(int id)
+        {
+            return await _dbSet
+                .Include(p => p.ProductSubCategories)
+                .ThenInclude(psc => psc.SubCategory)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
     }
 
 }

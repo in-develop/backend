@@ -12,8 +12,8 @@ using TeamChallenge.DbContext;
 namespace TeamChallenge.Migrations
 {
     [DbContext(typeof(CosmeticStoreDbContext))]
-    [Migration("20250923162336_AddOrderHistoryTable")]
-    partial class AddOrderHistoryTable
+    [Migration("20250926133658_ConfigureCascadeDeleteForProducts")]
+    partial class ConfigureCascadeDeleteForProducts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -247,12 +247,17 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Category 1"
+                            Name = "Face Care"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Category 2"
+                            Name = "Makeup"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Hair Care"
                         });
                 });
 
@@ -384,14 +389,11 @@ namespace TeamChallenge.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("DiscountPrice")
-                        .HasColumnType("decimal(10, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -408,8 +410,6 @@ namespace TeamChallenge.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("ProductBundleId");
 
                     b.ToTable("Products");
@@ -418,31 +418,98 @@ namespace TeamChallenge.Migrations
                         new
                         {
                             Id = 1,
-                            CategoryId = 1,
-                            Description = "Description for product 1",
-                            Name = "Prod 1",
-                            Price = 10.99m,
-                            ProductBundleId = 1,
+                            Description = "A gentle, non-stripping cleanser for all skin types.",
+                            Name = "Gentle Hydrating Cleanser",
+                            Price = 15.99m,
                             StockQuantity = 100
                         },
                         new
                         {
                             Id = 2,
-                            CategoryId = 2,
-                            Description = "Description for product 2",
-                            Name = "Prod 2",
-                            Price = 10.99m,
-                            ProductBundleId = 1,
-                            StockQuantity = 100
+                            Description = "A lightweight moisturizer with broad-spectrum sun protection.",
+                            Name = "Daily Defense Moisturizer SPF 30",
+                            Price = 28.50m,
+                            StockQuantity = 80
                         },
                         new
                         {
                             Id = 3,
-                            CategoryId = 1,
-                            Description = "Description for product 3",
-                            Name = "Prod 3",
-                            Price = 10.99m,
-                            StockQuantity = 100
+                            Description = "A buildable, medium-coverage foundation with a radiant finish.",
+                            Name = "Luminous Silk Foundation",
+                            Price = 45.00m,
+                            StockQuantity = 60
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "A long-lasting, highly pigmented matte lipstick.",
+                            Name = "Velvet Matte Lipstick - Classic Red",
+                            Price = 22.00m,
+                            StockQuantity = 120
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Adds body and shine to fine, flat hair.",
+                            Name = "Volume Boost Shampoo",
+                            Price = 18.00m,
+                            StockQuantity = 90
+                        });
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductSubCategoryEntity", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductId", "SubCategoryId");
+
+                    b.HasIndex("SubCategoryId");
+
+                    b.ToTable("ProductSubCategoryEntities");
+
+                    b.HasData(
+                        new
+                        {
+                            ProductId = 1,
+                            SubCategoryId = 1,
+                            Id = 1
+                        },
+                        new
+                        {
+                            ProductId = 2,
+                            SubCategoryId = 2,
+                            Id = 2
+                        },
+                        new
+                        {
+                            ProductId = 3,
+                            SubCategoryId = 3,
+                            Id = 3
+                        },
+                        new
+                        {
+                            ProductId = 4,
+                            SubCategoryId = 4,
+                            Id = 4
+                        },
+                        new
+                        {
+                            ProductId = 5,
+                            SubCategoryId = 5,
+                            Id = 5
+                        },
+                        new
+                        {
+                            ProductId = 3,
+                            SubCategoryId = 2,
+                            Id = 6
                         });
                 });
 
@@ -500,6 +567,60 @@ namespace TeamChallenge.Migrations
                             ProductId = 2,
                             Rating = 3,
                             UserId = "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e"
+                        });
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.SubCategoryEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("SubCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 1,
+                            Name = "Cleansers"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryId = 1,
+                            Name = "Moisturizers"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryId = 2,
+                            Name = "Foundation"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 2,
+                            Name = "Lipstick"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CategoryId = 3,
+                            Name = "Shampoo"
                         });
                 });
 
@@ -584,7 +705,7 @@ namespace TeamChallenge.Migrations
                             PasswordHash = "AQAAAAIAAYagAAAAEGX+x7oprDHdtrcw9g2r0B/J6Ae4IiS7/2HhEt4k6Zx7q3KtOmCXrvFrDxMlY8ox3A==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "V4WTZVKR2NZW2BOK4YAEARQOCJHSV4SK",
-                            SentEmailTime = new DateTime(2025, 9, 5, 23, 43, 34, 0, DateTimeKind.Unspecified),
+                            SentEmailTime = new DateTime(2025, 5, 9, 23, 43, 34, 0, DateTimeKind.Unspecified),
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         });
@@ -714,19 +835,30 @@ namespace TeamChallenge.Migrations
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.ProductEntity", b =>
                 {
-                    b.HasOne("TeamChallenge.Models.Entities.CategoryEntity", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("TeamChallenge.Models.Entities.ProductBundleEntity", "ProductBundle")
                         .WithMany("Products")
                         .HasForeignKey("ProductBundleId");
 
-                    b.Navigation("Category");
-
                     b.Navigation("ProductBundle");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.ProductSubCategoryEntity", b =>
+                {
+                    b.HasOne("TeamChallenge.Models.Entities.ProductEntity", "Product")
+                        .WithMany("ProductSubCategories")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeamChallenge.Models.Entities.SubCategoryEntity", "SubCategory")
+                        .WithMany("ProductSubCategories")
+                        .HasForeignKey("SubCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("SubCategory");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.ReviewEntity", b =>
@@ -748,6 +880,17 @@ namespace TeamChallenge.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TeamChallenge.Models.Entities.SubCategoryEntity", b =>
+                {
+                    b.HasOne("TeamChallenge.Models.Entities.CategoryEntity", "Category")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("TeamChallenge.Models.Entities.CartEntity", b =>
                 {
                     b.Navigation("CartItems");
@@ -755,7 +898,7 @@ namespace TeamChallenge.Migrations
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.CategoryEntity", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.OrderEntity", b =>
@@ -772,7 +915,14 @@ namespace TeamChallenge.Migrations
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.ProductEntity", b =>
                 {
+                    b.Navigation("ProductSubCategories");
+
                     b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("TeamChallenge.Models.Entities.SubCategoryEntity", b =>
+                {
+                    b.Navigation("ProductSubCategories");
                 });
 
             modelBuilder.Entity("TeamChallenge.Models.Entities.UserEntity", b =>

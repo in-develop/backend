@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TeamChallenge.Migrations
 {
     /// <inheritdoc />
-    public partial class AddInitialSeedData : Migration
+    public partial class ConfigureCascadeDeleteForProducts : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -216,7 +216,7 @@ namespace TeamChallenge.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -259,25 +259,40 @@ namespace TeamChallenge.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    DiscountPrice = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
                     StockQuantity = table.Column<int>(type: "int", nullable: false),
-                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    DiscountPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ProductBundleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Products_ProductBundles_ProductBundleId",
                         column: x => x.ProductBundleId,
                         principalTable: "ProductBundles",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrderHistory",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ChangedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    OldStatus = table.Column<int>(type: "int", nullable: true),
+                    NewStatus = table.Column<int>(type: "int", nullable: false),
+                    OrderId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderHistory_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -350,7 +365,7 @@ namespace TeamChallenge.Migrations
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ProductSubCategoryEntities_SubCategories_SubCategoryId",
                         column: x => x.SubCategoryId,
@@ -413,6 +428,18 @@ namespace TeamChallenge.Migrations
                 values: new object[] { 1, "Description for product bundle 1", null, "Prod bundle 1", 90.99m, 10 });
 
             migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "Id", "Description", "DiscountPrice", "Name", "Price", "ProductBundleId", "StockQuantity" },
+                values: new object[,]
+                {
+                    { 1, "A gentle, non-stripping cleanser for all skin types.", null, "Gentle Hydrating Cleanser", 15.99m, null, 100 },
+                    { 2, "A lightweight moisturizer with broad-spectrum sun protection.", null, "Daily Defense Moisturizer SPF 30", 28.50m, null, 80 },
+                    { 3, "A buildable, medium-coverage foundation with a radiant finish.", null, "Luminous Silk Foundation", 45.00m, null, 60 },
+                    { 4, "A long-lasting, highly pigmented matte lipstick.", null, "Velvet Matte Lipstick - Classic Red", 22.00m, null, 120 },
+                    { 5, "Adds body and shine to fine, flat hair.", null, "Volume Boost Shampoo", 18.00m, null, 90 }
+                });
+
+            migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
                 columns: new[] { "RoleId", "UserId" },
                 values: new object[] { "d4a7c4fb-a129-47ff-b520-df1e8799d609", "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" });
@@ -423,15 +450,13 @@ namespace TeamChallenge.Migrations
                 values: new object[] { 1, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" });
 
             migrationBuilder.InsertData(
-                table: "Products",
-                columns: new[] { "Id", "CategoryId", "Description", "DiscountPrice", "Name", "Price", "ProductBundleId", "StockQuantity" },
+                table: "Reviews",
+                columns: new[] { "Id", "Comment", "ProductId", "Rating", "UserId" },
                 values: new object[,]
                 {
-                    { 1, 1, "A gentle, non-stripping cleanser for all skin types.", null, "Gentle Hydrating Cleanser", 15.99m, null, 100 },
-                    { 2, 1, "A lightweight moisturizer with broad-spectrum sun protection.", null, "Daily Defense Moisturizer SPF 30", 28.50m, null, 80 },
-                    { 3, 2, "A buildable, medium-coverage foundation with a radiant finish.", null, "Luminous Silk Foundation", 45.00m, null, 60 },
-                    { 4, 2, "A long-lasting, highly pigmented matte lipstick.", null, "Velvet Matte Lipstick - Classic Red", 22.00m, null, 120 },
-                    { 5, 3, "Adds body and shine to fine, flat hair.", null, "Volume Boost Shampoo", 18.00m, null, 90 }
+                    { 1, "Great product!", 1, 5, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" },
+                    { 2, "Good value for money.", 1, 4, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" },
+                    { 3, "Average quality.", 2, 3, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" }
                 });
 
             migrationBuilder.InsertData(
@@ -457,16 +482,6 @@ namespace TeamChallenge.Migrations
                     { 3, 3, 3 },
                     { 4, 4, 4 },
                     { 5, 5, 5 }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Reviews",
-                columns: new[] { "Id", "Comment", "ProductId", "Rating", "UserId" },
-                values: new object[,]
-                {
-                    { 1, "Great product!", 1, 5, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" },
-                    { 2, "Good value for money.", 1, 4, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" },
-                    { 3, "Average quality.", 2, 3, "2e0e8d05-b3b5-4878-8a4b-e0db5ed4492e" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -525,6 +540,11 @@ namespace TeamChallenge.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderHistory_OrderId",
+                table: "OrderHistory",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
                 table: "OrderItems",
                 column: "OrderId");
@@ -538,11 +558,6 @@ namespace TeamChallenge.Migrations
                 name: "IX_Orders_UserId",
                 table: "Orders",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_CategoryId",
-                table: "Products",
-                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_ProductBundleId",
@@ -590,6 +605,9 @@ namespace TeamChallenge.Migrations
 
             migrationBuilder.DropTable(
                 name: "Cartitems");
+
+            migrationBuilder.DropTable(
+                name: "OrderHistory");
 
             migrationBuilder.DropTable(
                 name: "OrderItems");

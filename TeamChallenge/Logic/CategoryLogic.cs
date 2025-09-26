@@ -97,48 +97,63 @@ namespace TeamChallenge.Logic
         {
             try
             {
-
-                var newCategory = new CategoryEntity
-                {
-                    Name = requestData.Name,
-                    SubCategories = new List<SubCategoryEntity>()
-                };
-
                 if (requestData.SubCategoryIds != null && requestData.SubCategoryIds.Any())
                 {
-                    foreach (var subId in requestData.SubCategoryIds)
+                    var existingSubCategories = await _subCategoryRepository.GetFilteredAsync(sc => requestData.SubCategoryIds.Contains(sc.Id));
+                    if (existingSubCategories.Count() != requestData.SubCategoryIds.Distinct().Count())
                     {
-                        var subCategory = await _subCategoryRepository.GetByIdAsync(subId);
-                        if (subCategory != null)
-                        {
-                            newCategory.SubCategories.Add(subCategory);
-                        }
-                        else
-                        {
-                            _logger.LogWarning("SubCategory with Id = {subId} not found while creating category. Skipping.", subId);
-                            return new BadRequestResponse($"SubCategory with Id={subId} not found.");
-                        }
+                        return new BadRequestResponse("One or more provided SubCategoryIds are invalid.");
                     }
+
+                    await _categoryRepository.CreateAsync(entity =>
+                    {
+                        entity.Name = requestData.Name;
+                        entity.SubCategories = existingSubCategories.ToList();
+                    });
+                }
+                else
+                {
+                    await _categoryRepository.CreateAsync(entity =>
+                    {
+                        entity.Name = requestData.Name;
+                    });
                 }
 
-                // await _categoryRepository.CreateAsync(newCategory);
 
-                var categoryDto = new CategoryResponse
-                {
-                    Id = newCategory.Id,
-                    Name = newCategory.Name,
-                    SubCategories = newCategory.SubCategories.Select(sc => new SubCategoryResponse
+                    return new OkResponse("Category has been successfully created")
                     {
-                        Id = sc.Id,
-                        Name = sc.Name
-                    }).ToList()
-                };
+                        StatusCode = 201,
+                    };
 
-                return new CreateCategoryResponse(categoryDto);
+
+                //foreach (var subId in requestData.SubCategoryIds)
+                //{
+                //    var subCategory = await _subCategoryRepository.GetByIdAsync(subId);
+
+                //    else
+                //    {
+                //        return new BadRequestResponse($"SubCategory with Id={subId} not found.");
+                //    }
+
+                //await _categoryRepository.CreateAsync(newCategory);
+
+                //var categoryDto = new CategoryResponse
+                //{
+                //    Id = newCategory.Id,
+                //    Name = newCategory.Name,
+                //    SubCategories = newCategory.SubCategories.Select(sc => new SubCategoryResponse
+                //    {
+                //        Id = sc.Id,
+                //        Name = sc.Name
+                //    }).ToList()
+                //};
+
+                //return new CreateCategoryResponse(categoryDto);
+
+
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating category with Name = {name}", requestData.Name);
                 return new ServerErrorResponse(ex.Message);
             }
         }
@@ -194,16 +209,16 @@ namespace TeamChallenge.Logic
                 var requestedSubCategoryIds = requestData.SubCategoryIds;
 
                 // Finding Sub Category Ids needed to unlink
-                var idsToRemove = currentSubCategoryIds.Except(requestedSubCategoryIds).ToList();
-                if (idsToRemove.Any())
-                {
-                    var subCategoriesToRemove = categoryToUpdate.SubCategories
-                        .Where(sc => idsToRemove.Contains(sc.Id)).ToList();
-                    foreach (var subCategory in subCategoriesToRemove)
-                    {
-                        subCategory.CategoryId = null;
-                    }
-                }
+                //var idsToRemove = currentSubCategoryIds.Except(requestedSubCategoryIds).ToList();
+                //if (idsToRemove.Any())
+                //{
+                //    var subCategoriesToRemove = categoryToUpdate.SubCategories
+                //        .Where(sc => idsToRemove.Contains(sc.Id)).ToList();
+                //    foreach (var subCategory in subCategoriesToRemove)
+                //    {
+                //        subCategory.CategoryId = null;
+                //    }
+                //}
 
                 // Finding Sub Category Ids needed to link
                 var idsToAdd = requestedSubCategoryIds.Except(currentSubCategoryIds).ToList();
@@ -218,7 +233,6 @@ namespace TeamChallenge.Logic
                         }
                         else
                         {
-                            _logger.LogWarning("SubCategory with Id = {subCategoryId} not found. Skipping.", subCategoryId);
                             return new BadRequestResponse($"SubCategory with Id={subCategoryId} not found");
                         }
                     }

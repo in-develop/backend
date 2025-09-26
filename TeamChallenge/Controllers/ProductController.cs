@@ -46,7 +46,7 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpDelete("{id}")]
-        // [Authorize(GlobalConsts.Roles.Admin)]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Delete([FromRoute]int id)
         {
             return await _productLogic.DeleteProductAsync(id);
