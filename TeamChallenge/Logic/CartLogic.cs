@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using TeamChallenge.Helpers;
+﻿using TeamChallenge.Helpers;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Repositories;
@@ -7,7 +6,6 @@ using TeamChallenge.Services;
 
 namespace TeamChallenge.Logic
 {
-    [Authorize]
     public class CartLogic : ICartLogic
     {
         private readonly ICartRepository _cartRepository;
@@ -61,17 +59,7 @@ namespace TeamChallenge.Logic
             {
                 var cart = await _cartRepository.GetCartWithCartItemsAsync(cartId);
 
-                return new GetCartItemsResponse(cart.CartItems.Select(x => 
-                    new GetCartItemsResponseModel
-                    {
-                        Id = x.Id,
-                        ProductId = x.ProductId,
-                        ProductName = x.Product.Name,
-                        Quantity = x.Quantity,
-                        Price = x.Product.Price,
-                        CartId = x.CartId
-                    }
-                ));
+                return new GetCartItemsResponse(cart.CartItems.Select(x => new GetCartItemsResponseModel(x)));
             }
             catch
             {

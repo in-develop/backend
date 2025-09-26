@@ -5,7 +5,8 @@ using TeamChallenge.Models.Responses;
 
 namespace TeamChallenge.Controllers
 {
-    [Route("api/cart")]
+
+    [Route("api/carts")]
     [ApiController]
     [Authorize]
     public class CartController : ControllerBase

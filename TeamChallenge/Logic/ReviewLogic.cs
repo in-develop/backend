@@ -12,14 +12,17 @@ namespace TeamChallenge.Logic
         private readonly IReviewRepository _reviewRepository;
         private readonly ITokenReaderService _tokenReader;
         private readonly ILogger<ReviewLogic> _logger;
+        private readonly IRedisCacheService _cache;
         public ReviewLogic(
             RepositoryFactory factory, 
             ILogger<ReviewLogic> logger,
-            ITokenReaderService tokenReader)
+            ITokenReaderService tokenReader, 
+            IRedisCacheService cache)
         {
             _reviewRepository = (IReviewRepository)factory.GetRepository<ReviewEntity>();
             _logger = logger;
             _tokenReader = tokenReader;
+            _cache = cache;
         }
 
         public async Task<IResponse> GetAllReviewsAsync()
@@ -40,13 +43,21 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _reviewRepository.GetByIdAsync(id);
+                var result = await _cache.GetValueAsync<ReviewEntity>(id);
+
+                if (result != null)
+                {
+                    return new GetReviewResponse(result);
+                }
+
+                result = await _reviewRepository.GetByIdAsync(id);
 
                 if (result == null)
                 {
-                    _logger.LogWarning("Review with Id = {0} not found.", id);
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
+
+                await _cache.SetValueAsync(result, id);
 
                 return new GetReviewResponse(result);
             }
@@ -108,9 +119,10 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
-                    _logger.LogWarning("Review with Id = {0} not found.", id);
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
+
+                await _cache.RemoveValueAsync<ProductEntity>(id);
 
                 return new OkResponse();
             }
@@ -127,9 +139,10 @@ namespace TeamChallenge.Logic
                 var result = await _reviewRepository.DeleteAsync(id);
                 if (!result)
                 {
-                    _logger.LogWarning("Review with Id = {0} not found.", id);
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
+
+                await _cache.RemoveValueAsync<ProductEntity>(id);
 
                 return new OkResponse();
             }

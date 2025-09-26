@@ -2,6 +2,7 @@
 {
     public class ErrorResponse : BaseResponse
     {
+        public ErrorResponse() { }
         public ErrorResponse(string errorMessage)
         {
             Message = errorMessage;

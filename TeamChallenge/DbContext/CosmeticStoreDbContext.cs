@@ -225,5 +225,6 @@ namespace TeamChallenge.DbContext
         public DbSet<ProductBundleEntity> ProductBundles {  get; set; }
         public DbSet<SubCategoryEntity> SubCategories { get; set; }
         public DbSet<ProductSubCategoryEntity> ProductSubCategoryEntities { get; set; }
+        public DbSet<OrderHistoryEntity> OrderHistory {  get; set; }
     }
 }

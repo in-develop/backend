@@ -4,6 +4,7 @@ using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Requests;
 using SQLitePCL;
 using TeamChallenge.DbContext;
+using TeamChallenge.Services;
 
 namespace TeamChallenge.Logic
 {
@@ -12,12 +13,19 @@ namespace TeamChallenge.Logic
         private readonly IProductRepository _productRepository;
         private readonly CosmeticStoreDbContext _context;
         private readonly ILogger<ProductLogic> _logger;
+        private readonly ICategoryLogic _categoryLogic;
+        private readonly IRedisCacheService _cache;
 
-        public ProductLogic(RepositoryFactory factory, ILogger<ProductLogic> logger, CosmeticStoreDbContext context)
+        public ProductLogic(
+            RepositoryFactory factory, 
+            ILogger<ProductLogic> logger, 
+            ICategoryLogic categoryLogic,
+            IRedisCacheService cache)
         {
             _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
             _logger = logger;
-            _context = context;
+            _categoryLogic = categoryLogic;
+            _cache = cache;
         }
 
         public async Task<IResponse> DeleteManyProductsAsync(List<int> ids)
@@ -66,12 +74,21 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _productRepository.GetByIdAsync(id);
+                var result = await _cache.GetValueAsync<ProductEntity>(id);
+
+                if (result != null)
+                {
+                    return new GetProductResponse(new GetProductResponseModel(result));
+                }
+
+                result = await _productRepository.GetByIdAsync(id);
 
                 if (result == null)
                 {
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
+
+                await _cache.SetValueAsync(result, id);
 
                 return new GetProductResponse(new GetProductResponseModel(result));
             }
@@ -128,7 +145,15 @@ namespace TeamChallenge.Logic
 
         public async Task<IResponse> UpdateProductAsync(int id, UpdateProductRequest requestData)
         {
-            try {
+            try
+            {
+                var response = await _categoryLogic.CheckIfCategoriesExists(requestData.CategoryId);
+
+                if (!response.IsSuccess)
+                {
+                    return response;
+                }
+
                 var result = await _productRepository.UpdateAsync(id, entity =>
                 {
                     entity.Name = requestData.Name;
@@ -144,7 +169,9 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
-                return new OkResponse();
+                await _cache.RemoveValueAsync<ProductEntity>(id);
+
+                return response;
             }
             catch (Exception ex)
             {
@@ -161,6 +188,8 @@ namespace TeamChallenge.Logic
                 {
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
+
+                await _cache.RemoveValueAsync<ProductEntity>(id);
 
                 return new OkResponse();
             }

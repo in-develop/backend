@@ -80,7 +80,7 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> DeleteCartItemFromCartAsync()
+        public async Task<IResponse> DeleteCartItemsFromCartAsync()
         {
 
             var response = await _cartLogic.GetCart();

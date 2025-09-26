@@ -14,5 +14,7 @@ namespace TeamChallenge.Repositories
         Task<bool> UpdateManyAsync(Expression<Func<T, bool>> filter, Action<List<T>> entityFieldSetter);
         Task<bool> DeleteAsync(int id);
         Task<bool> DeleteManyAsync(Expression<Func<T, bool>> filter);
+
+
     }
 }

@@ -10,12 +10,14 @@ namespace TeamChallenge.Repositories
         private readonly CosmeticStoreDbContext _context;
         protected readonly DbSet<T> _dbSet;
         protected readonly ILogger<IRepository<T>> _logger;
+        private static CosmeticStoreDbContext _staticContext { get; set; }
 
         public BaseRepository(CosmeticStoreDbContext context, ILogger<IRepository<T>> logger)
         {
             _context = context;
             _dbSet = _context.Set<T>();
             _logger = logger;
+            _staticContext = context;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
