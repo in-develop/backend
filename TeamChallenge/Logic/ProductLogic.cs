@@ -20,6 +20,20 @@ namespace TeamChallenge.Logic
             _context = context;
         }
 
+        public async Task<IResponse> DeleteManyProductsAsync(List<int> ids)
+        {
+            try
+            {
+                await _productRepository.DeleteManyAsync(p => ids.Contains(p.Id));
+
+                return new OkResponse("Products deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return new ServerErrorResponse(ex.Message);
+            }
+        }
+
         public async Task<IResponse> CheckIfProductsExists(params int[] productIds)
         {
             var existingProducts = await _productRepository.GetFilteredAsync(p => productIds.Contains(p.Id));

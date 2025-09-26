@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests;
+using TeamChallenge.Models.Requests.Product;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.StaticData;
 
@@ -45,10 +46,16 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(GlobalConsts.Roles.Admin)]
+        // [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Delete([FromRoute]int id)
         {
             return await _productLogic.DeleteProductAsync(id);
+        }
+
+        [HttpDelete("bulk")]
+        public async Task<IResponse> DeleteMany([FromBody] DeleteProductManyRequest requestData)
+        {
+            return await _productLogic.DeleteManyProductsAsync(requestData.Ids);
         }
     }
 }

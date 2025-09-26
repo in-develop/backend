@@ -35,13 +35,13 @@ namespace TeamChallenge.DbContext
                 .HasOne(psc => psc.Product)
                 .WithMany(p => p.ProductSubCategories)
                 .HasForeignKey(psc => psc.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<ProductSubCategoryEntity>()
                 .HasOne(psc => psc.SubCategory)
                 .WithMany(sc => sc.ProductSubCategories)
                 .HasForeignKey(psc => psc.SubCategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
 
 

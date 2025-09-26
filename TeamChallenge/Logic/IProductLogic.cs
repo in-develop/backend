@@ -12,7 +12,7 @@ namespace TeamChallenge.Logic
         Task<IResponse> CreateProductAsync(CreateProductRequest dto);
         Task<IResponse> UpdateProductAsync(int id, UpdateProductRequest dto);
         Task<IResponse> DeleteProductAsync(int id);
-
+        Task<IResponse> DeleteManyProductsAsync(List<int> ids);
         Task<IResponse> CheckIfProductsExists(params int[] productIds);
     }
 }
