@@ -14,6 +14,7 @@ namespace TeamChallenge.Models.Requests.Product
         [Required, Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
         public decimal? DiscountPrice { get; set; }
+        public string? Volume { get; set; }
         [Required, MinLength(1, ErrorMessage = "Product must be assigned to at least one subcategory.")]
         public List<int> SubCategoryIds { get; set; } = new List<int>();
     }

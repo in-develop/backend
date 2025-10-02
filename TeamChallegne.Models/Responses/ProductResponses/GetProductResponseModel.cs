@@ -1,4 +1,5 @@
-﻿using TeamChallenge.Models.Entities;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses.SubCategoryResponses;
 
 namespace TeamChallenge.Models.Responses
@@ -10,6 +11,7 @@ namespace TeamChallenge.Models.Responses
             Id = entity.Id;
             Name = entity.Name;
             Description = entity.Description;
+            Volume = entity.Volume;
             Price = entity.Price;
             DiscountPrice = entity.DiscountPrice ?? 0;
             StockQuantity = entity.StockQuantity;
@@ -29,6 +31,7 @@ namespace TeamChallenge.Models.Responses
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public string? Volume { get; set; }
         public decimal Price { get; set; }
         public decimal DiscountPrice { get; set; }
         public int StockQuantity { get; set; }

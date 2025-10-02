@@ -33,7 +33,7 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpPost]
-        //[Authorize(GlobalConsts.Roles.Admin)]
+        [Authorize(GlobalConsts.Roles.Admin)]
         public async Task<IResponse> Create([FromBody] CreateCategoryRequest requestData)
         {
             return await _categoryLogic.CreateCategoryAsync(requestData);

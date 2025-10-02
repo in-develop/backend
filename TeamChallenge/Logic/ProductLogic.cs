@@ -1,10 +1,7 @@
-﻿using Azure.Core;
-using SQLitePCL;
-using TeamChallenge.DbContext;
-using TeamChallenge.Models.Entities;
-using TeamChallenge.Models.Models.Responses.SubCategoryResponse;
+﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Requests.Product;
 using TeamChallenge.Models.Responses;
+using TeamChallenge.Models.Responses.ProductResponses;
 using TeamChallenge.Repositories;
 using TeamChallenge.Services;
 
@@ -13,14 +10,13 @@ namespace TeamChallenge.Logic
     public class ProductLogic : IProductLogic
     {
         private readonly IProductRepository _productRepository;
-        private readonly CosmeticStoreDbContext _context;
         private readonly ILogger<ProductLogic> _logger;
         private readonly ISubCategoryRepository _subCategoryRepository;
         private readonly IRedisCacheService _cache;
 
         public ProductLogic(
-            RepositoryFactory factory, 
-            ILogger<ProductLogic> logger, 
+            RepositoryFactory factory,
+            ILogger<ProductLogic> logger,
             ICategoryLogic categoryLogic,
             IRedisCacheService cache)
         {
@@ -63,8 +59,8 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _productRepository.GetAllWithSubCategoriesAsync();
-                return new GetAllProductsResponse(result.Select(x => new GetProductResponseModel(x)));
+                var result = await _productRepository.GetAllAsync();
+                return new GetAllProductsResponse(result.Select(x => new ProductSummaryResponseModel(x)));
             }
             catch (Exception ex)
             {
@@ -91,7 +87,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
-                await _cache.SetValueAsync(result, id);
+                //await _cache.SetValueAsync(result, id); // Bug
 
                 return new GetProductResponse(new GetProductResponseModel(result));
             }
@@ -116,18 +112,17 @@ namespace TeamChallenge.Logic
                 {
                     entity.Name = requestData.Name;
                     entity.Description = requestData.Description;
+                    entity.Volume = requestData.Volume;
                     entity.Price = requestData.Price;
                     entity.DiscountPrice = requestData.DiscountPrice;
                     entity.StockQuantity = requestData.StockQuantity;
 
-                    foreach(var subId in requestData.SubCategoryIds)
+                    foreach (var subId in requestData.SubCategoryIds)
                     {
                         entity.ProductSubCategories.Add(new ProductSubCategoryEntity { SubCategoryId = subId });
                     }
                 });
-
                 return new OkResponse("Product successfully created") { StatusCode = 201 };
-
             }
             catch (Exception ex)
             {
@@ -159,6 +154,7 @@ namespace TeamChallenge.Logic
                 {
                     entity.Name = requestData.Name;
                     entity.Description = requestData.Description;
+                    entity.Volume = requestData.Volume;
                     entity.Price = requestData.Price;
                     entity.DiscountPrice = requestData.DiscountPrice;
                     entity.StockQuantity = requestData.StockQuantity;
@@ -170,30 +166,8 @@ namespace TeamChallenge.Logic
                     }
                 });
 
-                //if (!response.IsSuccess)
-                //{
-                //    return response;
-                //}
 
-                //var result = await _productRepository.UpdateAsync(id, entity =>
-                //{
-                //    entity.Name = requestData.Name;
-                //    entity.Description = requestData.Description;
-                //    entity.Price = requestData.Price;
-                //    entity.StockQuantity = requestData.StockQuantity;
-                //    entity.DiscountPrice = requestData.DiscountPrice;
-                //    //entity.CategoryId = requestData.CategoryId;
-                //});
-
-                //if (!result)
-                //{
-                //    return new NotFoundResponse($"Product with Id = {id} not found");
-                //}
-
-                //await _cache.RemoveValueAsync<ProductEntity>(id);
-
-                //return response;
-                return new OkResponse("Ok");
+                return new OkResponse("Product was successfully updated");
             }
             catch (Exception ex)
             {

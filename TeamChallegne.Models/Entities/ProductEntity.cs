@@ -8,6 +8,7 @@ namespace TeamChallenge.Models.Entities
         [Required]
         public string Name { get; set; }
         public string? Description { get; set; }
+        public string? Volume {  get; set; }
 
         [Column(TypeName = "decimal(10, 2)"), Required]
         public decimal Price { get; set; }
