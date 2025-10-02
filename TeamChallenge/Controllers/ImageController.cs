@@ -39,7 +39,7 @@ namespace TeamChallenge.Controllers
         [HttpPost]
         public async Task<IResponse> AddImageAsync([FromForm] CreateImageRequest dto)
         {
-            var response = await _imageLogic.UploadImageAsync(dto);
+            var response = await _imageLogic.AddImageAsync(dto);
             return response;
         }
 

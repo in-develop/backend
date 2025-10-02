@@ -1,5 +1,4 @@
-﻿using Humanizer;
-using TeamChallenge.Models.Entities;
+﻿using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Repositories;
@@ -27,16 +26,14 @@ namespace TeamChallenge.Logic
                 if (image == null)
                 {
                     return new NotFoundResponse($"Image with this id is not exist: {id}");
-                } 
+                }
 
                 var isSuccess = await _imageRepository.DeleteAsync(id);
                 if (!isSuccess)
                 {
                     return new ServerErrorResponse($"Failed to delete image with id: {id}");
                 }
-                
-                File.Delete(image.ImageUrl!);
-                
+
                 return new OkResponse();
 
             }
@@ -51,7 +48,9 @@ namespace TeamChallenge.Logic
             try
             {
                 var images = await _imageRepository.GetAllAsync();
-                return new GetAllImagesResponse(images);
+                var result = new GetImageListResponse(images);
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -68,7 +67,10 @@ namespace TeamChallenge.Logic
                 {
                     return new NotFoundResponse($"Image with this id is not exist: {id}");
                 }
-                return new GetImageResponse(image);
+
+                var result = new GetImagesResponse(image);
+
+                return result;
 
             }
             catch (Exception ex)
@@ -85,27 +87,35 @@ namespace TeamChallenge.Logic
                 return response;
             }
 
-            var images = await _imageRepository.GetFilteredAsync(x=> x.ProductId == productId);
-            return new GetAllImagesResponse(images);
+            var images = await _imageRepository.GetFilteredAsync(x => x.ProductId == productId);
+            var result = new GetImageListResponse(images);
+
+            return result;
         }
 
         public async Task<IResponse> UpdateImageAsync(UpdateImageRequest dto)
         {
             try
             {
-                var existingImage = await _imageRepository.GetByIdAsync(dto.Id);
-                if (existingImage == null)
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
                 {
-                    return new NotFoundResponse($"Image with this id is not exist: {dto.Id}");
+                    if (dto.ImageFile == null)
+                    {
+                        _logger.LogError("No file uploaded.");
+                        return new BadRequestResponse("No file uploaded.");
+                    }
+
+                    await dto.ImageFile.CopyToAsync(ms);
+                    fileBytes = ms.ToArray();
                 }
 
-                var imageUrl = existingImage.ImageUrl!;
-                File.Delete(imageUrl);// nameCopy2
+                var base64 = Convert.ToBase64String(fileBytes);
 
-                using (var stream = new FileStream(imageUrl, FileMode.Create))
+                var q = await _imageRepository.UpdateAsync(dto.Id, x =>
                 {
-                    await dto.ImageFile!.CopyToAsync(stream);
-                }
+                    x.ImageBase64 = base64;
+                });
 
                 return new OkResponse();
             }
@@ -115,7 +125,7 @@ namespace TeamChallenge.Logic
             }
         }
 
-        public async Task<IResponse> UploadImageAsync(CreateImageRequest dto)
+        public async Task<IResponse> AddImageAsync(CreateImageRequest dto)
         {
             try
             {
@@ -126,24 +136,32 @@ namespace TeamChallenge.Logic
                     return isProductExist;
                 }
 
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
+                {
+                    if (dto.ImageFile == null)
+                    {
+                        _logger.LogError("No file uploaded.");
+                        return new BadRequestResponse("No file uploaded.");
+                    }
+
+                    await dto.ImageFile.CopyToAsync(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+                var base64 = Convert.ToBase64String(fileBytes);
+
                 if (dto.ImageFile == null)
                 {
                     _logger.LogError("No file uploaded.");
                     return new BadRequestResponse("No file uploaded.");
                 }
 
-                var path = Path.Combine("D:\\CosmeticImages", $"{dto.ProductId}To{Guid.NewGuid().ToString()}.png");
-
                 await _imageRepository.CreateAsync(entity =>
                 {
-                    entity.ImageUrl = path;
+                    entity.ImageBase64 = base64;
                     entity.ProductId = dto.ProductId;
-                });
-
-                using (var stream = new FileStream(path, FileMode.Create))
-                {
-                    await dto.ImageFile.CopyToAsync(stream);
-                }
+                });                
 
                 return new OkResponse();
 

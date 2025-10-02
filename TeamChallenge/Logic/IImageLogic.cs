@@ -5,7 +5,7 @@ namespace TeamChallenge.Logic
 {
     public interface IImageLogic
     {
-        Task<IResponse> UploadImageAsync(CreateImageRequest dto);
+        Task<IResponse> AddImageAsync(CreateImageRequest dto);
         Task<IResponse> UpdateImageAsync(UpdateImageRequest dto);
         Task<IResponse> DeleteImageAsync(int id);
         Task<IResponse> GetImageAsync(int id);

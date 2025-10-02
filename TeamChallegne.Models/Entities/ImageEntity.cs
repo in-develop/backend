@@ -6,7 +6,7 @@ namespace TeamChallenge.Models.Entities
     public class ImageEntity : BaseEntity
     {
         [Required]
-        public string? ImageUrl { get; set; }
+        public string? ImageBase64 { get; set; }
         [ForeignKey("Product")]
         public int ProductId { get; set; }
         public ProductEntity? Product { get; set; }
