@@ -18,18 +18,10 @@ namespace TeamChallenge.DbContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // One-to-many relationship between Category-Subcategories
-            modelBuilder.Entity<CategoryEntity>()
-                .HasMany(c => c.SubCategories)
-                .WithOne(c => c.Category)
-                .HasForeignKey(c => c.CategoryId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-
 
             // Setting up relationship Many-to-Many between Products-SubCategories
-            modelBuilder.Entity<ProductSubCategoryEntity>()
-                .HasKey(psc => new { psc.ProductId, psc.SubCategoryId });
+
+            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ProductSubCategoryEntity>()
                 .HasOne(psc => psc.Product)
@@ -42,10 +34,6 @@ namespace TeamChallenge.DbContext
                 .WithMany(sc => sc.ProductSubCategories)
                 .HasForeignKey(psc => psc.SubCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-
-
-            base.OnModelCreating(modelBuilder);
 
             SetSeedData(modelBuilder);
 
@@ -220,7 +208,7 @@ namespace TeamChallenge.DbContext
         public DbSet<ReviewEntity> Reviews {  get; set; }
         public DbSet<ProductBundleEntity> ProductBundles {  get; set; }
         public DbSet<SubCategoryEntity> SubCategories { get; set; }
-        public DbSet<ProductSubCategoryEntity> ProductSubCategoryEntities { get; set; }
+        public DbSet<ProductSubCategoryEntity> ProductSubCategories { get; set; }
         public DbSet<OrderHistoryEntity> OrderHistory {  get; set; }
     }
 }
