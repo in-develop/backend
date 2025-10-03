@@ -43,23 +43,24 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _cache.GetValueAsync<ReviewEntity>(id);
+                var cachedData = await _cache.GetValueAsync<GetReviewResponseModel>(id);
 
-                if (result != null)
+                if (cachedData != null)
                 {
-                    return new GetReviewResponse(result);
+                    return new GetReviewResponse(cachedData);
                 }
 
-                result = await _reviewRepository.GetByIdAsync(id);
+                var result = await _reviewRepository.GetByIdAsync(id);
 
                 if (result == null)
                 {
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
+                
+                cachedData = new GetReviewResponseModel(result);
+                await _cache.SetValueAsync(cachedData, id);
 
-                await _cache.SetValueAsync(result, id);
-
-                return new GetReviewResponse(result);
+                return new GetReviewResponse(cachedData);
             }
             catch (Exception ex)
             {
@@ -122,7 +123,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
 
-                await _cache.RemoveValueAsync<ProductEntity>(id);
+                await _cache.RemoveValueAsync<GetReviewResponseModel>(id);
 
                 return new OkResponse();
             }
@@ -142,7 +143,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
 
-                await _cache.RemoveValueAsync<ProductEntity>(id);
+                await _cache.RemoveValueAsync<GetReviewResponseModel>(id);
 
                 return new OkResponse();
             }

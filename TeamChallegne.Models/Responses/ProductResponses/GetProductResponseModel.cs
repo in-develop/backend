@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using System.Text.Json.Serialization;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses.SubCategoryResponses;
 
@@ -6,6 +6,11 @@ namespace TeamChallenge.Models.Responses
 {
     public class GetProductResponseModel
     {
+        [JsonConstructor]
+        public GetProductResponseModel()
+        {
+            
+        }
         public GetProductResponseModel(ProductEntity entity)
         {
             Id = entity.Id;

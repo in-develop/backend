@@ -73,23 +73,24 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var result = await _cache.GetValueAsync<ProductEntity>(id);
+                var cachedData = await _cache.GetValueAsync<GetProductResponseModel>(id);
 
-                if (result != null)
+                if (cachedData != null)
                 {
-                    return new GetProductResponse(new GetProductResponseModel(result));
+                    return new GetProductResponse(cachedData);
                 }
 
-                result = await _productRepository.GetByIdWithSubCategoriesAsync(id);
+                var result = await _productRepository.GetByIdWithSubCategoriesAsync(id);
 
                 if (result == null)
                 {
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
-                //await _cache.SetValueAsync(result, id); // Bug
+                cachedData = new GetProductResponseModel(result);
+                await _cache.SetValueAsync(cachedData, id);
 
-                return new GetProductResponse(new GetProductResponseModel(result));
+                return new GetProductResponse(cachedData);
             }
             catch (Exception ex)
             {
@@ -166,6 +167,7 @@ namespace TeamChallenge.Logic
                     }
                 });
 
+                await _cache.RemoveValueAsync<GetProductResponseModel>(id);
 
                 return new OkResponse("Product was successfully updated");
             }
@@ -185,7 +187,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
-                await _cache.RemoveValueAsync<ProductEntity>(id);
+                await _cache.RemoveValueAsync<GetProductResponseModel>(id);
 
                 return new OkResponse();
             }

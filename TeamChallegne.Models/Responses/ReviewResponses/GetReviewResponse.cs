@@ -1,10 +1,8 @@
-﻿using TeamChallenge.Models.Entities;
-
-namespace TeamChallenge.Models.Responses
+﻿namespace TeamChallenge.Models.Responses
 {
-    public class GetReviewResponse : BaseDataResponse<ReviewEntity>
+    public class GetReviewResponse : BaseDataResponse<GetReviewResponseModel>
     {
-        public GetReviewResponse(ReviewEntity data) : base(data)
+        public GetReviewResponse(GetReviewResponseModel data) : base(data)
         {
         }
     }

@@ -1,9 +1,15 @@
-﻿using TeamChallenge.Models.Entities;
+﻿using System.Text.Json.Serialization;
+using TeamChallenge.Models.Entities;
 
 namespace TeamChallenge.Models.Responses
 {
     public class GetProductBundleResponseModel
     {
+        [JsonConstructor]
+        public GetProductBundleResponseModel()
+        {
+            
+        }
         public GetProductBundleResponseModel(ProductBundleEntity entity)
         {
             Id = entity.Id;
