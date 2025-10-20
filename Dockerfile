@@ -2,8 +2,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY *.sln .
-COPY */*.csproj ./
-RUN for file in $(ls ./*.csproj); do mkdir -p ${file%.*}/ && mv ${file} ${file%.*}/; done
+COPY TeamChallenge/ ./TeamChallenge/
+COPY TeamChallegne.Models/ ./TeamChallegne.Models/
 
 RUN dotnet restore "TeamChallenge.sln"
 
