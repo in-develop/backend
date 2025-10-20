@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -31,6 +33,26 @@ SetupAuthentication(builder.Services, builder.Configuration);
 SetupInMemoryStorage(builder.Services, builder.Configuration);
 
 var app = builder.Build();
+
+if (app.Environment.IsProduction()) // Запускається тільки на Render
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        try
+        {
+            // Отримуємо доступ до сервісів
+            var dbContext = scope.ServiceProvider.GetRequiredService<CosmeticStoreDbContext>();
+
+            // Застосовуємо всі міграції
+            dbContext.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "Помилка під час міграції бази даних.");
+        }
+    }
+}
 
 using (var scope = app.Services.CreateScope())
 {
@@ -180,17 +202,42 @@ void SetupAuthentication(IServiceCollection services, IConfiguration config)
 
     builder.Services.AddAuthorization();
 }
+
 void SetupDatabase(IServiceCollection services, IConfiguration config)
 {
+    // Отримуємо рядок підключення. Ми будемо використовувати ОДИН ключ.
+    var connectionString = config.GetConnectionString("DatabaseConnectionString");
+
+    // Переконайтеся, що рядок не порожній
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("Connection string 'DatabaseConnectionString' not found.");
+    }
+
     builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
     {
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+        // === ОСЬ ГОЛОВНА ЛОГІКА ===
+        if (builder.Environment.IsProduction())
+        {
+            // Ми на Render (Production), тому використовуємо PostgreSQL
+            options.UseNpgsql(connectionString);
+        }
+        else
+        {
+            // Ми локально (Development), тому використовуємо SQL Server
+            options.UseSqlServer(connectionString);
+        }
+        // === КІНЕЦЬ ЛОГІКИ ===
+
         if (builder.Environment.IsDevelopment())
         {
             options.EnableSensitiveDataLogging();
         }
+
+        //options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
     });
 
+    // Ця частина залишається без змін
     builder.Services.AddIdentity<UserEntity, IdentityRole>(
         opt =>
         {
@@ -205,6 +252,31 @@ void SetupDatabase(IServiceCollection services, IConfiguration config)
         .AddEntityFrameworkStores<CosmeticStoreDbContext>()
         .AddApiEndpoints();
 }
+//void SetupDatabase(IServiceCollection services, IConfiguration config)
+//{
+//    builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
+//    {
+//        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+//        if (builder.Environment.IsDevelopment())
+//        {
+//            options.EnableSensitiveDataLogging();
+//        }
+//    });
+
+//    builder.Services.AddIdentity<UserEntity, IdentityRole>(
+//        opt =>
+//        {
+//            opt.User.RequireUniqueEmail = true;
+//            opt.SignIn.RequireConfirmedEmail = true;
+//            opt.Password.RequireNonAlphanumeric = false;
+//            opt.Password.RequireUppercase = false;
+//            opt.Password.RequiredLength = 1;
+//            opt.Password.RequireDigit = false;
+//        })
+//        .AddRoles<IdentityRole>()
+//        .AddEntityFrameworkStores<CosmeticStoreDbContext>()
+//        .AddApiEndpoints();
+//}
 void SetupInMemoryStorage(IServiceCollection services, IConfiguration config)
 {
     builder.Services.AddSession(options =>
