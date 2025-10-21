@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TeamChallegne.Models\TeamChallenge.Models.csproj" />
+    <ProjectReference Include="..\TeamChallenge.Models\TeamChallenge.Models.csproj" />
   </ItemGroup>
 
 </Project>
