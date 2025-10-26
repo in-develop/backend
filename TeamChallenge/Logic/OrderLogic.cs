@@ -1,5 +1,4 @@
-﻿using StackExchange.Redis;
-using TeamChallenge.Helpers;
+﻿using TeamChallenge.Helpers;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.OrderResponses;

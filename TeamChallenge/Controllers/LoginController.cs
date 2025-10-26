@@ -8,44 +8,37 @@ namespace TeamChallenge.Controllers
 {
     [Route("api/auth")]
     [ApiController]
-    public class LoginController : ControllerBase
+    public class LoginController(ILoginService service) : ControllerBase
     {
-        private ILoginService _service;
-
-        public LoginController(ILoginService service)
-        {
-            _service = service;
-        }
-
         [HttpPost("login")]
         public async Task<IResponse> Login([FromBody] TCLoginRequest request)
         {
-            return await _service.Login(request);
+            return await service.Login(request);
         }
 
         [HttpPost("signup")]
         public async Task<IResponse> SignUp([FromBody] SignUpRequest request)
         {
-            return await _service.SignUp(request);
+            return await service.SignUp(request);
         }
 
         [HttpGet("logout")]
         [Authorize]
         public async Task<IResponse> Logout()
         {
-           return await _service.Logout();
+           return await service.Logout();
         }
 
         [HttpGet("confirm-email")]
         public async Task<IResponse> ConfirmEmail([FromQuery] string email, [FromQuery] string token)
         {
-            return await _service.ConfirmEmail(email, token);
+            return await service.ConfirmEmail(email, token);
         }
 
         [HttpPost("resend-email-confirmation")]
         public async Task<IResponse> ResendEmailConfirmation([FromBody]ResendEmailConfirmationRequest request)
         {
-            return await _service.ResendEmailConfirmation(request);
+            return await service.ResendEmailConfirmation(request);
         }
     }
 }

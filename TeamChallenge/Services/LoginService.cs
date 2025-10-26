@@ -160,7 +160,7 @@ namespace TeamChallenge.Services
                     }
                 }
 
-                user = new UserEntity { UserName = request.Username, Email = request.Email, SentEmailTime = DateTime.Now };
+                user = new UserEntity { UserName = request.Username, Email = request.Email };
                 var result = await _userManager.CreateAsync(user, request.Password);
 
                 if (!result.Succeeded)

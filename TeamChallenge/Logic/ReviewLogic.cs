@@ -11,18 +11,12 @@ namespace TeamChallenge.Logic
     {
         private readonly IReviewRepository _reviewRepository;
         private readonly ITokenReaderService _tokenReader;
-        private readonly ILogger<ReviewLogic> _logger;
-        private readonly IRedisCacheService _cache;
         public ReviewLogic(
             RepositoryFactory factory, 
-            ILogger<ReviewLogic> logger,
-            ITokenReaderService tokenReader, 
-            IRedisCacheService cache)
+            ITokenReaderService tokenReader)
         {
             _reviewRepository = (IReviewRepository)factory.GetRepository<ReviewEntity>();
-            _logger = logger;
             _tokenReader = tokenReader;
-            _cache = cache;
         }
 
         public async Task<IResponse> GetAllReviewsAsync()
@@ -43,13 +37,6 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var cachedData = await _cache.GetValueAsync<GetReviewResponseModel>(id);
-
-                if (cachedData != null)
-                {
-                    return new GetReviewResponse(cachedData);
-                }
-
                 var result = await _reviewRepository.GetByIdAsync(id);
 
                 if (result == null)
@@ -57,10 +44,9 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
                 
-                cachedData = new GetReviewResponseModel(result);
-                await _cache.SetValueAsync(cachedData, id);
+                var review = new GetReviewResponseModel(result);
 
-                return new GetReviewResponse(cachedData);
+                return new GetReviewResponse(review);
             }
             catch (Exception ex)
             {
@@ -123,9 +109,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
 
-                await _cache.RemoveValueAsync<GetReviewResponseModel>(id);
-
-                return new OkResponse();
+                return new OkResponse($"Review with Id = {id} updated");
             }
             catch (Exception ex)
             {
@@ -143,9 +127,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Review with Id = {id} not found");
                 }
 
-                await _cache.RemoveValueAsync<GetReviewResponseModel>(id);
-
-                return new OkResponse();
+                return new OkResponse($"Review with Id = {id} deleted");
             }
             catch (Exception ex)
             {

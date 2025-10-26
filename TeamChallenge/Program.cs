@@ -11,18 +11,25 @@ using TeamChallenge.DbContext;
 using TeamChallenge.Filters;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Entities;
+using TeamChallenge.Models.SendEmailModels;
 using TeamChallenge.Repositories;
 using TeamChallenge.Services;
 using TeamChallenge.StaticData;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
+builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration.ReadFrom.Configuration(context.Configuration));
 
-builder.Host.UseSerilog((context, loggerConfiguration) =>
-    loggerConfiguration.ReadFrom.Configuration(context.Configuration));
-
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "v1",
+        Title = "TeamChallenge API",
+        Description = "API documentation for TeamChallenge project"
+    });
+});
 
 SetupCustomServices(builder.Services);
 SetupDatabase(builder.Services, builder.Configuration);
@@ -47,25 +54,27 @@ using (var scope = app.Services.CreateScope())
 }
 
 //Configure the HTTP request pipeline.
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    GlobalConsts.ClientUrl = app.Configuration["ClientUrl:Debug"]!;
-}
-
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "TeamChallenge API v1");
+    options.RoutePrefix = "swagger";
+});
+
+GlobalConsts.ClientUrl = app.Configuration["ClientUrl:Debug"]!;
 
 app.UseSerilogRequestLogging();
 
-app.UseSession();
 app.UseHttpsRedirection();
-app.MapIdentityApi<IdentityUser>();
+
+app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapIdentityApi<IdentityUser>();
 
 app.MapControllers();
 
@@ -81,6 +90,7 @@ void SetupFilters(IServiceCollection services)
         options.Filters.Add<ValidationFilter>();
     });
 }
+
 void SetupCustomServices(IServiceCollection services)
 {
     services.AddSingleton<IGenerateToken, GenerateTokenService>();
@@ -97,9 +107,9 @@ void SetupCustomServices(IServiceCollection services)
     services.AddScoped<ICartItemLogic, CartItemLogic>();
     services.AddScoped<IUserLogic, UserLogic>();
     services.AddScoped<ITokenReaderService, TokenReaderService>();
-    services.AddScoped<IRedisCacheService, RedisCacheService>();
     services.AddScoped<ValidationFilter>();
 }
+
 void SetupAuthentication(IServiceCollection services, IConfiguration config)
 {
     services.AddAuthentication(x =>
@@ -153,8 +163,7 @@ void SetupAuthentication(IServiceCollection services, IConfiguration config)
         {
             ValidIssuer = config["Jwt:Issuer"],
             ValidAudience = config["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                System.Text.Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
             ValidateIssuerSigningKey = true,
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -180,6 +189,7 @@ void SetupAuthentication(IServiceCollection services, IConfiguration config)
 
     builder.Services.AddAuthorization();
 }
+
 void SetupDatabase(IServiceCollection services, IConfiguration config)
 {
     builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
@@ -205,8 +215,11 @@ void SetupDatabase(IServiceCollection services, IConfiguration config)
         .AddEntityFrameworkStores<CosmeticStoreDbContext>()
         .AddApiEndpoints();
 }
+
 void SetupInMemoryStorage(IServiceCollection services, IConfiguration config)
 {
+    builder.Services.AddDistributedMemoryCache();
+
     builder.Services.AddSession(options =>
     {
         options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -219,12 +232,6 @@ void SetupInMemoryStorage(IServiceCollection services, IConfiguration config)
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Strict;
-    });
-
-    builder.Services.AddStackExchangeRedisCache(options =>
-    {
-        options.Configuration = config.GetConnectionString("Redis");
-        options.InstanceName = "TeamChallenge_";
     });
 }
 
