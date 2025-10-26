@@ -73,7 +73,7 @@ namespace TeamChallenge.Logic
                 {
                     entity.UserId = userId;
                     entity.Status = OrderStatus.Pending;
-                    entity.CreatedAt = DateTime.Now;
+                    entity.CreatedAt = DateTime.UtcNow;
                     entity.TotalAmount = CalculateTotalAmountFromCart(cart);
                 });
 
@@ -91,7 +91,7 @@ namespace TeamChallenge.Logic
                 {
                     entity.OrderId = order.Id;
                     entity.NewStatus = OrderStatus.Pending;
-                    entity.ChangedAt = DateTime.Now;
+                    entity.ChangedAt = DateTime.UtcNow;
                 });
 
                 response = await _cartItemLogic.DeleteCartItemsFromCartAsync();
@@ -162,7 +162,7 @@ namespace TeamChallenge.Logic
                     entity.OrderId = order.Id;
                     entity.OldStatus = lastOrderHistory.NewStatus;
                     entity.NewStatus = OrderStatus.Cancelled;
-                    entity.ChangedAt = DateTime.Now;
+                    entity.ChangedAt = DateTime.UtcNow;
                 });
 
                 return new OkResponse();
@@ -195,7 +195,7 @@ namespace TeamChallenge.Logic
                     entity.OrderId = order.Id;
                     entity.OldStatus = OrderStatus.Pending;
                     entity.NewStatus = OrderStatus.Processing;
-                    entity.ChangedAt = DateTime.Now;
+                    entity.ChangedAt = DateTime.UtcNow;
                 });
 
                 var productQuantityDict = order.OrderItems.ToDictionary(x => x.ProductId, x => x.Quantity);

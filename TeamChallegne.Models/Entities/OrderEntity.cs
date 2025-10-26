@@ -5,7 +5,7 @@ namespace TeamChallenge.Models.Entities
 {
     public class OrderEntity : BaseEntity
     {
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [Column(TypeName = "decimal(10, 2)")]
         public decimal TotalAmount { get; set; }
         public OrderStatus Status { get; set; }
