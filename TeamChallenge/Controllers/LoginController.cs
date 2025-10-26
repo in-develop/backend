@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Models.Requests;
+using TeamChallenge.Models.Requests.Login;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Services;
 
@@ -30,7 +31,7 @@ namespace TeamChallenge.Controllers
         }
 
         [HttpGet("confirm-email")]
-        public async Task<IResponse> ConfirmEmail([FromQuery] string email, [FromQuery] string token)
+        public async Task<IResponse> ConfirmEmail([FromQuery] string? email, [FromQuery] string? token)
         {
             return await service.ConfirmEmail(email, token);
         }

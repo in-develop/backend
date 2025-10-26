@@ -4,6 +4,6 @@ namespace TeamChallenge.Services
 {
     public interface IGenerateToken
     {
-        string GenerateToken(UserEntity user, IList<string> roles, bool remebmerMe, int cartId);
+        string GenerateToken(UserEntity? user, IList<string> roles, bool rememberMe);
     }
 }

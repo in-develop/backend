@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TeamChallenge.StaticData;
+using TeamChallenge.Models.Static_data;
 
 namespace TeamChallenge.Models.Entities
 {

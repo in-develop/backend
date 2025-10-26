@@ -2,51 +2,31 @@
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.OrderResponses;
+using TeamChallenge.Models.Static_data;
 using TeamChallenge.Repositories;
 using TeamChallenge.Services;
-using TeamChallenge.StaticData;
 
 namespace TeamChallenge.Logic
 {
-
-    public class OrderLogic : IOrderLogic
+    public class OrderLogic(
+        RepositoryFactory factory,
+        ILogger<OrderLogic> logger,
+        ITokenReaderService tokenReader,
+        ICartItemLogic cartItemLogic,
+        RepositoryFactory repositoryFactory)
+        : IOrderLogic
     {
-        private readonly IOrderRepository _orderRepository;
-        private readonly IOrderItemRepository _orderItemRepository;
-        private readonly IOrderHistoryRepository _orderHistoryRepository;
-        private readonly ICartRepository _cartRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly ICartItemLogic _cartItemLogic;
-        private readonly ICartLogic _cartLogic;
-        private readonly ILogger<OrderLogic> _logger;
-        private readonly ITokenReaderService _tokenReader;
-        private readonly RepositoryFactory _repositoryFactory;
-
-        public OrderLogic(
-            RepositoryFactory factory,
-            ILogger<OrderLogic> logger,
-            ITokenReaderService tokenReader,
-            ICartItemLogic cartItemLogic,
-            ICartLogic cartLogic,
-            RepositoryFactory repositoryFactory)
-        {
-            _orderRepository = (IOrderRepository)factory.GetRepository<OrderEntity>();
-            _orderItemRepository = (IOrderItemRepository)factory.GetRepository<OrderItemEntity>();
-            _orderHistoryRepository = (IOrderHistoryRepository)factory.GetRepository<OrderHistoryEntity>();
-            _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
-            _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
-            _logger = logger;
-            _tokenReader = tokenReader;
-            _cartItemLogic = cartItemLogic;
-            _cartLogic = cartLogic;
-            _repositoryFactory = repositoryFactory;
-        }
+        private readonly IOrderRepository _orderRepository = (IOrderRepository)factory.GetRepository<OrderEntity>();
+        private readonly IOrderItemRepository _orderItemRepository = (IOrderItemRepository)factory.GetRepository<OrderItemEntity>();
+        private readonly IOrderHistoryRepository _orderHistoryRepository = (IOrderHistoryRepository)factory.GetRepository<OrderHistoryEntity>();
+        private readonly ICartRepository _cartRepository = (ICartRepository)factory.GetRepository<CartEntity>();
+        private readonly IProductRepository _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
 
         public async Task<IResponse> CreateOrderAsync()
         {
-            return await _repositoryFactory.WrapWithTransactionAsync(async () =>
+            return await repositoryFactory.WrapWithTransactionAsync(async () =>
             {
-                var response = _tokenReader.GetCartId();
+                var response = tokenReader.GetCartId();
                 if (!response.IsSuccess)
                 {
                     return response;
@@ -57,11 +37,11 @@ namespace TeamChallenge.Logic
 
                 if (cart == null)
                 {
-                    _logger.LogError("Cart not found. ID: {0}", cartId);
+                    logger.LogError("Cart not found. ID: {0}", cartId);
                     return new NotFoundResponse($"Cart not found. ID: {cartId}");
                 }
 
-                response = _tokenReader.GetUserId();
+                response = tokenReader.GetUserId();
                 if (!response.IsSuccess)
                 {
                     return response;
@@ -94,7 +74,7 @@ namespace TeamChallenge.Logic
                     entity.ChangedAt = DateTime.UtcNow;
                 });
 
-                response = await _cartItemLogic.DeleteCartItemsFromCartAsync();
+                response = await cartItemLogic.DeleteCartItemsFromCartAsync();
 
                 return response;
             });
@@ -136,7 +116,7 @@ namespace TeamChallenge.Logic
 
         public async Task<IResponse> DeleteOrderAsync(int orderId)
         {
-            return await _repositoryFactory.WrapWithTransactionAsync<IResponse>(async () =>
+            return await repositoryFactory.WrapWithTransactionAsync<IResponse>(async () =>
             {
                 var order = await _orderRepository.GetOrderWithDetailsAsync(orderId);
 
@@ -171,7 +151,7 @@ namespace TeamChallenge.Logic
 
         public async Task<IResponse> SubmitOrderAsync(int orderId)
         {
-            return await _repositoryFactory.WrapWithTransactionAsync<IResponse>(async () =>
+            return await repositoryFactory.WrapWithTransactionAsync<IResponse>(async () =>
             {
                 var order = await _orderRepository.GetOrderWithDetailsAsync(orderId);
 

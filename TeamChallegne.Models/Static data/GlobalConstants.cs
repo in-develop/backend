@@ -1,6 +1,6 @@
-﻿namespace TeamChallenge.StaticData
+﻿namespace TeamChallenge.Models.Static_data
 {
-    public static class GlobalConsts
+    public static class GlobalConstants
     {
         public static string ClientUrl = "https://impala-still-pika.ngrok-free.app/";
 

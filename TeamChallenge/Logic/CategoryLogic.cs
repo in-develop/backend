@@ -3,22 +3,14 @@ using TeamChallenge.Models.Models.Responses;
 using TeamChallenge.Models.Models.Responses.SubCategoryResponse;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.Models.Responses.CategoryResponses;
 using TeamChallenge.Repositories;
 
 namespace TeamChallenge.Logic
 {
-    public class CategoryLogic : ICategoryLogic
+    public class CategoryLogic(RepositoryFactory factory, ILogger<CategoryLogic> logger) : ICategoryLogic
     {
-        private readonly ICategoryRepository _categoryRepository;
-        private readonly ILogger<CategoryLogic> _logger;
-        private readonly ISubCategoryRepository _subCategoryRepository;
-        public CategoryLogic(RepositoryFactory factory, ILogger<CategoryLogic> logger)
-        {
-            _subCategoryRepository = (ISubCategoryRepository)factory.GetRepository<SubCategoryEntity>();
-            _categoryRepository = (ICategoryRepository)factory.GetRepository<CategoryEntity>();
-            _logger = logger;
-        }
+        private readonly ICategoryRepository _categoryRepository = (ICategoryRepository)factory.GetRepository<CategoryEntity>();
+        private readonly ISubCategoryRepository _subCategoryRepository = (ISubCategoryRepository)factory.GetRepository<SubCategoryEntity>();
 
         public async Task<IResponse> CheckIfCategoriesExists(params int[] categoryIDs)
         {
@@ -28,7 +20,7 @@ namespace TeamChallenge.Logic
 
             if (missingCategoryIds.Any())
             {
-                _logger.LogWarning("Categories not found with IDs: {MissingProductIds}", string.Join(", ", missingCategoryIds));
+                logger.LogWarning("Categories not found with IDs: {MissingProductIds}", string.Join(", ", missingCategoryIds));
                 return new NotFoundResponse($"Categories not found with IDs: {string.Join(", ", missingCategoryIds)}");
             }
 
@@ -56,7 +48,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching all Categories.");
+                logger.LogError(ex, "Error fetching all Categories.");
                 return new ServerErrorResponse(ex.Message);
             }
         }
@@ -69,7 +61,7 @@ namespace TeamChallenge.Logic
 
                 if (categoryEntity == null)
                 {
-                    _logger.LogWarning("Category with Id = {id} not found.", id);
+                    logger.LogWarning("Category with Id = {id} not found.", id);
                     return new NotFoundResponse($"Category with Id={id} not found");
                 }
 
@@ -88,7 +80,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while creating a category.");
+                logger.LogError(ex, "An error occurred while creating a category.");
                 return new ServerErrorResponse(ex.Message);
             }
         }
@@ -100,7 +92,8 @@ namespace TeamChallenge.Logic
                 if (requestData.SubCategoryIds != null && requestData.SubCategoryIds.Any())
                 {
                     var existingSubCategories = await _subCategoryRepository.GetFilteredAsync(sc => requestData.SubCategoryIds.Contains(sc.Id));
-                    if (existingSubCategories.Count() != requestData.SubCategoryIds.Distinct().Count())
+                    var subCategoryEntities = existingSubCategories.ToList();
+                    if (subCategoryEntities.Count != requestData.SubCategoryIds.Distinct().Count())
                     {
                         return new BadRequestResponse("One or more provided SubCategoryIds are invalid.");
                     }
@@ -108,7 +101,7 @@ namespace TeamChallenge.Logic
                     await _categoryRepository.CreateAsync(entity =>
                     {
                         entity.Name = requestData.Name;
-                        entity.SubCategories = existingSubCategories.ToList();
+                        entity.SubCategories = subCategoryEntities.ToList();
                     });
                 }
                 else
@@ -119,38 +112,10 @@ namespace TeamChallenge.Logic
                     });
                 }
 
-
-                    return new OkResponse("Category has been successfully created")
-                    {
-                        StatusCode = 201,
-                    };
-
-
-                //foreach (var subId in requestData.SubCategoryIds)
-                //{
-                //    var subCategory = await _subCategoryRepository.GetByIdAsync(subId);
-
-                //    else
-                //    {
-                //        return new BadRequestResponse($"SubCategory with Id={subId} not found.");
-                //    }
-
-                //await _categoryRepository.CreateAsync(newCategory);
-
-                //var categoryDto = new CategoryResponse
-                //{
-                //    Id = newCategory.Id,
-                //    Name = newCategory.Name,
-                //    SubCategories = newCategory.SubCategories.Select(sc => new SubCategoryResponse
-                //    {
-                //        Id = sc.Id,
-                //        Name = sc.Name
-                //    }).ToList()
-                //};
-
-                //return new CreateCategoryResponse(categoryDto);
-
-
+                return new OkResponse("Category has been successfully created")
+                {
+                    StatusCode = 201,
+                };
             }
             catch (Exception ex)
             {
@@ -184,7 +149,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while creating multiple categories.");
+                logger.LogError(ex, "An error occurred while creating multiple categories.");
                 return new ServerErrorResponse(ex.Message);
             }
         }
@@ -278,7 +243,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while updating multiple categories.");
+                logger.LogError(ex, "An error occurred while updating multiple categories.");
                 return new ServerErrorResponse(ex.Message);
             }
         }
@@ -291,7 +256,7 @@ namespace TeamChallenge.Logic
 
                 if (!result)
                 {
-                    _logger.LogWarning("Category with Id = {id} not found for deletion.", id);
+                    logger.LogWarning("Category with Id = {id} not found for deletion.", id);
                     return new NotFoundResponse($"Category with Id={id} not found");
                 }
 
@@ -321,7 +286,7 @@ namespace TeamChallenge.Logic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while deleting multiple categories.");
+                logger.LogError(ex, "An error occurred while deleting multiple categories.");
                 return new ServerErrorResponse(ex.Message);
             }
         }

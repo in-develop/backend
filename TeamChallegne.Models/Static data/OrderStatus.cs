@@ -1,4 +1,4 @@
-﻿namespace TeamChallenge.StaticData
+﻿namespace TeamChallenge.Models.Static_data
 {
     public enum OrderStatus
     {

@@ -12,37 +12,70 @@ using TeamChallenge.Filters;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.SendEmailModels;
+using TeamChallenge.Models.Static_data;
 using TeamChallenge.Repositories;
 using TeamChallenge.Services;
-using TeamChallenge.StaticData;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
 builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    options.UseInlineDefinitionsForEnums();
+
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
-        Version = "v1",
-        Title = "TeamChallenge API",
-        Description = "API documentation for TeamChallenge project"
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter just your valid JWT token.\n\nExample: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
+SetupFilters(builder.Services);
 SetupCustomServices(builder.Services);
 SetupDatabase(builder.Services, builder.Configuration);
-SetupFilters(builder.Services);
 SetupAuthentication(builder.Services, builder.Configuration);
 SetupInMemoryStorage(builder.Services, builder.Configuration);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000 ",
+                "https://TO-BE-DONE.vercel.app")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = new[] { GlobalConsts.Roles.Member, GlobalConsts.Roles.Unauthorized };
+    var roles = new[] { GlobalConstants.Roles.Admin, GlobalConstants.Roles.Member, GlobalConstants.Roles.Unauthorized };
 
     foreach (var role in roles)
     {
@@ -61,7 +94,7 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "swagger";
 });
 
-GlobalConsts.ClientUrl = app.Configuration["ClientUrl:Debug"]!;
+GlobalConstants.ClientUrl = app.Configuration["ClientUrl:Debug"]!;
 
 app.UseSerilogRequestLogging();
 
