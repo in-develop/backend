@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TeamChallenge.Models.Requests
+namespace TeamChallenge.Models.Requests.Login
 {
     public class SignUpRequest
     {
@@ -10,7 +10,5 @@ namespace TeamChallenge.Models.Requests
         public string Email { get; set; }
         [Required]
         public string Password { get; set; }        
-        public List<CreateCartItemRequest>? CartItems { get; set; }
-
     }
 }

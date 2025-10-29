@@ -3,52 +3,46 @@ using Microsoft.AspNetCore.Mvc;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.StaticData;
+using TeamChallenge.Models.Static_data;
 
 namespace TeamChallenge.Controllers
 {
     [ApiController]
     [Route("api/bundles")]
-    public class ProductBundleController : ControllerBase
+    public class ProductBundleController(IProductBundleLogic productLogic) : ControllerBase
     {
-        private readonly IProductBundleLogic _bundleLogic;
-        public ProductBundleController(IProductBundleLogic productLogic)
-        {
-            _bundleLogic = productLogic;
-        }
-
         [HttpGet]
         public async Task<IResponse> GetAll()
         {
-            return await _bundleLogic.GetAllProductBundlesAsync();
+            return await productLogic.GetAllProductBundlesAsync();
 
         }
 
         [HttpGet("{id}")]
         public async Task<IResponse> GetById([FromRoute] int id)
         {
-            return await _bundleLogic.GetProductBundleByIdAsync(id);
+            return await productLogic.GetProductBundleByIdAsync(id);
         }
 
         [HttpPost]
-        [Authorize(GlobalConsts.Roles.Admin)]
+        [Authorize(Roles = "Admin")]
         public async Task<IResponse> Create([FromBody] CreateProductBundleRequest requestData)
         {
-            return await _bundleLogic.CreateProductBundleAsync(requestData);
+            return await productLogic.CreateProductBundleAsync(requestData);
         }
 
         [HttpPut("{id}")]
-        [Authorize(GlobalConsts.Roles.Admin)]
+        [Authorize(Roles = "Admin")]
         public async Task<IResponse> Update([FromRoute] int id, [FromBody] UpdateProductBundleRequest requestData)
         {
-            return await _bundleLogic.UpdateProductBundleAsync(id, requestData);
+            return await productLogic.UpdateProductBundleAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(GlobalConsts.Roles.Admin)]
+        [Authorize(Roles = "Admin")]
         public async Task<IResponse> Delete([FromRoute] int id)
         {
-            return await _bundleLogic.DeleteProductBundleAsync(id);
+            return await productLogic.DeleteProductBundleAsync(id);
         }
     }
 }

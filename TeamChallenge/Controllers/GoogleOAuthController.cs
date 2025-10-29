@@ -2,27 +2,21 @@
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Services;
 
+namespace TeamChallenge.Controllers;
+
 [ApiController]
 [Route("api/auth")]
-public class GoogleAuthController : ControllerBase
+public class GoogleAuthController(IGoogleOAuth googleOAuthService) : ControllerBase
 {
-    private readonly IGoogleOAuth _googleOAuthService;
-
-    public GoogleAuthController(IGoogleOAuth googleOAuthService)
-    {
-        _googleOAuthService = googleOAuthService;
-    }
-
     [HttpGet("google-signin")]
-    public async Task<IResponse> GetGoogleLoginUrl()
+    public Task<IResponse> GetGoogleLoginUrl()
     {
-        return _googleOAuthService.GenerateOAuthRequestUrl();
+        return Task.FromResult(googleOAuthService.GenerateOAuthRequestUrl());
     }
 
     [HttpGet("google-callback")]
     public async Task<IResponse> GoogleCallback([FromQuery] string code, [FromQuery] string state)
     {
-        return await _googleOAuthService.GetGoogleAuthCallback(code, state);
+        return await googleOAuthService.GetGoogleAuthCallback(code, state);
     }
-
 }

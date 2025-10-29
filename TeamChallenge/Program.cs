@@ -11,31 +11,71 @@ using TeamChallenge.DbContext;
 using TeamChallenge.Filters;
 using TeamChallenge.Logic;
 using TeamChallenge.Models.Entities;
+using TeamChallenge.Models.SendEmailModels;
+using TeamChallenge.Models.Static_data;
 using TeamChallenge.Repositories;
 using TeamChallenge.Services;
-using TeamChallenge.StaticData;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.Configure<SenderModel>(builder.Configuration.GetSection("Sender"));
+builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration.ReadFrom.Configuration(context.Configuration));
 
-builder.Host.UseSerilog((context, loggerConfiguration) =>
-    loggerConfiguration.ReadFrom.Configuration(context.Configuration));
-
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.UseInlineDefinitionsForEnums();
+
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter just your valid JWT token.\n\nExample: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+SetupFilters(builder.Services);
 SetupCustomServices(builder.Services);
 SetupDatabase(builder.Services, builder.Configuration);
-SetupFilters(builder.Services);
 SetupAuthentication(builder.Services, builder.Configuration);
 SetupInMemoryStorage(builder.Services, builder.Configuration);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000 ",
+                "https://TO-BE-DONE.vercel.app")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = new[] { GlobalConsts.Roles.Member, GlobalConsts.Roles.Unauthorized };
+    var roles = new[] { GlobalConstants.Roles.Admin, GlobalConstants.Roles.Member, GlobalConstants.Roles.Unauthorized };
 
     foreach (var role in roles)
     {
@@ -47,25 +87,27 @@ using (var scope = app.Services.CreateScope())
 }
 
 //Configure the HTTP request pipeline.
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    GlobalConsts.ClientUrl = app.Configuration["ClientUrl:Debug"]!;
-}
-
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "TeamChallenge API v1");
+    options.RoutePrefix = "swagger";
+});
+
+GlobalConstants.ClientUrl = app.Configuration["ClientUrl:Debug"]!;
 
 app.UseSerilogRequestLogging();
 
-app.UseSession();
 app.UseHttpsRedirection();
-app.MapIdentityApi<IdentityUser>();
+
+app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapIdentityApi<IdentityUser>();
 
 app.MapControllers();
 
@@ -81,6 +123,7 @@ void SetupFilters(IServiceCollection services)
         options.Filters.Add<ValidationFilter>();
     });
 }
+
 void SetupCustomServices(IServiceCollection services)
 {
     services.AddSingleton<IGenerateToken, GenerateTokenService>();
@@ -97,9 +140,9 @@ void SetupCustomServices(IServiceCollection services)
     services.AddScoped<ICartItemLogic, CartItemLogic>();
     services.AddScoped<IUserLogic, UserLogic>();
     services.AddScoped<ITokenReaderService, TokenReaderService>();
-    services.AddScoped<IRedisCacheService, RedisCacheService>();
     services.AddScoped<ValidationFilter>();
 }
+
 void SetupAuthentication(IServiceCollection services, IConfiguration config)
 {
     services.AddAuthentication(x =>
@@ -153,8 +196,7 @@ void SetupAuthentication(IServiceCollection services, IConfiguration config)
         {
             ValidIssuer = config["Jwt:Issuer"],
             ValidAudience = config["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                System.Text.Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
             ValidateIssuerSigningKey = true,
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -180,6 +222,7 @@ void SetupAuthentication(IServiceCollection services, IConfiguration config)
 
     builder.Services.AddAuthorization();
 }
+
 void SetupDatabase(IServiceCollection services, IConfiguration config)
 {
     builder.Services.AddDbContext<CosmeticStoreDbContext>(options =>
@@ -205,8 +248,11 @@ void SetupDatabase(IServiceCollection services, IConfiguration config)
         .AddEntityFrameworkStores<CosmeticStoreDbContext>()
         .AddApiEndpoints();
 }
+
 void SetupInMemoryStorage(IServiceCollection services, IConfiguration config)
 {
+    builder.Services.AddDistributedMemoryCache();
+
     builder.Services.AddSession(options =>
     {
         options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -219,12 +265,6 @@ void SetupInMemoryStorage(IServiceCollection services, IConfiguration config)
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Strict;
-    });
-
-    builder.Services.AddStackExchangeRedisCache(options =>
-    {
-        options.Configuration = config.GetConnectionString("Redis");
-        options.InstanceName = "TeamChallenge_";
     });
 }
 

@@ -3,7 +3,6 @@ using TeamChallenge.Models.Requests.Product;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Models.Responses.ProductResponses;
 using TeamChallenge.Repositories;
-using TeamChallenge.Services;
 
 namespace TeamChallenge.Logic
 {
@@ -12,18 +11,14 @@ namespace TeamChallenge.Logic
         private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductLogic> _logger;
         private readonly ISubCategoryRepository _subCategoryRepository;
-        private readonly IRedisCacheService _cache;
 
         public ProductLogic(
             RepositoryFactory factory,
-            ILogger<ProductLogic> logger,
-            ICategoryLogic categoryLogic,
-            IRedisCacheService cache)
+            ILogger<ProductLogic> logger)
         {
             _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
             _subCategoryRepository = (ISubCategoryRepository)factory.GetRepository<SubCategoryEntity>();
             _logger = logger;
-            _cache = cache;
         }
 
         public async Task<IResponse> DeleteManyProductsAsync(List<int> ids)
@@ -68,18 +63,10 @@ namespace TeamChallenge.Logic
             }
         }
 
-        // Looping error
         public async Task<IResponse> GetProductByIdAsync(int id)
         {
             try
             {
-                var cachedData = await _cache.GetValueAsync<GetProductResponseModel>(id);
-
-                if (cachedData != null)
-                {
-                    return new GetProductResponse(cachedData);
-                }
-
                 var result = await _productRepository.GetByIdWithSubCategoriesAsync(id);
 
                 if (result == null)
@@ -87,10 +74,9 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
 
-                cachedData = new GetProductResponseModel(result);
-                await _cache.SetValueAsync(cachedData, id);
+                var product = new GetProductResponseModel(result);
 
-                return new GetProductResponse(cachedData);
+                return new GetProductResponse(product);
             }
             catch (Exception ex)
             {
@@ -131,8 +117,6 @@ namespace TeamChallenge.Logic
             }
         }
 
-
-
         public async Task<IResponse> UpdateProductAsync(int id, UpdateProductRequest requestData)
         {
             try
@@ -167,9 +151,7 @@ namespace TeamChallenge.Logic
                     }
                 });
 
-                await _cache.RemoveValueAsync<GetProductResponseModel>(id);
-
-                return new OkResponse("Product was successfully updated");
+                return new OkResponse($"Product '{id}' was successfully updated");
             }
             catch (Exception ex)
             {
@@ -186,8 +168,6 @@ namespace TeamChallenge.Logic
                 {
                     return new NotFoundResponse($"Product with Id = {id} not found");
                 }
-
-                await _cache.RemoveValueAsync<GetProductResponseModel>(id);
 
                 return new OkResponse();
             }

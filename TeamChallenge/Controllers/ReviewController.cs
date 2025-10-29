@@ -9,42 +9,36 @@ namespace TeamChallenge.Controllers
     [ApiController]
     [Authorize]
     [Route("api/reviews")]
-    public class ReviewController : ControllerBase
+    public class ReviewController(IReviewLogic reviewLogic) : ControllerBase
     {
-        private readonly IReviewLogic _reviewLogic;
-        public ReviewController(IReviewLogic reviewLogic)
-        {
-            _reviewLogic = reviewLogic;
-        }
-
         [HttpGet]
         public async Task<IResponse> GetAll()
         {
-            return await _reviewLogic.GetAllReviewsAsync();
+            return await reviewLogic.GetAllReviewsAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<IResponse> GetById([FromRoute] int id)
         {
-            return await _reviewLogic.GetReviewByIdAsync(id);
+            return await reviewLogic.GetReviewByIdAsync(id);
         }
 
         [HttpPost]
         public async Task<IResponse> Create([FromBody] CreateReviewRequest requestData)
         {
-            return await _reviewLogic.CreateReviewAsync(requestData);
+            return await reviewLogic.CreateReviewAsync(requestData);
         }
 
         [HttpPut("{id}")]
         public async Task<IResponse> Update([FromRoute] int id, [FromBody] UpdateReviewRequest requestData)
         {
-            return await _reviewLogic.UpdateReviewAsync(id, requestData);
+            return await reviewLogic.UpdateReviewAsync(id, requestData);
         }
 
         [HttpDelete("{id}")]
         public async Task<IResponse> Delete([FromRoute] int id)
         {
-            return await _reviewLogic.DeleteReviewAsync(id);
+            return await reviewLogic.DeleteReviewAsync(id);
         }
     }
 }

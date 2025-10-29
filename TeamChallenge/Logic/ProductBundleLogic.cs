@@ -2,7 +2,6 @@
 using TeamChallenge.Models.Requests;
 using TeamChallenge.Models.Responses;
 using TeamChallenge.Repositories;
-using TeamChallenge.Services;
 
 namespace TeamChallenge.Logic
 {
@@ -12,19 +11,16 @@ namespace TeamChallenge.Logic
         private readonly IProductRepository _productRepository;
         private readonly IProductLogic _productLogic;
         private readonly ILogger<ProductBundleLogic> _logger;
-        private readonly IRedisCacheService _cache;
 
         public ProductBundleLogic(
             RepositoryFactory factory, 
             IProductLogic productLogic,
-            ILogger<ProductBundleLogic> logger,
-            IRedisCacheService cache)
+            ILogger<ProductBundleLogic> logger)
         {
             _bundleRepository = (IProductBundleRepository)factory.GetRepository<ProductBundleEntity>();
             _productRepository = (IProductRepository)factory.GetRepository<ProductEntity>();
             _logger = logger;
             _productLogic = productLogic;
-            _cache = cache;
         }
 
         public async Task<IResponse> GetAllProductBundlesAsync()
@@ -44,13 +40,6 @@ namespace TeamChallenge.Logic
         {
             try
             {
-                var cachedData = await _cache.GetValueAsync<GetProductBundleResponseModel>(id);
-
-                if (cachedData != null)
-                {
-                    return new GetProductBundleResponse(cachedData);
-                }
-
                 var result = await _bundleRepository.GetByIdAsync(id);
 
                 if (result == null)
@@ -58,10 +47,9 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product bundle with Id = {id} not found");
                 }
 
-                cachedData = new GetProductBundleResponseModel(result);
-                await _cache.SetValueAsync(cachedData, id);
+                var product = new GetProductBundleResponseModel(result);
 
-                return new GetProductBundleResponse(cachedData);
+                return new GetProductBundleResponse(product);
             }
             catch (Exception ex)
             {
@@ -127,14 +115,12 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product bundle with Id = {id} not found");
                 }
 
-                await _cache.RemoveValueAsync<GetProductBundleResponseModel>(id);
 
                 result = await _productRepository.UpdateManyAsync(x => request.ProductIds.Contains(x.Id), entities =>
                 {
-                    entities.ForEach(async e =>
+                    entities.ForEach(e =>
                     {
                         e.ProductBundleId = id;
-                        await _cache.RemoveValueAsync<GetProductResponseModel>(e.Id);
                     });
                 });
 
@@ -161,9 +147,7 @@ namespace TeamChallenge.Logic
                     return new NotFoundResponse($"Product bundle with Id = {id} not found");
                 }
 
-                await _cache.RemoveValueAsync<GetProductBundleResponseModel>(id);
-
-                return new OkResponse();
+                return new OkResponse($"Deleted Product Id: {id}");
             }
             catch (Exception ex)
             {

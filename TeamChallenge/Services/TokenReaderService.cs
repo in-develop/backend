@@ -1,29 +1,22 @@
 ﻿using System.Security.Claims;
 using TeamChallenge.Models.Responses;
-using TeamChallenge.StaticData;
 
 namespace TeamChallenge.Services
 {
-    public class TokenReaderService : ITokenReaderService
+    public class TokenReaderService(
+        ILogger<TokenReaderService> logger,
+        IHttpContextAccessor httpContextAccessor)
+        : ITokenReaderService
     {
-        private readonly ILogger<TokenReaderService> _logger;
-        private HttpContext _httpContext;
-        public TokenReaderService(
-            ILogger<TokenReaderService> logger,
-            IHttpContextAccessor httpContextAccessor)
-        {
-
-            _logger = logger;
-            _httpContext = httpContextAccessor.HttpContext!;
-        }
+        private readonly HttpContext _httpContext = httpContextAccessor.HttpContext!;
 
         public IResponse GetCartId()
         {
-            var cartId = _httpContext.User.FindFirstValue(CustomClaimTypes.CartId);
+            var cartId = _httpContext.User.FindFirstValue("CartId");
 
-            if (!int.TryParse(cartId, out int cartIdInt))
+            if (!int.TryParse(cartId, out var cartIdInt))
             {
-                _logger.LogWarning("User claims does not contain cart id or it is invalid.");
+                logger.LogWarning("User claims does not contain cart id or it is invalid.");
                 return new UnauthorizedResponse("User claims does not contain cart id or it is invalid.");
             }
 
@@ -36,7 +29,7 @@ namespace TeamChallenge.Services
 
             if (string.IsNullOrEmpty(userId))
             {
-                _logger.LogWarning("User claims does not contain user id or it is invalid.");
+                logger.LogWarning("User claims does not contain user id or it is invalid.");
                 return new UnauthorizedResponse("User claims does not contain user id or it is invalid.");
             }
 

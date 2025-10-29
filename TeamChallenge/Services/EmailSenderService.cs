@@ -1,22 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.Options;
-using System.Linq.Expressions;
+﻿using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
-using TeamChallenge.Helpers;
-using TeamChallenge.Models.Entities;
 using TeamChallenge.Models.SendEmailModels;
 
 namespace TeamChallenge.Services
 {
-    public class EmailSenderService : IEmailSend
+    public class EmailSenderService(IOptions<SenderModel> options) : IEmailSend
     {
-        private readonly SenderModel _sender;
-        public EmailSenderService(IOptions<SenderModel> options)
-        {
-            _sender = options.Value;
-        }       
+        private readonly SenderModel _sender = options.Value;
 
         public async Task SendEmail(string email, string body)
         {
@@ -28,14 +19,11 @@ namespace TeamChallenge.Services
             message.Body = body;
             message.IsBodyHtml = true;
 
-            using var client = new SmtpClient(_sender.Host, _sender.Port)
-            {
-                Credentials = new NetworkCredential(_sender.Email, _sender.Password),
-                EnableSsl = true
-            };
+            using var client = new SmtpClient(_sender.Host, _sender.Port);
+            client.Credentials = new NetworkCredential(_sender.Email, _sender.Password);
+            client.EnableSsl = true;
 
             await client.SendMailAsync(message);
         }
-
     }
 }

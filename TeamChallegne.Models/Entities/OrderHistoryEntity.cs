@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using TeamChallenge.StaticData;
+using TeamChallenge.Models.Static_data;
 
 namespace TeamChallenge.Models.Entities
 {
     public class OrderHistoryEntity : BaseEntity
     {
-        public DateTime ChangedAt { get; set; } = DateTime.Now;
+        public DateTime ChangedAt { get; set; } = DateTime.UtcNow;
         public OrderStatus? OldStatus { get; set; }
         [Required]
         public OrderStatus NewStatus { get; set; }
